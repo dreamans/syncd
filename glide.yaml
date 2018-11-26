@@ -1,5 +1,0 @@
-package: github.com/syncd/syncd
-import:
-- package: github.com/pkg/sftp
-  version: v1.8.3
-- package: golang.org/x/crypto/ssh
