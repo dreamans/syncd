@@ -82,11 +82,11 @@ func (c *Command) Run() error {
     return err
 }
 
-func (c Command) Stdout() []byte {
+func (c *Command) Stdout() []byte {
     return c.stdout
 }
 
-func (c Command) Stderr() []byte {
+func (c *Command) Stderr() []byte {
     return c.stderr.Bytes()
 }
 
@@ -104,7 +104,7 @@ func (c *Command) cmdInit () *exec.Cmd {
     return c.command
 }
 
-func (c Command) terminate() error {
+func (c *Command) terminate() error {
     return syscall.Kill(-c.command.Process.Pid, syscall.SIGKILL)
 }
 
