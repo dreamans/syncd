@@ -8,7 +8,7 @@ import (
     "strings"
     "os/user"
 
-    "github.com/syncd/syncd/pkg/util"
+    "github.com/tinystack/syncd/pkg/util"
 )
 
 type Bash struct {
