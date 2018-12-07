@@ -15,7 +15,7 @@ func beforeHandler(c *webserve.Context) error {
 }
 
 func afterHandler(c *webserve.Context) error {
-    log.Println("access " + c.Method())
+    log.Info("access %s", c.Method())
 
     return nil
 }
