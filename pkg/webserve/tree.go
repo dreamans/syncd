@@ -3,7 +3,7 @@
 // at https://github.com/julienschmidt/httprouter/blob/v1.1/LICENSE
 // at https://github.com/gin-gonic/gin/blob/v1.3.0/LICENSE
 
-package web
+package webserve
 
 import (
     "strings"

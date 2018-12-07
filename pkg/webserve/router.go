@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package web
+package webserve
 
 type Route struct {
     Method string
@@ -48,4 +48,3 @@ func (r *Router) handle(method string, path string, handler HandlerFunc) {
         Path:   path,
     }
 }
-

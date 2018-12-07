@@ -1,0 +1,24 @@
+hash: 062859279dbf84db8a867573a9a0a70da3196ed9c0aaf0972545a2f4a0c6c911
+updated: 2018-12-07T16:27:54.426126+08:00
+imports:
+- name: github.com/kr/fs
+  version: 1455def202f6e05b95cc7bfc7e8ae67ae5141eba
+- name: github.com/pkg/errors
+  version: 059132a15dd08d6704c67711dae0cf35ab991756
+- name: github.com/pkg/sftp
+  version: 08de04f133f27844173471167014e1a753655ac8
+- name: github.com/valyala/bytebufferpool
+  version: cdfbe9377474227bb42120c1e22fd4433e7f69bf
+- name: github.com/valyala/fasttemplate
+  version: dcecefd839c4193db0d35b88ec65b4c12d360ab0
+- name: golang.org/x/crypto
+  version: 505ab145d0a99da450461ae2c1a9f6cd10d1f447
+  subpackages:
+  - curve25519
+  - ed25519
+  - ed25519/internal/edwards25519
+  - internal/chacha20
+  - internal/subtle
+  - poly1305
+  - ssh
+testImports: []

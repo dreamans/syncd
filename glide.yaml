@@ -1,0 +1,6 @@
+package: github.com/tinystack/syncd
+import:
+- package: github.com/pkg/sftp
+  version: ^1.8.3
+- package: github.com/valyala/fasttemplate
+- package: golang.org/x/crypto/ssh

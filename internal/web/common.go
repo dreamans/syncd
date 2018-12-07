@@ -5,9 +5,8 @@
 package web
 
 import (
-    "log"
-
     "github.com/tinystack/syncd/pkg/webserve"
+    "github.com/tinystack/syncd/pkg/log"
 )
 
 func beforeHandler(c *webserve.Context) error {

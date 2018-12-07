@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package web
+package webserve
 
 import (
     "log"
@@ -16,6 +16,8 @@ type (
         ServerErrorHandler    func(error, *Context, int)
         NotFoundHandler       HandlerFunc
         MethodNotAllowHandler HandlerFunc
+        BeforeHandler         HandlerFunc
+        AfterHandler          HandlerFunc
         pool                  sync.Pool
         router                *Router
     }
@@ -86,8 +88,19 @@ func (ser *Serve) requestHTTPHandle(c *Context) {
         handler, params, _ := root.getValue(path)
         if handler != nil {
             c.Params = params
-            if err := handler(c); err != nil && e.ServerErrorHandler != nil {
-                ser.ServerErrorHandler(err, c, http.StatusInternalServerError)
+            handlers := []HandlerFunc{}
+            if ser.BeforeHandler != nil {
+                handlers = append(handlers, ser.BeforeHandler)
+            }
+            handlers = append(handlers, handler)
+            if ser.AfterHandler != nil {
+                handlers = append(handlers, ser.AfterHandler)
+            }
+            for _, h := range handlers {
+                if err := h(c); err != nil {
+                    ser.ServerErrorHandler(err, c, http.StatusInternalServerError)
+                    return
+                }
             }
             return
         }
@@ -120,3 +133,6 @@ func (ser *Serve) GET(path string, handler HandlerFunc) {
     ser.Handle("GET", path, handler)
 }
 
+func (ser *Serve) POST(path string, handler HandlerFunc) {
+    ser.Handle("POST", path, handler)
+}
