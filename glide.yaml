@@ -2,5 +2,8 @@ package: github.com/tinystack/syncd
 import:
 - package: github.com/pkg/sftp
   version: ^1.8.3
-- package: github.com/valyala/fasttemplate
-- package: golang.org/x/crypto/ssh
+- package: golang.org/x/crypto
+  subpackages:
+  - ssh
+- package: github.com/go-sql-driver/mysql
+  version: v1.4.1
