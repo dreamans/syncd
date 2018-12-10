@@ -90,4 +90,3 @@ func (c Conn) makeAuth() ([]gossh.AuthMethod, error) {
     }
     return auth, nil
 }
-

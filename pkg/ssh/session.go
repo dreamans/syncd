@@ -39,4 +39,3 @@ func (s *Session) Close() {
         s.session.Close()
     }
 }
-

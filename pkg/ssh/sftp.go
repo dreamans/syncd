@@ -54,4 +54,3 @@ func (c SftpClient) Close() {
         c.Close()
     }
 }
-
