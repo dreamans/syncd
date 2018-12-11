@@ -8,6 +8,8 @@ import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
     "github.com/tinystack/syncd/route"
+    "github.com/tinystack/syncd"
+    "github.com/tinystack/syncd/model"
 )
 
 func init() {
@@ -55,14 +57,18 @@ func newProject(c *goweb.Context) error {
         BuildScript: c.PostForm("buildScript"),
     }
     if valid := govalidate.NewValidate(&p); !valid.Pass() {
-        route.RenderParamError(c, valid.LastFailed().Msg)
+        syncd.RenderParamError(c, valid.LastFailed().Msg)
         return nil
     }
 
-    c.Json(200, goweb.JSON{
-        "code": "0",
-        "message": "Hijacker",
-        "data": p,
-    })
+    projectModel := model.Project{
+        Name: p.Name,
+        Description: p.Description,
+        Space: p.Space,
+        BuildScript: p.BuildScript,
+    }
+    projectModel.Create()
+
+    syncd.RenderJson(c, p)
     return nil
 }

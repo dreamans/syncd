@@ -8,21 +8,30 @@ type (
     Config struct {
         Serve   *ServeConfig
         Db      *DbConfig
+        Log     *LogConfig
+    }
+
+    LogConfig struct {
+        Path    string
     }
 
     ServeConfig struct {
         Addr            string
-        Log             string
         ReadTimeout     int
         WriteTimeout    int
         IdleTimeout     int
     }
 
     DbConfig struct {
-        Host    string
-        Port    string
-        User    string
-        Pass    string
-        DBname  string
+        Unix            string
+        Host            string
+        Port            string
+        Charset         string
+        User            string
+        Pass            string
+        DbName          string
+        MaxIdleConns    int
+        MaxOpenConns    int
+        ConnMaxLifeTime int
     }
 )

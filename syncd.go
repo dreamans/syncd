@@ -5,13 +5,13 @@
 package syncd
 
 import (
-    "os"
     "time"
+    "io"
+    "os"
 
     "github.com/tinystack/goweb"
     "github.com/tinystack/golog"
-    "github.com/tinystack/syncd/route"
-    _ "github.com/tinystack/syncd/module"
+    "github.com/jinzhu/gorm"
 )
 
 type Syncd struct {
@@ -19,13 +19,13 @@ type Syncd struct {
     serve   *goweb.Serve
 }
 
+var (
+    Logger          *golog.Logger
+    Orm             *gorm.DB
+    DbInstance      *DB
+)
+
 func NewSyncd(cfg *Config) *Syncd {
-    var logger *golog.Logger
-    if cfg.Serve.Log != "" {
-        logger = golog.New(golog.NewFileHandler(cfg.Serve.Log))
-    } else {
-        logger = golog.New(os.Stderr)
-    }
     syncd := &Syncd{
         config: cfg,
         serve: goweb.New(cfg.Serve.Addr),
@@ -33,38 +33,45 @@ func NewSyncd(cfg *Config) *Syncd {
     syncd.serve.ReadTimeout = time.Second * time.Duration(cfg.Serve.ReadTimeout)
     syncd.serve.WriteTimeout = time.Second * time.Duration(cfg.Serve.WriteTimeout)
     syncd.serve.IdleTimeout = time.Second * time.Duration(cfg.Serve.IdleTimeout)
-    syncd.serve.Logger = logger
+
+    syncd.serve.BeforeHandler = beforeHandler
+    syncd.serve.AfterHandler = afterHandler
+    syncd.serve.ServerErrorHandler = serverErrorHandler
+    syncd.serve.NotFoundHandler = notFoundHandler
+    syncd.serve.MethodNotAllowHandler = notFoundHandler
 
     return syncd
 }
 
 func (s *Syncd) Start() error {
-    s.regRoute()
-    s.regDb()
-
     return s.serve.Start()
 }
 
-func (s *Syncd) regRoute() {
-    s.serve.BeforeHandler = route.BeforeHandler
-    s.serve.AfterHandler = route.AfterHandler
-    s.serve.ServerErrorHandler = route.ServerErrorHandler
-    s.serve.NotFoundHandler = route.NotFoundHandler
-    s.serve.MethodNotAllowHandler = route.NotFoundHandler
-
-    rg := route.RouteGroup()
-    for _, r := range rg {
-        switch r.Method {
-        case "GET":
-            s.serve.GET(r.Path, r.Handler)
-        case "POST":
-            s.serve.POST(r.Path, r.Handler)
-        case "OPTIONS":
-            s.serve.OPTIONS(r.Path, r.Handler)
-        }
-    }
+func (s *Syncd) RegisterRoute(method, path string, handler goweb.HandlerFunc) {
+    s.serve.Handler(method, path, handler)
 }
 
-func (s *Syncd) regDb() {
+func (s *Syncd) UnRegisterRoute() {}
 
+func (s *Syncd) RegisterOrm() {
+    DbInstance := NewDatabase(s.config.Db)
+    if err := DbInstance.Open(); err != nil {
+        panic(err)
+    }
+    Orm = DbInstance.DbHandler
+}
+
+func (s *Syncd) RegisterLog() {
+    var loggerHandler io.Writer
+    switch s.config.Log.Path {
+    case "stdout":
+        loggerHandler = os.Stdout
+    case "stderr":
+        loggerHandler = os.Stderr
+    case "":
+        loggerHandler = os.Stdout
+    default:
+        loggerHandler = golog.NewFileHandler(s.config.Log.Path)
+    }
+    Logger = golog.New(loggerHandler)
 }

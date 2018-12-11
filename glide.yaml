@@ -1,9 +1,10 @@
 package: github.com/tinystack/syncd
 import:
-- package: github.com/pkg/sftp
-  version: ^1.8.3
-- package: golang.org/x/crypto
-  subpackages:
-  - ssh
 - package: github.com/go-sql-driver/mysql
   version: v1.4.1
+- package: github.com/jinzhu/gorm
+  version: v1.9.2
+- package: github.com/tinystack/golog
+- package: github.com/tinystack/goutil
+- package: github.com/tinystack/govalidate
+- package: github.com/tinystack/goweb

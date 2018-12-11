@@ -1,22 +1,22 @@
-hash: f3872b6e2b2aca915c294a4dbddfdfaac587c4be0e800a8472128edcc6614569
-updated: 2018-12-08T20:36:02.879071+08:00
+hash: 255705a41f727754c9def114c04e0b96c0e7f5c8f712c6c4faa9d7ce654a46cf
+updated: 2018-12-11T19:01:38.374966+08:00
 imports:
 - name: github.com/go-sql-driver/mysql
   version: 72cd26f257d44c1114970e19afddcd812016007e
-- name: github.com/kr/fs
-  version: 1455def202f6e05b95cc7bfc7e8ae67ae5141eba
-- name: github.com/pkg/errors
-  version: 059132a15dd08d6704c67711dae0cf35ab991756
-- name: github.com/pkg/sftp
-  version: 08de04f133f27844173471167014e1a753655ac8
-- name: golang.org/x/crypto
-  version: 505ab145d0a99da450461ae2c1a9f6cd10d1f447
+- name: github.com/jinzhu/gorm
+  version: 472c70caa40267cb89fd8facb07fe6454b578626
+- name: github.com/jinzhu/inflection
+  version: 04140366298a54a039076d798123ffa108fff46c
+- name: github.com/tinystack/golog
+  version: 3692ebca708fe99f2a0f4cdb3424ab6888e84b07
+- name: github.com/tinystack/goutil
+  version: 120e04ad49202f3e375134ae404cd4dc2562c076
+- name: github.com/tinystack/govalidate
+  version: facba342b173d3eec0673cbdf98bed505bece173
+- name: github.com/tinystack/goweb
+  version: ea0a0009b1f238023d47ecfa30fe226e624a1338
+- name: google.golang.org/appengine
+  version: a37df1387b4521194676d88c79230c613610d5f4
   subpackages:
-  - curve25519
-  - ed25519
-  - ed25519/internal/edwards25519
-  - internal/chacha20
-  - internal/subtle
-  - poly1305
-  - ssh
+  - cloudsql
 testImports: []

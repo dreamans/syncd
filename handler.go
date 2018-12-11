@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package route
+package syncd
 
 import (
     "net/url"
@@ -12,7 +12,7 @@ import (
     "github.com/tinystack/goutil"
 )
 
-func BeforeHandler(c *goweb.Context) error {
+func beforeHandler(c *goweb.Context) error {
     var origin string
     if referer := c.Request.Referer(); referer != "" {
         if u, err := url.Parse(referer); err == nil {
@@ -26,19 +26,19 @@ func BeforeHandler(c *goweb.Context) error {
     return nil
 }
 
-func AfterHandler(c *goweb.Context) error {
+func afterHandler(c *goweb.Context) error {
     return nil
 }
 
-func ServerErrorHandler(error error, c *goweb.Context, code int) {
-    c.Logger().Error("server error occurs, code[%v], error[%v]", code, error)
+func serverErrorHandler(error error, c *goweb.Context, code int) {
+    Logger.Error("server error occurs, code[%v], error[%v]", code, error)
     c.Json(http.StatusInternalServerError, goweb.JSON{
         "code": http.StatusInternalServerError,
         "message": "Internal Server Error",
     })
 }
 
-func NotFoundHandler(c *goweb.Context) error {
+func notFoundHandler(c *goweb.Context) error {
     c.Json(http.StatusNotFound, goweb.JSON{
         "code": http.StatusNotFound,
         "message": "Page Not Found",
