@@ -6,6 +6,7 @@ package route
 
 import (
     "net/url"
+    "net/http"
 
     "github.com/tinystack/goweb"
     "github.com/tinystack/goutil"
@@ -31,15 +32,15 @@ func AfterHandler(c *goweb.Context) error {
 
 func ServerErrorHandler(error error, c *goweb.Context, code int) {
     c.Logger().Error("server error occurs, code[%v], error[%v]", code, error)
-    c.Json(404, goweb.JSON{
-        "code": "500",
+    c.Json(http.StatusInternalServerError, goweb.JSON{
+        "code": http.StatusInternalServerError,
         "message": "Internal Server Error",
     })
 }
 
 func NotFoundHandler(c *goweb.Context) error {
-    c.Json(404, goweb.JSON{
-        "code": "404",
+    c.Json(http.StatusNotFound, goweb.JSON{
+        "code": http.StatusNotFound,
         "message": "Page Not Found",
     })
     return nil
