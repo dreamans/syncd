@@ -10,10 +10,24 @@ import (
     "github.com/tinystack/goweb"
 )
 
+const (
+    CODE_OK         = 0
+    CODE_ERR_SYSTEM = 1000
+    CODE_ERR_APP    = 1001
+    CODE_ERR_PARAM  = 1002
+)
+
 func RenderParamError(c *goweb.Context, msg string) {
     c.Json(http.StatusOK, goweb.JSON{
         "code": CODE_ERR_PARAM,
         "message": msg,
+    })
+}
+
+func RenderAppError(c *goweb.Context, msg string) {
+    c.Json(http.StatusOK, goweb.JSON{
+        "code": CODE_ERR_APP,
+        "message": "success",
     })
 }
 

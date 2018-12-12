@@ -36,6 +36,7 @@ func (db *DB) Open() error {
     }
 
     c.SingularTable(true)
+    c.LogMode(false)
 
     c.DB().SetMaxIdleConns(db.cfg.MaxIdleConns)
     c.DB().SetMaxOpenConns(db.cfg.MaxOpenConns)

@@ -5,6 +5,8 @@
 package project
 
 import (
+    "strings"
+
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
     "github.com/tinystack/syncd/route"
@@ -26,14 +28,6 @@ type NewProjectParam struct {
     DeployUser      string      `valid:"require" errmsg:"required=Deploy user cannot be epmty"`
     DeployPath      string      `valid:"require" errmsg:"required=Deploy path cannot be epmty"`
     DeployHistory   int         `valid:"int_min=3" errmsg:"int_min=Deploy history at least 3"`
-    PreDeployCmd    string
-    PostDeployCmd   string
-    NeedAudit       int
-    Status          int
-    RepoUser        string
-    RepoPass        string
-    RepoMode        int
-    BuildScript     string
 }
 
 func newProject(c *goweb.Context) error {
@@ -47,28 +41,48 @@ func newProject(c *goweb.Context) error {
         DeployUser: c.PostForm("deployUser"),
         DeployPath: c.PostForm("deployPath"),
         DeployHistory: c.PostFormInt("deployHistory"),
-        PreDeployCmd: c.PostForm("preDeployCmd"),
-        PostDeployCmd: c.PostForm("postDeployCmd"),
-        NeedAudit: c.PostFormInt("needAudit"),
-        Status: c.PostFormInt("status"),
-        RepoUser: c.PostForm("repoUser"),
-        RepoPass: c.PostForm("repoPass"),
-        RepoMode: c.PostFormInt("repoMode"),
-        BuildScript: c.PostForm("buildScript"),
     }
     if valid := govalidate.NewValidate(&p); !valid.Pass() {
         syncd.RenderParamError(c, valid.LastFailed().Msg)
         return nil
     }
 
+    deployServer := strings.Join(p.DeployServer, ",")
+    needAudit := 0
+    if c.PostFormInt("needAudit") != 0 {
+        needAudit = 1
+    }
+    status := 0
+    if c.PostFormInt("status") != 0 {
+        status = 1
+    }
+
     projectModel := model.Project{
         Name: p.Name,
         Description: p.Description,
         Space: p.Space,
-        BuildScript: p.BuildScript,
+        Repo: p.Repo,
+        RepoUrl: p.RepoUrl,
+        DeployServer: deployServer,
+        DeployUser: p.DeployUser,
+        DeployPath: p.DeployPath,
+        DeployHistory: p.DeployHistory,
+        PreDeployCmd: c.PostForm("preDeployCmd"),
+        PostDeployCmd: c.PostForm("postDeployCmd"),
+        NeedAudit: needAudit,
+        Status: status,
+        RepoUser: c.PostForm("repoUser"),
+        RepoPass: c.PostForm("repoPass"),
+        RepoMode: c.PostFormInt("repoMode"),
+        BuildScript: c.PostForm("buildScript"),
     }
-    projectModel.Create()
-
-    syncd.RenderJson(c, p)
+    id, ok := projectModel.Create()
+    if !ok {
+        syncd.RenderAppError(c, "项目新增失败")
+        return nil
+    }
+    syncd.RenderJson(c, goweb.JSON{
+        "id": id,
+    })
     return nil
 }
