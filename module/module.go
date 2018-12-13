@@ -6,4 +6,5 @@ package module
 
 import (
     _ "github.com/tinystack/syncd/module/project"
+    _ "github.com/tinystack/syncd/module/server"
 )

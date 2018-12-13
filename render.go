@@ -27,7 +27,7 @@ func RenderParamError(c *goweb.Context, msg string) {
 func RenderAppError(c *goweb.Context, msg string) {
     c.Json(http.StatusOK, goweb.JSON{
         "code": CODE_ERR_APP,
-        "message": "success",
+        "message": msg,
     })
 }
 

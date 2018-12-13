@@ -21,11 +21,6 @@ func NewDatabase(cfg *DbConfig) *DB {
     db := &DB{
         cfg: cfg,
     }
-
-    gorm.DefaultTableNameHandler = func (db *gorm.DB, defaultTableName string) string  {
-        return "syd_" + defaultTableName;
-    }
-
     return db
 }
 
@@ -34,10 +29,7 @@ func (db *DB) Open() error {
     if err != nil {
         return err
     }
-
-    c.SingularTable(true)
     c.LogMode(false)
-
     c.DB().SetMaxIdleConns(db.cfg.MaxIdleConns)
     c.DB().SetMaxOpenConns(db.cfg.MaxOpenConns)
     c.DB().SetConnMaxLifetime(time.Second * time.Duration(db.cfg.ConnMaxLifeTime))
