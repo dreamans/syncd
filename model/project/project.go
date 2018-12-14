@@ -21,7 +21,7 @@ func List(fields string, offset, limit int) ([]ProjectList, bool) {
         Offset: offset,
         Limit: limit,
         Order: "id desc",
-        Fields: "id, name, repo_mode, need_audit, status",
+        Fields: fields,
     })
     return p, ok
 }

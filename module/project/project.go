@@ -17,7 +17,7 @@ import (
 func init() {
     route.Register(route.API_PROJECT_UPDATE, updateProject)
     route.Register(route.API_PROJECT_LIST, listProject)
-    route.Register(route.API_PROJECT_GET, getProject)
+    route.Register(route.API_PROJECT_DETAIL, detailProject)
 }
 
 type ProjectParamValid struct {
@@ -121,13 +121,12 @@ func listProject(c *goweb.Context) error {
     return nil
 }
 
-func getProject(c *goweb.Context) error {
+func detailProject(c *goweb.Context) error {
     id := c.QueryInt("id")
     if id == 0 {
         syncd.RenderParamError(c, "id can not be empty")
         return nil
     }
-
     p, ok := projectModel.Get(id)
     if !ok {
         syncd.RenderAppError(c, "get project detail data failed")

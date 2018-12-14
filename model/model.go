@@ -18,8 +18,9 @@ type QueryParam struct {
 }
 
 func Create(tableName string, data interface{}) bool {
-    if err := syncd.Orm.Table(tableName).Create(data).Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v", err)
+    db := syncd.Orm.Table(tableName).Create(data)
+    if err := db.Error; err != nil {
+        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
     }
     return true
@@ -35,7 +36,7 @@ func GetMulti(tableName string, data interface{}, query QueryParam) bool {
     }
     db = db.Find(data)
     if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v", err)
+        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
     }
 
@@ -43,9 +44,9 @@ func GetMulti(tableName string, data interface{}, query QueryParam) bool {
 }
 
 func Count(tableName string, count *int, query QueryParam) bool {
-    db := syncd.Orm.Table(tableName).Count(&count)
+    db := syncd.Orm.Table(tableName).Count(count)
     if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v", err)
+        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
     }
     return true
@@ -61,7 +62,7 @@ func GetOne(tableName string, data interface{}, query QueryParam) bool {
     }
     db = db.First(data)
     if err := db.Error; err != nil && !db.RecordNotFound() {
-        syncd.Logger.Warning("mysql query error: %v", err)
+        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
     }
     return true
@@ -74,7 +75,20 @@ func Update(tableName string, data interface{}, query QueryParam) bool {
     }
     db = db.Updates(data)
     if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v", err)
+        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        return false
+    }
+    return true
+}
+
+func Delete(tableName string, data interface{}, query QueryParam) bool {
+    if query.Plain == "" {
+        syncd.Logger.Warning("mysql query error: delete failed, where conditions cannot be empty")
+        return false
+    }
+    db := syncd.Orm.Table(tableName).Where(query.Plain, query.Prepare...).Delete(data)
+    if err := db.Error; err != nil {
+        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
     }
     return true

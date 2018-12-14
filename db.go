@@ -18,10 +18,9 @@ type DB struct {
 }
 
 func NewDatabase(cfg *DbConfig) *DB {
-    db := &DB{
+    return &DB{
         cfg: cfg,
     }
-    return db
 }
 
 func (db *DB) Open() error {

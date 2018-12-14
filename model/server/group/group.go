@@ -23,3 +23,37 @@ func Update(id int, data Group) bool {
     })
     return ok
 }
+
+func List(fields string, offset, limit int) ([]Group, bool) {
+    var data []Group
+    ok := model.GetMulti(TableName, &data, model.QueryParam{
+        Offset: offset,
+        Limit: limit,
+        Order: "id desc",
+        Fields: fields,
+    })
+    return data, ok
+}
+
+func Total() (int, bool) {
+    var count int
+    ok := model.Count(TableName, &count, model.QueryParam{})
+    return count, ok
+}
+
+func Get(id int) (Group, bool){
+    var data Group
+    ok := model.GetOne(TableName, &data, model.QueryParam{
+        Plain: "id = ?",
+        Prepare: []interface{}{id},
+    })
+    return data, ok
+}
+
+func Delete(id int) bool {
+    ok := model.Delete(TableName, Group{}, model.QueryParam{
+        Plain: "id = ?",
+        Prepare: []interface{}{id},
+    })
+    return ok
+}
