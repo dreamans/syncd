@@ -23,8 +23,7 @@ type Project struct {
     RepoPass        string  `gorm:"type:varchar(100);not null;default:''" json:"repo_pass"`
     RepoMode        int     `gorm:"type:int(11);not null;default:0" json:"repo_mode"`
     BuildScript     string  `gorm:"type:text;not null" json:"build_script"`
-    Ctime           int     `gorm:"type:int(11);not null;default:0" json:"ctime"`
-    Mtime           int     `gorm:"type:int(11);not null;default:0" json:"mtime"`
+    Utime           int     `gorm:"type:int(11);not null;default:0" json:"utime"`
 }
 
 type ProjectList struct {

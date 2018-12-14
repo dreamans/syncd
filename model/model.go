@@ -27,14 +27,20 @@ func Create(tableName string, data interface{}) bool {
 }
 
 func GetMulti(tableName string, data interface{}, query QueryParam) bool {
-    db := syncd.Orm.Table(tableName).Offset(query.Offset).Limit(query.Limit)
+    db := syncd.Orm.Table(tableName).Offset(query.Offset)
+    if query.Limit > 0 {
+        db = db.Limit(query.Limit)
+    }
     if query.Fields != "" {
         db = db.Select(query.Fields)
     }
     if query.Order != "" {
         db = db.Order(query.Order)
     }
-    db = db.Find(data)
+    if query.Plain != "" {
+        db = db.Where(query.Plain, query.Prepare...)
+    }
+    db.Find(data)
     if err := db.Error; err != nil {
         syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false

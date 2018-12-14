@@ -11,7 +11,7 @@ import (
 )
 
 func Create(data *Project) bool {
-    data.Ctime = int(time.Now().Unix())
+    data.Utime = int(time.Now().Unix())
     return model.Create(TableName, data)
 }
 
@@ -42,7 +42,7 @@ func Get(id int) (Project, bool){
 }
 
 func Update(id int, data Project) bool {
-    data.Mtime = int(time.Now().Unix())
+    data.Utime = int(time.Now().Unix())
     ok := model.Update(TableName, data, model.QueryParam{
         Plain: "id = ?",
         Prepare: []interface{}{id},

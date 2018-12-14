@@ -8,4 +8,9 @@ const (
     API_SERVER_GROUP_LIST = "GET /api/server/group/list"
     API_SERVER_GROUP_DETAIL = "GET /api/server/group/detail"
     API_SERVER_GROUP_DELETE = "POST /api/server/group/delete"
+    API_SERVER_UPDATE = "POST /api/server/update"
+    API_SERVER_LIST = "GET /api/server/list"
+    API_SERVER_DETAIL = "GET /api/server/detail"
+    API_SERVER_DELETE = "POST /api/server/delete"
+    API_SERVER_MULTI = "GET /api/server/multi"
 )

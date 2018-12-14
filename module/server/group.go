@@ -75,13 +75,13 @@ func detailServerGroup(c *goweb.Context) error {
         syncd.RenderParamError(c, "id can not be empty")
         return nil
     }
-    p, ok := groupModel.Get(id)
+    detail, ok := groupModel.Get(id)
     if !ok {
         syncd.RenderAppError(c, "get server group detail data failed")
         return nil
     }
     syncd.RenderJson(c, goweb.JSON{
-        "detail": p,
+        "detail": detail,
     })
     return nil
 }
