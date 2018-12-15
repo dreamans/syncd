@@ -12,6 +12,7 @@ import (
     "github.com/tinystack/syncd/route"
     "github.com/tinystack/syncd"
     projectModel "github.com/tinystack/syncd/model/project"
+    baseModel "github.com/tinystack/syncd/model"
 )
 
 func init() {
@@ -103,13 +104,20 @@ func listProject(c *goweb.Context) error {
         limit   int
     )
     offset, limit = c.QueryInt("offset"), c.QueryInt("limit")
-    projList, ok := projectModel.List("id, name, repo_mode, need_audit, status", offset, limit)
+
+    projList, ok := projectModel.List(baseModel.QueryParam{
+        Fields: "id, name, repo_mode, need_audit, status",
+        Offset: offset,
+        Limit: limit,
+        Order: "id DESC",
+        //Where
+    })
     if !ok {
         syncd.RenderAppError(c, "get project list data failed")
         return nil
     }
 
-    total, ok = projectModel.Total()
+    total, ok = projectModel.Total(baseModel.QueryParam{})
     if !ok {
         syncd.RenderAppError(c, "get project total count failed")
         return nil

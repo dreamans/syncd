@@ -35,5 +35,5 @@ type ProjectList struct {
 }
 
 const (
-    TableName = "syd_project"
+    TableName = "project"
 )

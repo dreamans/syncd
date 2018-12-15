@@ -5,10 +5,14 @@
 package server
 
 import (
+    "fmt"
+
     "github.com/tinystack/goweb"
+    "github.com/tinystack/goutil"
     "github.com/tinystack/syncd"
     "github.com/tinystack/syncd/route"
     groupModel "github.com/tinystack/syncd/model/server/group"
+    baseModel "github.com/tinystack/syncd/model"
 )
 
 func init() {
@@ -44,19 +48,46 @@ func updateServerGroup(c *goweb.Context) error {
 
 func listServerGroup(c *goweb.Context) error {
     var (
-        ok      bool
-        total   int
-        offset  int
-        limit   int
+        total, offset, limit, groupId int
+        ok bool
+        keyword string
+        where []baseModel.WhereParam
     )
     offset, limit = c.QueryInt("offset"), c.QueryInt("limit")
-    list, ok := groupModel.List("id, name", offset, limit)
+    keyword = c.Query("keyword")
+    if keyword != "" {
+        if goutil.IsInteger(keyword) {
+            groupId = c.QueryInt("keyword")
+            if groupId > 0 {
+                where = append(where, baseModel.WhereParam{
+                    Field: "id",
+                    Prepare: groupId,
+                })
+            }
+        } else {
+            where = append(where, baseModel.WhereParam{
+                Field: "name",
+                Tag: "LIKE",
+                Prepare: fmt.Sprintf("%%%s%%", keyword),
+            })
+        }
+    }
+
+    list, ok := groupModel.List(baseModel.QueryParam{
+        Fields: "id, name",
+        Offset: offset,
+        Limit: limit,
+        Order: "id DESC",
+        Where: where,
+    })
     if !ok {
         syncd.RenderAppError(c, "get server group list data failed")
         return nil
     }
 
-    total, ok = groupModel.Total()
+    total, ok = groupModel.Total(baseModel.QueryParam{
+        Where: where,
+    })
     if !ok {
         syncd.RenderAppError(c, "get server group total count failed")
         return nil

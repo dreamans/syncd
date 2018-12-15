@@ -30,6 +30,7 @@ type (
         User            string
         Pass            string
         DbName          string
+        TablePrefix     string
         MaxIdleConns    int
         MaxOpenConns    int
         ConnMaxLifeTime int

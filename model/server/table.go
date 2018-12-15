@@ -14,5 +14,5 @@ type Server struct {
 }
 
 const (
-    TableName = "syd_server"
+    TableName = "server"
 )

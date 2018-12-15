@@ -11,5 +11,5 @@ type Group struct {
 }
 
 const (
-    TableName = "syd_server_group"
+    TableName = "server_group"
 )

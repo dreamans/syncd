@@ -5,20 +5,29 @@
 package model
 
 import (
+    "fmt"
+    "strings"
+
     "github.com/tinystack/syncd"
+    "github.com/jinzhu/gorm"
 )
 
+type WhereParam struct {
+    Field   string
+    Tag     string
+    Prepare interface{}
+}
+
 type QueryParam struct {
+    Fields     string
     Offset     int
     Limit      int
     Order      string
-    Fields     string
-    Plain      string
-    Prepare    []interface{}
+    Where      []WhereParam
 }
 
 func Create(tableName string, data interface{}) bool {
-    db := syncd.Orm.Table(tableName).Create(data)
+    db := syncd.Orm.Table(setTableName(tableName)).Create(data)
     if err := db.Error; err != nil {
         syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
@@ -27,7 +36,7 @@ func Create(tableName string, data interface{}) bool {
 }
 
 func GetMulti(tableName string, data interface{}, query QueryParam) bool {
-    db := syncd.Orm.Table(tableName).Offset(query.Offset)
+    db := syncd.Orm.Table(setTableName(tableName)).Offset(query.Offset)
     if query.Limit > 0 {
         db = db.Limit(query.Limit)
     }
@@ -37,9 +46,7 @@ func GetMulti(tableName string, data interface{}, query QueryParam) bool {
     if query.Order != "" {
         db = db.Order(query.Order)
     }
-    if query.Plain != "" {
-        db = db.Where(query.Plain, query.Prepare...)
-    }
+    db = parseWhereParam(db, query.Where)
     db.Find(data)
     if err := db.Error; err != nil {
         syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
@@ -50,7 +57,9 @@ func GetMulti(tableName string, data interface{}, query QueryParam) bool {
 }
 
 func Count(tableName string, count *int, query QueryParam) bool {
-    db := syncd.Orm.Table(tableName).Count(count)
+    db := syncd.Orm.Table(setTableName(tableName))
+    db = parseWhereParam(db, query.Where)
+    db = db.Count(count)
     if err := db.Error; err != nil {
         syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
@@ -59,13 +68,11 @@ func Count(tableName string, count *int, query QueryParam) bool {
 }
 
 func GetOne(tableName string, data interface{}, query QueryParam) bool {
-    db := syncd.Orm.Table(tableName)
+    db := syncd.Orm.Table(setTableName(tableName))
     if query.Fields != "" {
         db = db.Select(query.Fields)
     }
-    if query.Plain != "" {
-        db = db.Where(query.Plain, query.Prepare...)
-    }
+    db = parseWhereParam(db, query.Where)
     db = db.First(data)
     if err := db.Error; err != nil && !db.RecordNotFound() {
         syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
@@ -74,11 +81,19 @@ func GetOne(tableName string, data interface{}, query QueryParam) bool {
     return true
 }
 
-func Update(tableName string, data interface{}, query QueryParam) bool {
-    db := syncd.Orm.Table(tableName)
-    if query.Plain != "" {
-        db = db.Where(query.Plain, query.Prepare...)
+func GetByPk(tableName string, data interface{}, id interface{}) bool {
+    db := syncd.Orm.Table(setTableName(tableName))
+    db.First(data, id)
+    if err := db.Error; err != nil && !db.RecordNotFound() {
+        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        return false
     }
+    return true
+}
+
+func Update(tableName string, data interface{}, query QueryParam) bool {
+    db := syncd.Orm.Table(setTableName(tableName))
+    db = parseWhereParam(db, query.Where)
     db = db.Updates(data)
     if err := db.Error; err != nil {
         syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
@@ -88,14 +103,52 @@ func Update(tableName string, data interface{}, query QueryParam) bool {
 }
 
 func Delete(tableName string, data interface{}, query QueryParam) bool {
-    if query.Plain == "" {
+    if len(query.Where) == 0 {
         syncd.Logger.Warning("mysql query error: delete failed, where conditions cannot be empty")
         return false
     }
-    db := syncd.Orm.Table(tableName).Where(query.Plain, query.Prepare...).Delete(data)
+    db := syncd.Orm.Table(setTableName(tableName))
+    db = parseWhereParam(db, query.Where)
+    db = db.Delete(data)
     if err := db.Error; err != nil {
         syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
     }
     return true
+}
+
+func DeleteByPk(tableName string, data interface{}) bool {
+    db := syncd.Orm.Table(setTableName(tableName))
+    db.Delete(data)
+    if err := db.Error; err != nil {
+        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        return false
+    }
+    return true
+}
+
+func parseWhereParam(db *gorm.DB, where []WhereParam) *gorm.DB {
+    if len(where) == 0 {
+        return db
+    }
+    var (
+        plain []string
+        prepare []interface{}
+    )
+    for _, w := range where {
+        tag := w.Tag
+        if tag == "" {
+            tag = "="
+        }
+        plain = append(plain, fmt.Sprintf("%s %s ?", w.Field, tag))
+        prepare = append(prepare, w.Prepare)
+    }
+    return db.Where(strings.Join(plain, " AND "), prepare...)
+}
+
+func setTableName(rawName string) string {
+    return strings.Join([]string{
+        syncd.DbInstance.GetTablePrefix(),
+        rawName,
+    }, "")
 }

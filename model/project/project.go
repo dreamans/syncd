@@ -15,37 +15,33 @@ func Create(data *Project) bool {
     return model.Create(TableName, data)
 }
 
-func List(fields string, offset, limit int) ([]ProjectList, bool) {
+func List(query model.QueryParam) ([]ProjectList, bool) {
     var p []ProjectList
-    ok := model.GetMulti(TableName, &p, model.QueryParam{
-        Offset: offset,
-        Limit: limit,
-        Order: "id desc",
-        Fields: fields,
-    })
+    ok := model.GetMulti(TableName, &p, query)
     return p, ok
 }
 
-func Total() (int, bool) {
+func Total(query model.QueryParam) (int, bool) {
     var count int
-    ok := model.Count(TableName, &count, model.QueryParam{})
+    ok := model.Count(TableName, &count, query)
     return count, ok
 }
 
 func Get(id int) (Project, bool){
-    var p Project
-    ok := model.GetOne(TableName, &p, model.QueryParam{
-        Plain: "id = ?",
-        Prepare: []interface{}{id},
-    })
-    return p, ok
+    var data Project
+    ok := model.GetByPk(TableName, &data, id)
+    return data, ok
 }
 
 func Update(id int, data Project) bool {
     data.Utime = int(time.Now().Unix())
     ok := model.Update(TableName, data, model.QueryParam{
-        Plain: "id = ?",
-        Prepare: []interface{}{id},
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: id,
+            },
+        },
     })
     return ok
 }

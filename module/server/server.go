@@ -5,11 +5,15 @@
 package server
 
 import (
+    "fmt"
+
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
+    "github.com/tinystack/goutil"
     "github.com/tinystack/syncd"
     "github.com/tinystack/syncd/route"
     serverModel "github.com/tinystack/syncd/model/server"
+    baseModel "github.com/tinystack/syncd/model"
 )
 
 func init() {
@@ -61,14 +65,62 @@ func updateServer(c *goweb.Context) error {
 }
 
 func listServer(c *goweb.Context) error {
-    offset, limit := c.QueryInt("offset"), c.QueryInt("limit")
-    list, ok := serverModel.List("id, group_id, name, ip, ssh_port", offset, limit)
+    var (
+        offset, limit, groupId, serverId int
+        keyword string
+        where []baseModel.WhereParam
+    )
+
+    offset, limit = c.QueryInt("offset"), c.QueryInt("limit")
+    groupId = c.QueryInt("group_id")
+    keyword = c.Query("keyword")
+    if keyword != "" {
+        if goutil.IsInteger(keyword) {
+            serverId = c.QueryInt("keyword")
+            if serverId > 0 {
+                where = append(where, baseModel.WhereParam{
+                    Field: "id",
+                    Prepare: serverId,
+                })
+            }
+        } else {
+            if goutil.IsIp(keyword) {
+                where = append(where, baseModel.WhereParam{
+                    Field: "ip",
+                    Prepare: keyword,
+                })
+            } else {
+                where = append(where, baseModel.WhereParam{
+                    Field: "name",
+                    Tag: "LIKE",
+                    Prepare: fmt.Sprintf("%%%s%%", keyword),
+                })
+            }
+        }
+    }
+
+    if groupId > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "group_id",
+            Prepare: groupId,
+        })
+    }
+
+    list, ok := serverModel.List(baseModel.QueryParam{
+        Fields: "id, group_id, name, ip, ssh_port",
+        Offset: offset,
+        Limit: limit,
+        Order: "id DESC",
+        Where: where,
+    })
     if !ok {
         syncd.RenderAppError(c, "get server list data failed")
         return nil
     }
 
-    total, ok := serverModel.Total()
+    total, ok := serverModel.Total(baseModel.QueryParam{
+        Where: where,
+    })
     if !ok {
         syncd.RenderAppError(c, "get server total count failed")
         return nil
@@ -83,8 +135,19 @@ func listServer(c *goweb.Context) error {
 
 func multiServer(c *goweb.Context) error {
     groupId := c.QueryInt("group_id")
-    syncd.Logger.Info("%v", groupId)
-    list, ok := serverModel.Multi("id, group_id, name, ip, ssh_port", groupId)
+
+    var where []baseModel.WhereParam
+    if groupId > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "group_id",
+            Prepare: groupId,
+        })
+    }
+    list, ok := serverModel.List(baseModel.QueryParam{
+        Fields: "id, group_id, name, ip, ssh_port",
+        Order: "id DESC",
+        Where: where,
+    })
     if !ok {
         syncd.RenderAppError(c, "get server list data failed")
         return nil

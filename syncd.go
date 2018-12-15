@@ -54,7 +54,7 @@ func (s *Syncd) RegisterRoute(method, path string, handler goweb.HandlerFunc) {
 func (s *Syncd) UnRegisterRoute() {}
 
 func (s *Syncd) RegisterOrm() {
-    DbInstance := NewDatabase(s.config.Db)
+    DbInstance = NewDatabase(s.config.Db)
     if err := DbInstance.Open(); err != nil {
         panic(err)
     }

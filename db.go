@@ -28,6 +28,7 @@ func (db *DB) Open() error {
     if err != nil {
         return err
     }
+
     c.LogMode(true)
     c.DB().SetMaxIdleConns(db.cfg.MaxIdleConns)
     c.DB().SetMaxOpenConns(db.cfg.MaxOpenConns)
@@ -51,4 +52,8 @@ func (db *DB) parseConnConfig() string {
     s := fmt.Sprintf("%s:%s@%s/%s?charset=%s&parseTime=True&loc=Local", db.cfg.User, db.cfg.Pass, connHost, db.cfg.DbName, db.cfg.Charset)
 
     return s
+}
+
+func (db *DB) GetTablePrefix() string {
+    return db.cfg.TablePrefix
 }
