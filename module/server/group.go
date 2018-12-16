@@ -13,6 +13,8 @@ import (
     "github.com/tinystack/syncd/route"
     groupModel "github.com/tinystack/syncd/model/server/group"
     baseModel "github.com/tinystack/syncd/model"
+
+    serverService "github.com/tinystack/syncd/service/server"
 )
 
 func init() {
@@ -30,7 +32,7 @@ func updateServerGroup(c *goweb.Context) error {
         return nil
     }
     var ok bool
-    g := groupModel.Group{
+    g := groupModel.ServerGroup{
         Name: groupName,
     }
     if groupId > 0 {

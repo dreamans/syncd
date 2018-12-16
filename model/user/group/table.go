@@ -4,12 +4,13 @@
 
 package group
 
-type ServerGroup struct {
+type UserGroup struct {
     ID      int         `gorm:"primary_key" json:"id"`
     Name    string      `gorm:"type:varchar(100);not null;default:''" json:"name"`
+    Priv    string      `gorm:"type:varchar(10000);not null;default:''" json:"priv"`
     Utime   int         `gorm:"type:int(11);not null;default:0" json:"utime"`
 }
 
 const (
-    TableName = "server_group"
+    TableName = "user_group"
 )

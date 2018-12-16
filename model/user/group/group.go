@@ -10,13 +10,13 @@ import (
     "github.com/tinystack/syncd/model"
 )
 
-func Create(data *ServerGroup) bool {
+func Create(data *UserGroup) bool {
     data.Utime = int(time.Now().Unix())
     return model.Create(TableName, data)
 }
 
-func Update(id int, data ServerGroup) bool {
-    data.Utime = int(time.Now().Unix())
+func Update(id int, data map[string]interface{}) bool {
+    data["utime"] = int(time.Now().Unix())
     ok := model.Update(TableName, data, model.QueryParam{
         Where: []model.WhereParam{
             model.WhereParam{
@@ -28,8 +28,8 @@ func Update(id int, data ServerGroup) bool {
     return ok
 }
 
-func List(query model.QueryParam) ([]ServerGroup, bool) {
-    var data []ServerGroup
+func List(query model.QueryParam) ([]UserGroup, bool) {
+    var data []UserGroup
     ok := model.GetMulti(TableName, &data, query)
     return data, ok
 }
@@ -40,13 +40,13 @@ func Total(query model.QueryParam) (int, bool) {
     return count, ok
 }
 
-func Get(id int) (ServerGroup, bool){
-    var data ServerGroup
+func Get(id int) (UserGroup, bool){
+    var data UserGroup
     ok := model.GetByPk(TableName, &data, id)
     return data, ok
 }
 
 func Delete(id int) bool {
-    ok := model.DeleteByPk(TableName, ServerGroup{ID: id})
+    ok := model.DeleteByPk(TableName, UserGroup{ID: id})
     return ok
 }
