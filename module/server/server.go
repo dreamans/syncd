@@ -5,15 +5,11 @@
 package server
 
 import (
-    "fmt"
-
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
-    "github.com/tinystack/goutil"
     "github.com/tinystack/syncd"
     "github.com/tinystack/syncd/route"
-    serverModel "github.com/tinystack/syncd/model/server"
-    baseModel "github.com/tinystack/syncd/model"
+    serverService "github.com/tinystack/syncd/service/server"
 )
 
 func init() {
@@ -21,7 +17,6 @@ func init() {
     route.Register(route.API_SERVER_LIST, listServer)
     route.Register(route.API_SERVER_DETAIL, detailServer)
     route.Register(route.API_SERVER_DELETE, deleteServer)
-    route.Register(route.API_SERVER_MULTI, multiServer)
 }
 
 type ServerParamValid struct {
@@ -42,22 +37,15 @@ func updateServer(c *goweb.Context) error {
         syncd.RenderParamError(c, valid.LastFailed().Msg)
         return nil
     }
-    serverId := c.PostFormInt("id")
-
-    s := serverModel.Server{
+    server := &serverService.Server{
+        ID: c.PostFormInt("id"),
         GroupId: params.GroupId,
         Name: params.Name,
         Ip: params.Ip,
         SshPort: params.SshPort,
     }
-    var ok bool
-    if serverId > 0 {
-        ok = serverModel.Update(serverId, s)
-    } else {
-        ok = serverModel.Create(&s)
-    }
-    if !ok {
-        syncd.RenderAppError(c, "server data update failed")
+    if err := server.CreateOrUpdate(); err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
     syncd.RenderJson(c, nil)
@@ -65,67 +53,15 @@ func updateServer(c *goweb.Context) error {
 }
 
 func listServer(c *goweb.Context) error {
-    var (
-        offset, limit, groupId, serverId int
-        keyword string
-        where []baseModel.WhereParam
-    )
+    groupId, offset, limit := c.QueryInt("group_id"), c.QueryInt("offset"), c.QueryInt("limit")
+    keyword := c.Query("keyword")
 
-    offset, limit = c.QueryInt("offset"), c.QueryInt("limit")
-    groupId = c.QueryInt("group_id")
-    keyword = c.Query("keyword")
-    if keyword != "" {
-        if goutil.IsInteger(keyword) {
-            serverId = c.QueryInt("keyword")
-            if serverId > 0 {
-                where = append(where, baseModel.WhereParam{
-                    Field: "id",
-                    Prepare: serverId,
-                })
-            }
-        } else {
-            if goutil.IsIp(keyword) {
-                where = append(where, baseModel.WhereParam{
-                    Field: "ip",
-                    Prepare: keyword,
-                })
-            } else {
-                where = append(where, baseModel.WhereParam{
-                    Field: "name",
-                    Tag: "LIKE",
-                    Prepare: fmt.Sprintf("%%%s%%", keyword),
-                })
-            }
-        }
-    }
-
-    if groupId > 0 {
-        where = append(where, baseModel.WhereParam{
-            Field: "group_id",
-            Prepare: groupId,
-        })
-    }
-
-    list, ok := serverModel.List(baseModel.QueryParam{
-        Fields: "id, group_id, name, ip, ssh_port",
-        Offset: offset,
-        Limit: limit,
-        Order: "id DESC",
-        Where: where,
-    })
-    if !ok {
-        syncd.RenderAppError(c, "get server list data failed")
+    server := &serverService.Server{}
+    list, total, err := server.List(keyword, groupId, offset, limit)
+    if err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
-
-    total, ok := serverModel.Total(baseModel.QueryParam{
-        Where: where,
-    })
-    if !ok {
-        syncd.RenderAppError(c, "get server total count failed")
-        return nil
-    }
-
     syncd.RenderJson(c, goweb.JSON{
         "list": list,
         "total": total,
@@ -133,57 +69,24 @@ func listServer(c *goweb.Context) error {
     return nil
 }
 
-func multiServer(c *goweb.Context) error {
-    groupId := c.QueryInt("group_id")
-
-    var where []baseModel.WhereParam
-    if groupId > 0 {
-        where = append(where, baseModel.WhereParam{
-            Field: "group_id",
-            Prepare: groupId,
-        })
-    }
-    list, ok := serverModel.List(baseModel.QueryParam{
-        Fields: "id, group_id, name, ip, ssh_port",
-        Order: "id DESC",
-        Where: where,
-    })
-    if !ok {
-        syncd.RenderAppError(c, "get server list data failed")
-        return nil
-    }
-    syncd.RenderJson(c, goweb.JSON{
-        "list": list,
-    })
-    return nil
-}
-
 func detailServer(c *goweb.Context) error {
-    id := c.QueryInt("id")
-    if id == 0 {
-        syncd.RenderParamError(c, "id can not be empty")
+    server := &serverService.Server{
+        ID: c.QueryInt("id"),
+    }
+    if err := server.Get(); err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
-    detail, ok := serverModel.Get(id)
-    if !ok {
-        syncd.RenderAppError(c, "get server detail data failed")
-        return nil
-    }
-    syncd.RenderJson(c, goweb.JSON{
-        "detail": detail,
-    })
+    syncd.RenderJson(c, server)
     return nil
 }
 
 func deleteServer(c *goweb.Context) error {
-    id := c.PostFormInt("id")
-    if id == 0 {
-        syncd.RenderParamError(c, "id can not be empty")
-        return nil
+    server := &serverService.Server{
+        ID: c.PostFormInt("id"),
     }
-    ok := serverModel.Delete(id)
-    if !ok {
-        syncd.RenderAppError(c, "delete server data failed")
+    if err := server.Delete(); err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
     syncd.RenderJson(c, nil)

@@ -5,32 +5,32 @@
 package project
 
 import (
-    "strings"
-
+    "github.com/tinystack/goutil"
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
     "github.com/tinystack/syncd/route"
     "github.com/tinystack/syncd"
-    projectModel "github.com/tinystack/syncd/model/project"
-    baseModel "github.com/tinystack/syncd/model"
+    projectService "github.com/tinystack/syncd/service/project"
 )
 
 func init() {
     route.Register(route.API_PROJECT_UPDATE, updateProject)
     route.Register(route.API_PROJECT_LIST, listProject)
     route.Register(route.API_PROJECT_DETAIL, detailProject)
+    route.Register(route.API_PROJECT_DELETE, deleteProject)
 }
 
 type ProjectParamValid struct {
-    Name            string      `valid:"required" errmsg:"required=Project name cannot be empty"`
-    Description     string      `valid:"require" errmsg:"required=Project description cannot be empty"`
-    Space           string      `valid:"require" errmsg:"required=Project space cannot be empty"`
-    Repo            string      `valid:"require" errmsg:"required=Repo type cannot be empty"`
-    RepoUrl         string      `valid:"require" errmsg:"required=Repo remote addr cannot be empty"`
-    DeployServer    []string    `valid:"require" errmsg:"required=Deploy server cannot be empty"`
-    DeployUser      string      `valid:"require" errmsg:"required=Deploy user cannot be epmty"`
-    DeployPath      string      `valid:"require" errmsg:"required=Deploy path cannot be epmty"`
-    DeployHistory   int         `valid:"int_min=3" errmsg:"int_min=Deploy history at least 3"`
+    Name            string      `valid:"required" errmsg:"required=project name cannot be empty"`
+    Description     string      `valid:"require" errmsg:"required=project description cannot be empty"`
+    Space           string      `valid:"require" errmsg:"required=project space cannot be empty"`
+    Repo            string      `valid:"require" errmsg:"required=repo type cannot be empty"`
+    RepoMode        int         `valid:"require" errmsg:"required=repo mode cannot be empty"`
+    RepoUrl         string      `valid:"require" errmsg:"required=repo remote addr cannot be empty"`
+    DeployServer    []string    `valid:"require" errmsg:"required=deploy server cannot be empty"`
+    DeployUser      string      `valid:"require" errmsg:"required=deploy user cannot be epmty"`
+    DeployPath      string      `valid:"require" errmsg:"required=deploy path cannot be epmty"`
+    DeployHistory   int         `valid:"int_min=3" errmsg:"int_min=deploy history at least 3"`
 }
 
 func updateProject(c *goweb.Context) error {
@@ -39,6 +39,7 @@ func updateProject(c *goweb.Context) error {
         Description: c.PostForm("description"),
         Space: c.PostForm("space"),
         Repo: c.PostForm("repo"),
+        RepoMode: c.PostFormInt("repoMode"),
         RepoUrl: c.PostForm("repoUrl"),
         DeployServer: c.PostFormArray("deployServer"),
         DeployUser: c.PostForm("deployUser"),
@@ -50,7 +51,7 @@ func updateProject(c *goweb.Context) error {
         return nil
     }
 
-    deployServer := strings.Join(params.DeployServer, ",")
+    deployServer := goutil.StrSlice2IntSlice(params.DeployServer)
     needAudit := 0
     if c.PostFormInt("needAudit") != 0 {
         needAudit = 1
@@ -59,13 +60,15 @@ func updateProject(c *goweb.Context) error {
     if c.PostFormInt("status") != 0 {
         status = 1
     }
-    projectId := c.PostFormInt("id")
-    p := projectModel.Project{
+
+    project := &projectService.Project{
+        ID: c.PostFormInt("id"),
         Name: params.Name,
         Description: params.Description,
         Space: params.Space,
         Repo: params.Repo,
         RepoUrl: params.RepoUrl,
+        RepoMode: params.RepoMode,
         DeployServer: deployServer,
         DeployUser: params.DeployUser,
         DeployPath: params.DeployPath,
@@ -76,72 +79,64 @@ func updateProject(c *goweb.Context) error {
         Status: status,
         RepoUser: c.PostForm("repoUser"),
         RepoPass: c.PostForm("repoPass"),
-        RepoMode: c.PostFormInt("repoMode"),
         BuildScript: c.PostForm("buildScript"),
     }
-    if projectId > 0 {
-        p.ID = projectId
-        if ok := projectModel.Update(projectId, p); !ok {
-            syncd.RenderAppError(c, "project data update failed")
-            return nil
-        }
-    } else {
-        if ok := projectModel.Create(&p); !ok {
-            syncd.RenderAppError(c, "project data create failed")
-            return nil
-        }
+    if err := project.CreateOrUpdate(); err != nil {
+        syncd.RenderParamError(c, err.Error())
+        return nil
     }
-
     syncd.RenderJson(c, nil)
     return nil
 }
 
 func listProject(c *goweb.Context) error {
-    var (
-        ok      bool
-        total   int
-        offset  int
-        limit   int
-    )
-    offset, limit = c.QueryInt("offset"), c.QueryInt("limit")
+    offset, limit := c.QueryInt("offset"), c.QueryInt("limit")
+    keyword := c.Query("keyword")
 
-    projList, ok := projectModel.List(baseModel.QueryParam{
-        Fields: "id, name, repo_mode, need_audit, status",
-        Offset: offset,
-        Limit: limit,
-        Order: "id DESC",
-        //Where
-    })
-    if !ok {
-        syncd.RenderAppError(c, "get project list data failed")
-        return nil
-    }
-
-    total, ok = projectModel.Total(baseModel.QueryParam{})
-    if !ok {
-        syncd.RenderAppError(c, "get project total count failed")
+    project := &projectService.Project{}
+    list, total, err := project.List(keyword, offset, limit)
+    if err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
     syncd.RenderJson(c, goweb.JSON{
-        "list": projList,
+        "list": list,
         "total": total,
     })
     return nil
 }
 
 func detailProject(c *goweb.Context) error {
-    id := c.QueryInt("id")
-    if id == 0 {
-        syncd.RenderParamError(c, "id can not be empty")
+    project := &projectService.Project{
+        ID: c.QueryInt("id"),
+    }
+    if err := project.Get(); err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
-    p, ok := projectModel.Get(id)
-    if !ok {
-        syncd.RenderAppError(c, "get project detail data failed")
+    syncd.RenderJson(c, project)
+    return nil
+}
+
+func deleteProject(c *goweb.Context) error {
+    project := &projectService.Project{
+        ID: c.PostFormInt("id"),
+    }
+    if err := project.Get(); err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
-    syncd.RenderJson(c, goweb.JSON{
-        "detail": p,
-    })
+
+    if project.Status != 0 {
+        syncd.RenderAppError(c, "project delete falied, project status must be unavailable")
+        return nil
+    }
+
+    if err := project.Delete(); err != nil {
+        syncd.RenderAppError(c, err.Error())
+        return nil
+    }
+
+    syncd.RenderJson(c, nil)
     return nil
 }

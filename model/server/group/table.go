@@ -5,9 +5,9 @@
 package group
 
 type ServerGroup struct {
-    ID      int         `gorm:"primary_key" json:"id"`
-    Name    string      `gorm:"type:varchar(100);not null;default:''" json:"name"`
-    Utime   int         `gorm:"type:int(11);not null;default:0" json:"utime"`
+    ID      int         `gorm:"primary_key"`
+    Name    string      `gorm:"type:varchar(100);not null;default:''"`
+    Utime   int         `gorm:"type:int(11);not null;default:0"`
 }
 
 const (

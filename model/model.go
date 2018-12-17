@@ -52,7 +52,6 @@ func GetMulti(tableName string, data interface{}, query QueryParam) bool {
         syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
         return false
     }
-
     return true
 }
 
@@ -140,7 +139,14 @@ func parseWhereParam(db *gorm.DB, where []WhereParam) *gorm.DB {
         if tag == "" {
             tag = "="
         }
-        plain = append(plain, fmt.Sprintf("%s %s ?", w.Field, tag))
+        var plainFmt string
+        switch tag {
+        case "IN":
+            plainFmt = fmt.Sprintf("%s IN (?)", w.Field)
+        default:
+            plainFmt = fmt.Sprintf("%s %s ?", w.Field, tag)
+        }
+        plain = append(plain, plainFmt)
         prepare = append(prepare, w.Prepare)
     }
     return db.Where(strings.Join(plain, " AND "), prepare...)

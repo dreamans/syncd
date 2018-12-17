@@ -11,10 +11,10 @@ import (
 
     "github.com/tinystack/goutil"
     baseModel "github.com/tinystack/syncd/model"
-    groupModel "github.com/tinystack/syncd/model/user/group"
+    userGroupModel "github.com/tinystack/syncd/model/user/group"
 )
 
-type GroupDetail struct {
+type Group struct {
     ID      int     `json:"id"`
     Name    string  `json:"name"`
     Priv    []int   `json:"priv"`
@@ -26,14 +26,13 @@ type GroupItem struct {
     Name    string  `json:"name"`
 }
 
-func GetUserGroupDetail(id int) (*GroupDetail, error) {
-    if id == 0 {
-        return nil, errors.New("id can not be empty")
+func (g *Group) Get() error {
+    if g.ID == 0 {
+        return errors.New("id can not be empty")
     }
-
-    detail, ok := groupModel.Get(id)
+    detail, ok := userGroupModel.Get(g.ID)
     if !ok {
-        return nil, errors.New("get user group detail data failed")
+        return errors.New("get user group detail data failed")
     }
 
     privList := []int{}
@@ -42,28 +41,27 @@ func GetUserGroupDetail(id int) (*GroupDetail, error) {
         privList = goutil.StrSlice2IntSlice(strPrivList)
     }
 
-    return &GroupDetail{
-        ID: detail.ID,
-        Name: detail.Name,
-        Priv: privList,
-        Utime: detail.Utime,
-    }, nil
+    g.ID = detail.ID
+    g.Name = detail.Name
+    g.Priv = privList
+    g.Utime = detail.Utime
+
+    return nil
 }
 
-func UpdateUserGroup(id int, name string, priv []string) error {
+func (g *Group) CreateOrUpdate() error {
     var ok bool
-    priv = goutil.StrFilterSliceEmpty(priv)
-    g := groupModel.UserGroup{
-        Name: name,
-        Priv: strings.Join(priv, ","),
+    group := userGroupModel.UserGroup{
+        Name: g.Name,
+        Priv: strings.Join(goutil.IntSlice2StrSlice(g.Priv), ","),
     }
-    if id > 0 {
-        ok = groupModel.Update(id, map[string]interface{}{
-            "name": g.Name,
-            "priv": g.Priv,
+    if g.ID > 0 {
+        ok = userGroupModel.Update(g.ID, map[string]interface{}{
+            "name": group.Name,
+            "priv": group.Priv,
         })
     } else {
-        ok = groupModel.Create(&g)
+        ok = userGroupModel.Create(&group)
     }
     if !ok {
         return errors.New("user group data update failed")
@@ -72,7 +70,7 @@ func UpdateUserGroup(id int, name string, priv []string) error {
     return nil
 }
 
-func GetUserGroupList(keyword string, offset, limit int) ([]GroupItem, int, error) {
+func (g *Group) List(keyword string, offset, limit int) ([]GroupItem, int, error) {
     var (
         ok bool
         groupId, total int
@@ -96,7 +94,7 @@ func GetUserGroupList(keyword string, offset, limit int) ([]GroupItem, int, erro
             })
         }
     }
-    list, ok := groupModel.List(baseModel.QueryParam{
+    list, ok := userGroupModel.List(baseModel.QueryParam{
         Fields: "id, name",
         Offset: offset,
         Limit: limit,
@@ -106,7 +104,7 @@ func GetUserGroupList(keyword string, offset, limit int) ([]GroupItem, int, erro
     if !ok {
         return nil, 0, errors.New("get user group list data failed")
     }
-    total, ok = groupModel.Total(baseModel.QueryParam{
+    total, ok = userGroupModel.Total(baseModel.QueryParam{
         Where: where,
     })
     if !ok {

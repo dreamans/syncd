@@ -15,8 +15,8 @@ func Create(data *Project) bool {
     return model.Create(TableName, data)
 }
 
-func List(query model.QueryParam) ([]ProjectList, bool) {
-    var p []ProjectList
+func List(query model.QueryParam) ([]Project, bool) {
+    var p []Project
     ok := model.GetMulti(TableName, &p, query)
     return p, ok
 }
@@ -62,5 +62,10 @@ func Update(id int, data Project) bool {
             },
         },
     })
+    return ok
+}
+
+func Delete(id int) bool {
+    ok := model.DeleteByPk(TableName, Project{ID: id})
     return ok
 }

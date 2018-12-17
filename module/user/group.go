@@ -5,10 +5,10 @@
 package user
 
 import (
+    "github.com/tinystack/goutil"
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
     "github.com/tinystack/syncd/route"
-    //privModel "github.com/tinystack/syncd/model/user/priv"
     userService "github.com/tinystack/syncd/service/user"
 )
 
@@ -20,19 +20,20 @@ func init() {
 }
 
 func updateUserGroup(c *goweb.Context) error {
-    groupId := c.PostFormInt("id")
-    groupName := c.PostForm("name")
-    groupPriv := c.PostFormArray("priv")
-    if groupName == "" {
+    id, name, priv := c.PostFormInt("id"), c.PostForm("name"), c.PostFormArray("priv")
+    if name == "" {
         syncd.RenderParamError(c, "user group name can not empty")
         return nil
     }
-
-    if err := userService.UpdateUserGroup(groupId, groupName, groupPriv); err != nil {
-        syncd.RenderParamError(c, err.Error())
+    userGroup := &userService.Group{
+        ID: id,
+        Name: name,
+        Priv: goutil.StrSlice2IntSlice(goutil.StrFilterSliceEmpty(priv)),
+    }
+    if err := userGroup.CreateOrUpdate(); err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
-
     syncd.RenderJson(c, nil)
     return nil
 }
@@ -41,9 +42,10 @@ func listUserGroup(c *goweb.Context) error {
     keyword := c.Query("keyword")
     offset, limit := c.QueryInt("offset"), c.QueryInt("limit")
 
-    list, total, err := userService.GetUserGroupList(keyword, offset, limit)
+    userGroup := &userService.Group{}
+    list, total, err := userGroup.List(keyword, offset, limit)
     if err != nil {
-        syncd.RenderParamError(c, err.Error())
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
     syncd.RenderJson(c, goweb.JSON{
@@ -54,12 +56,14 @@ func listUserGroup(c *goweb.Context) error {
 }
 
 func detailUserGroup(c *goweb.Context) error {
-    detail, err := userService.GetUserGroupDetail(c.QueryInt("id"))
-    if err != nil {
+    userGroup := &userService.Group{
+        ID: c.QueryInt("id"),
+    }
+    if err := userGroup.Get(); err != nil {
         syncd.RenderAppError(c, err.Error())
         return nil
     }
-    syncd.RenderJson(c, detail)
+    syncd.RenderJson(c, userGroup)
     return nil
 }
 
