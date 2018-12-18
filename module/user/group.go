@@ -39,9 +39,7 @@ func updateUserGroup(c *goweb.Context) error {
 }
 
 func listUserGroup(c *goweb.Context) error {
-    keyword := c.Query("keyword")
-    offset, limit := c.QueryInt("offset"), c.QueryInt("limit")
-
+    offset, limit, keyword := c.QueryInt("offset"), c.QueryInt("limit"), c.Query("keyword")
     userGroup := &userService.Group{}
     list, total, err := userGroup.List(keyword, offset, limit)
     if err != nil {

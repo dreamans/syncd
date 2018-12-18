@@ -23,4 +23,6 @@ const (
     API_USER_GROUP_DETAIL = "GET /api/user/group/detail"
     API_USER_PRIV_LIST = "GET /api/user/priv/list"
     API_USER_GROUP_PRIV = "GET /api/user/group/priv"
+    API_USER_UPDATE = "POST /api/user/update"
+    API_USER_LIST = "GET /api/user/list"
 )

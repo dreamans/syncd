@@ -66,7 +66,6 @@ func (g *Group) CreateOrUpdate() error {
     if !ok {
         return errors.New("user group data update failed")
     }
-
     return nil
 }
 
