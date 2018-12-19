@@ -39,9 +39,15 @@ func Total(query model.QueryParam) (int, bool) {
     return count, ok
 }
 
-func Get(id int) (User, bool){
+func Get(id int) (User, bool) {
     var data User
     ok := model.GetByPk(TableName, &data, id)
+    return data, ok
+}
+
+func GetOne(query model.QueryParam) (User, bool) {
+    var data User
+    ok := model.GetOne(TableName, &data, query)
     return data, ok
 }
 

@@ -13,6 +13,7 @@ type User struct {
     TrueName        string  `gorm:"type:varchar(20);not null;default:''"`
     Mobile          string  `gorm:"type:varchar(20);not null;default:''"`
     Salt            string  `gorm:"type:varchar(10);not null;default:''"`
+    LockStatus      int     `gorm:"type:int(11);not null;default:1"`
     LastLoginIp     string  `gorm:"type:varchar(45);not null;default:''"`
     LastLoginTime   int     `gorm:"type:int(11);not null;default:0"`
     Ctime           int     `gorm:"type:int(11);not null;default:0"`

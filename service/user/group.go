@@ -118,3 +118,14 @@ func (g *Group) List(keyword string, offset, limit int) ([]GroupItem, int, error
     }
     return groupList, total, nil
 }
+
+func (g *Group) Delete() error {
+    if g.ID == 0 {
+        return errors.New("id can not be empty")
+    }
+    ok := userGroupModel.Delete(g.ID)
+    if !ok {
+        return errors.New("user group delete failed")
+    }
+    return nil
+}

@@ -17,6 +17,7 @@ func init() {
     route.Register(route.API_USER_GROUP_LIST, listUserGroup)
     route.Register(route.API_USER_GROUP_DETAIL, detailUserGroup)
     route.Register(route.API_USER_GROUP_PRIV, privUserGroup)
+    route.Register(route.API_USER_GROUP_DELETE, deleteGroup)
 }
 
 func updateUserGroup(c *goweb.Context) error {
@@ -62,6 +63,18 @@ func detailUserGroup(c *goweb.Context) error {
         return nil
     }
     syncd.RenderJson(c, userGroup)
+    return nil
+}
+
+func deleteGroup(c *goweb.Context) error {
+    userGroup := &userService.Group{
+        ID: c.PostFormInt("id"),
+    }
+    if err := userGroup.Delete(); err != nil {
+        syncd.RenderAppError(c, err.Error())
+        return nil
+    }
+    syncd.RenderJson(c, nil)
     return nil
 }
 
