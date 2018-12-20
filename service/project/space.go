@@ -1,0 +1,123 @@
+// Copyright 2018 tinystack Author. All Rights Reserved.
+// Use of this source code is governed by a MIT-style
+// license that can be found in the LICENSE file.
+
+package project
+
+import (
+    "errors"
+    "fmt"
+
+    baseModel "github.com/tinystack/syncd/model"
+    projectSpaceModel "github.com/tinystack/syncd/model/project/space"
+)
+
+type Space struct {
+    ID          int     `json:"id"`
+    Name        string  `json:"name"`
+    Description string  `json:"description"`
+    Ctime       int     `json:"ctime"`
+}
+
+func (s *Space) CreateOrUpdate() error {
+    var ok bool
+    space := projectSpaceModel.ProjectSpace{
+        Name: s.Name,
+        Description: s.Description,
+    }
+    if s.ID > 0 {
+        ok = projectSpaceModel.Update(s.ID, space)
+    } else {
+        ok = projectSpaceModel.Create(&space)
+    }
+    if !ok {
+        return errors.New("project space update or create failed")
+    }
+    return nil
+}
+
+func (s *Space) List(keyword string, offset, limit int) ([]Space, int, error) {
+    var where []baseModel.WhereParam
+    if keyword != "" {
+        where = append(where, baseModel.WhereParam{
+            Field: "name",
+            Tag: "LIKE",
+            Prepare: fmt.Sprintf("%%%s%%", keyword),
+        })
+    }
+    list, ok := projectSpaceModel.List(baseModel.QueryParam{
+        Fields: "id, name, ctime",
+        Offset: offset,
+        Limit: limit,
+        Order: "id DESC",
+        Where: where,
+    })
+    if !ok {
+        return nil, 0, errors.New("get project space list failed")
+    }
+    total, ok := projectSpaceModel.Total(baseModel.QueryParam{
+        Where: where,
+    })
+    if !ok {
+        return nil, 0, errors.New("get project space total count failed")
+    }
+    var nlist []Space
+    for _, l := range list {
+        nlist = append(nlist, Space{
+            ID: l.ID,
+            Name: l.Name,
+            Description: l.Description,
+            Ctime: l.Ctime,
+        })
+    }
+    return nlist, total, nil
+}
+
+func (s *Space) Get() error {
+    if s.ID == 0 {
+        return errors.New("id can not be empty")
+    }
+    detail, ok := projectSpaceModel.Get(s.ID)
+    if !ok {
+        return errors.New("get project space failed")
+    }
+    s.Name = detail.Name
+    s.Description = detail.Description
+    s.Ctime = detail.Ctime
+    return nil
+}
+
+func (s *Space) Delete() error {
+    if s.ID == 0 {
+        return errors.New("id can not be empty")
+    }
+    ok := projectSpaceModel.Delete(s.ID)
+    if !ok {
+        return errors.New("project space delete failed")
+    }
+    return nil
+}
+
+func (s *Space) CheckSpaceExists() (bool, error) {
+    var where []baseModel.WhereParam
+    if s.Name != "" {
+        where = append(where, baseModel.WhereParam{
+            Field: "name",
+            Prepare: s.Name,
+        })
+    }
+    if s.ID > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "id",
+            Tag: "!=",
+            Prepare: s.ID,
+        })
+    }
+    detail, ok := projectSpaceModel.GetOne(baseModel.QueryParam{
+        Where: where,
+    })
+    if !ok {
+        return false, errors.New("get project space one data failed")
+    }
+    return detail.ID > 0, nil
+}
