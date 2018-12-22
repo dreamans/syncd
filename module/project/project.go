@@ -18,14 +18,16 @@ func init() {
     route.Register(route.API_PROJECT_LIST, listProject)
     route.Register(route.API_PROJECT_DETAIL, detailProject)
     route.Register(route.API_PROJECT_DELETE, deleteProject)
+    route.Register(route.API_PROJECT_EXISTS, existsProject)
 }
 
 type ProjectParamValid struct {
     Name            string      `valid:"required" errmsg:"required=project name cannot be empty"`
     Description     string      `valid:"require" errmsg:"required=project description cannot be empty"`
+    SpaceId         int         `valid:"int_min=1" errmsg:"required=space_id cannot be empty"`
     Space           string      `valid:"require" errmsg:"required=project space cannot be empty"`
     Repo            string      `valid:"require" errmsg:"required=repo type cannot be empty"`
-    RepoMode        int         `valid:"require" errmsg:"required=repo mode cannot be empty"`
+    RepoMode        int         `valid:"int_min=1" errmsg:"required=repo_mode cannot be empty"`
     RepoUrl         string      `valid:"require" errmsg:"required=repo remote addr cannot be empty"`
     DeployServer    []string    `valid:"require" errmsg:"required=deploy server cannot be empty"`
     DeployUser      string      `valid:"require" errmsg:"required=deploy user cannot be epmty"`
@@ -37,6 +39,7 @@ func updateProject(c *goweb.Context) error {
     params := ProjectParamValid{
         Name: c.PostForm("name"),
         Description: c.PostForm("description"),
+        SpaceId: c.PostFormInt("space_id"),
         Space: c.PostForm("space"),
         Repo: c.PostForm("repo"),
         RepoMode: c.PostFormInt("repoMode"),
@@ -51,12 +54,31 @@ func updateProject(c *goweb.Context) error {
         return nil
     }
 
+    var (
+        needAudit, status int
+        exists bool
+        err error
+    )
+
+    projExists := &projectService.Project{
+        ID: c.PostFormInt("id"),
+        SpaceId: params.SpaceId,
+        Name: params.Name,
+    }
+    exists, err = projExists.CheckProjectExists()
+    if err != nil {
+        syncd.RenderAppError(c, err.Error())
+        return nil
+    }
+    if exists {
+        syncd.RenderAppError(c, "project update failed, project name have exists")
+        return nil
+    }
+
     deployServer := goutil.StrSlice2IntSlice(params.DeployServer)
-    needAudit := 0
     if c.PostFormInt("needAudit") != 0 {
         needAudit = 1
     }
-    status := 0
     if c.PostFormInt("status") != 0 {
         status = 1
     }
@@ -65,6 +87,7 @@ func updateProject(c *goweb.Context) error {
         ID: c.PostFormInt("id"),
         Name: params.Name,
         Description: params.Description,
+        SpaceId: params.SpaceId,
         Space: params.Space,
         Repo: params.Repo,
         RepoUrl: params.RepoUrl,
@@ -81,8 +104,8 @@ func updateProject(c *goweb.Context) error {
         RepoPass: c.PostForm("repoPass"),
         BuildScript: c.PostForm("buildScript"),
     }
-    if err := project.CreateOrUpdate(); err != nil {
-        syncd.RenderParamError(c, err.Error())
+    if err = project.CreateOrUpdate(); err != nil {
+        syncd.RenderAppError(c, err.Error())
         return nil
     }
     syncd.RenderJson(c, nil)
@@ -90,10 +113,11 @@ func updateProject(c *goweb.Context) error {
 }
 
 func listProject(c *goweb.Context) error {
-    offset, limit := c.QueryInt("offset"), c.QueryInt("limit")
-    keyword := c.Query("keyword")
+    offset, limit, keyword, spaceId := c.QueryInt("offset"), c.QueryInt("limit"), c.Query("keyword"), c.QueryInt("space_id")
 
-    project := &projectService.Project{}
+    project := &projectService.Project{
+        SpaceId: spaceId,
+    }
     list, total, err := project.List(keyword, offset, limit)
     if err != nil {
         syncd.RenderAppError(c, err.Error())
@@ -138,5 +162,27 @@ func deleteProject(c *goweb.Context) error {
     }
 
     syncd.RenderJson(c, nil)
+    return nil
+}
+
+func existsProject(c *goweb.Context) error {
+    id, spaceId, keyword := c.QueryInt("id"), c.QueryInt("space_id"), c.Query("keyword")
+    if spaceId == 0 || keyword == "" {
+        syncd.RenderParamError(c, "params error")
+        return nil
+    }
+    project := &projectService.Project{
+        ID: id,
+        SpaceId: spaceId,
+        Name: keyword,
+    }
+    exists, err := project.CheckProjectExists()
+    if err != nil {
+        syncd.RenderAppError(c, err.Error())
+        return nil
+    }
+    syncd.RenderJson(c, goweb.JSON{
+        "exists": exists,
+    })
     return nil
 }

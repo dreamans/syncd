@@ -17,6 +17,7 @@ type Project struct {
     ID              int     `json:"id"`
     Name            string  `json:"name"`
     Description     string  `json:"description"`
+    SpaceId         int     `json:"space_id"`
     Space           string  `json:"space"`
     Repo            string  `json:"repo"`
     RepoUrl         string  `json:"repo_url"`
@@ -47,6 +48,12 @@ func (p *Project) List(keyword string, offset, limit int) ([]ProjectItem, int, e
         projectId int
         where []baseModel.WhereParam
     )
+    if p.SpaceId > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "space_id",
+            Prepare: p.SpaceId,
+        })
+    }
     if keyword != "" {
         if goutil.IsInteger(keyword) {
             projectId = goutil.Str2Int(keyword)
@@ -113,6 +120,7 @@ func (p *Project) Get() error {
     }
     p.Name = detail.Name
     p.Description = detail.Description
+    p.SpaceId = detail.SpaceId
     p.Space = detail.Space
     p.Repo = detail.Repo
     p.RepoUrl = detail.RepoUrl
@@ -136,6 +144,7 @@ func (p *Project) CreateOrUpdate() error {
     project := projectModel.Project{
         Name: p.Name,
         Description: p.Description,
+        SpaceId: p.SpaceId,
         Space: p.Space,
         Repo: p.Repo,
         RepoUrl: p.RepoUrl,
@@ -173,4 +182,46 @@ func (p *Project) Delete() error {
         return errors.New("project delete failed")
     }
     return nil
+}
+
+func (p *Project) CheckSpaceHaveProject() (bool, error) {
+    where := []baseModel.WhereParam{
+        baseModel.WhereParam{
+            Field: "space_id",
+            Prepare: p.SpaceId,
+        },
+    }
+    detail, ok := projectModel.GetOne(baseModel.QueryParam{
+        Where: where,
+    })
+    if !ok {
+        return false, errors.New("project get failed")
+    }
+    return detail.ID > 0, nil
+}
+
+func (p *Project) CheckProjectExists() (bool, error) {
+    var where []baseModel.WhereParam
+    where = append(where, baseModel.WhereParam{
+        Field: "name",
+        Prepare: p.Name,
+    })
+    where = append(where, baseModel.WhereParam{
+        Field: "space_id",
+        Prepare: p.SpaceId,
+    })
+    if p.ID > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "id",
+            Tag: "!=",
+            Prepare: p.ID,
+        })
+    }
+    detail, ok := projectModel.GetOne(baseModel.QueryParam{
+        Where: where,
+    })
+    if !ok {
+        return false, errors.New("get project one data failed")
+    }
+    return detail.ID > 0, nil
 }

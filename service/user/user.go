@@ -30,6 +30,7 @@ type UserItem struct {
     GroupId         int     `json:"group_id"`
     GroupName       string  `json:"group_name"`
     Name            string  `json:"name"`
+    Email           string  `json:"email"`
     LockStatus      int     `json:"lock_status"`
     LastLoginTime   int     `json:"last_login_time"`
     LastLoginIp     string  `json:"last_login_ip"`
@@ -118,7 +119,7 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
         }
     }
     list, ok := userModel.List(baseModel.QueryParam{
-        Fields: "id, name, group_id, lock_status, last_login_ip, last_login_time",
+        Fields: "id, name, group_id, email, lock_status, last_login_ip, last_login_time",
         Offset: offset,
         Limit: limit,
         Order: "id DESC",
@@ -139,6 +140,7 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
         userList = append(userList, UserItem{
             ID: u.ID,
             Name: u.Name,
+            Email: u.Email,
             GroupId: u.GroupId,
             LockStatus: u.LockStatus,
             LastLoginIp: u.LastLoginIp,
@@ -234,4 +236,70 @@ func (u *User) Delete() error {
         return errors.New("user delete failed")
     }
     return nil
+}
+
+func (u *User) Search() ([]UserItem, error){
+    var where []baseModel.WhereParam
+    if u.Name != "" {
+        where = append(where, baseModel.WhereParam{
+            Field: "name",
+            Tag: "LIKE",
+            Prepare: fmt.Sprintf("%%%s%%", u.Name),
+        })
+    }
+    if u.Email != "" {
+        where = append(where, baseModel.WhereParam{
+            Field: "email",
+            Prepare: u.Email,
+        })
+    }
+    list, ok := userModel.List(baseModel.QueryParam{
+        Fields: "id, name, group_id, email, lock_status",
+        Order: "id DESC",
+        Where: where,
+    })
+    if !ok {
+        return nil, errors.New("get user list failed")
+    }
+
+    var (
+        groupIdList []int
+        userList []UserItem
+    )
+    for _, l := range list {
+        groupIdList = append(groupIdList, l.GroupId)
+        userList = append(userList, UserItem{
+            ID: l.ID,
+            GroupId: l.GroupId,
+            Name: l.Name,
+            Email: l.Email,
+            LockStatus: l.LockStatus,
+        })
+    }
+
+    if len(groupIdList) > 0 {
+        glist, ok := userGroupModel.List(baseModel.QueryParam{
+            Fields: "id, name",
+            Where: []baseModel.WhereParam{
+                baseModel.WhereParam{
+                    Field: "id",
+                    Tag: "IN",
+                    Prepare: groupIdList,
+                },
+            },
+        })
+        if !ok {
+            return nil, errors.New("get user group list failed")
+        }
+        groupNameList := make(map[int]string)
+        for _, g := range glist {
+            groupNameList[g.ID] = g.Name
+        }
+        for k, v := range userList {
+            if groupName, exists := groupNameList[v.GroupId]; exists {
+                userList[k].GroupName = groupName
+            }
+        }
+    }
+    return userList, nil
 }

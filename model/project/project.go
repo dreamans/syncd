@@ -33,6 +33,12 @@ func Get(id int) (Project, bool){
     return data, ok
 }
 
+func GetOne(query model.QueryParam) (Project, bool) {
+    var data Project
+    ok := model.GetOne(TableName, &data, query)
+    return data, ok
+}
+
 func Update(id int, data Project) bool {
     updateFields := map[string]interface{}{
         "name": data.Name,

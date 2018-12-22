@@ -9,11 +9,14 @@ const (
     API_PROJECT_DELETE = "POST /api/project/delete"
     API_PROJECT_LIST = "GET /api/project/list"
     API_PROJECT_DETAIL = "GET /api/project/detail"
+    API_PROJECT_EXISTS = "GET /api/project/exists"
     API_PROJECT_SPACE_UPDATE = "POST /api/project/space/update"
     API_PROJECT_SPACE_LIST = "GET /api/project/space/list"
     API_PROJECT_SPACE_DETAIL = "GET /api/project/space/detail"
     API_PROJECT_SPACE_DELETE = "POST /api/project/space/delete"
     API_PROJECT_SPACE_EXISTS = "GET /api/project/space/exists"
+    API_PROJECT_SPACE_USER_ADD = "POST /api/project/space/user/add"
+    API_PROJECT_SPACE_USER_LIST = "GET /api/project/space/user/list"
 
     API_SERVER_GROUP_UPDATE = "POST /api/server/group/update"
     API_SERVER_GROUP_LIST = "GET /api/server/group/list"
@@ -36,4 +39,5 @@ const (
     API_USER_DETAIL = "GET /api/user/detail"
     API_USER_EXISTS = "GET /api/user/exists"
     API_USER_DELETE = "POST /api/user/delete"
+    API_USER_SEARCH = "GET /api/user/search"
 )

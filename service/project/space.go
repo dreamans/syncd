@@ -46,7 +46,7 @@ func (s *Space) List(keyword string, offset, limit int) ([]Space, int, error) {
         })
     }
     list, ok := projectSpaceModel.List(baseModel.QueryParam{
-        Fields: "id, name, ctime",
+        Fields: "id, name, description, ctime",
         Offset: offset,
         Limit: limit,
         Order: "id DESC",

@@ -8,6 +8,7 @@ type Project struct {
     ID              int     `gorm:"primary_key"`
     Name            string  `gorm:"type:varchar(100);not null;default:''"`
     Description     string  `gorm:"type:varchar(100);not null;default:''"`
+    SpaceId         int     `gorm:"type:int(11);not null;default:0"`
     Space           string  `gorm:"type:varchar(100);not null;default:''"`
     Repo            string  `gorm:"type:varchar(20);not null;default:''"`
     RepoUrl         string  `gorm:"type:varchar(200);not null;default:''"`

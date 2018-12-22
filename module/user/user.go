@@ -7,6 +7,7 @@ package user
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
+    "github.com/tinystack/goutil"
     "github.com/tinystack/syncd"
     "github.com/tinystack/syncd/route"
     userService "github.com/tinystack/syncd/service/user"
@@ -18,6 +19,7 @@ func init() {
     route.Register(route.API_USER_DETAIL, detailUser)
     route.Register(route.API_USER_EXISTS, existsUser)
     route.Register(route.API_USER_DELETE, deleteUser)
+    route.Register(route.API_USER_SEARCH, searchUser)
 }
 
 type UserParamValid struct {
@@ -160,5 +162,28 @@ func deleteUser(c *goweb.Context) error {
         return nil
     }
     syncd.RenderJson(c, nil)
+    return nil
+}
+func searchUser(c *goweb.Context) error {
+    keyword := c.Query("keyword")
+    if keyword == "" {
+        syncd.RenderJson(c, nil)
+        return nil
+    }
+
+    user := &userService.User{}
+    if goutil.IsEmail(keyword) {
+        user.Email = keyword
+    } else {
+        user.Name = keyword
+    }
+    list, err := user.Search()
+    if err != nil {
+        syncd.RenderAppError(c, err.Error())
+        return nil
+    }
+    syncd.RenderJson(c, goweb.JSON{
+        "list": list,
+    })
     return nil
 }
