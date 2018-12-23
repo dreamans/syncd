@@ -109,6 +109,24 @@ func listUser(c *goweb.Context) error {
         syncd.RenderAppError(c, err.Error())
         return nil
     }
+    var groupIdList []int
+    for _, l := range list {
+        groupIdList = append(groupIdList, l.GroupId)
+    }
+    if len(groupIdList) > 0 {
+        group := &userService.Group{}
+        groupNameList, err := group.GetNameByIds(groupIdList)
+        if err != nil {
+            syncd.RenderAppError(c, err.Error())
+            return nil
+        }
+        for k, v := range list {
+            if groupName, exists := groupNameList[v.GroupId]; exists {
+                list[k].GroupName = groupName
+            }
+        }
+    }
+
     syncd.RenderJson(c, goweb.JSON{
         "list": list,
         "total": total,
@@ -164,6 +182,7 @@ func deleteUser(c *goweb.Context) error {
     syncd.RenderJson(c, nil)
     return nil
 }
+
 func searchUser(c *goweb.Context) error {
     keyword := c.Query("keyword")
     if keyword == "" {
@@ -182,6 +201,27 @@ func searchUser(c *goweb.Context) error {
         syncd.RenderAppError(c, err.Error())
         return nil
     }
+
+    //append group_name
+    var groupIds []int
+    for _, l := range list {
+        groupIds = append(groupIds, l.GroupId)
+    }
+    if len(groupIds) > 0 {
+        group := &userService.Group{}
+        groupNameList, err := group.GetNameByIds(groupIds)
+        if err != nil {
+            syncd.RenderAppError(c, err.Error())
+            return nil
+        }
+        for k, l := range list {
+            val, key := groupNameList[l.GroupId]
+            if key {
+                list[k].GroupName = val
+            }
+        }
+    }
+
     syncd.RenderJson(c, goweb.JSON{
         "list": list,
     })

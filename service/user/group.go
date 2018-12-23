@@ -129,3 +129,24 @@ func (g *Group) Delete() error {
     }
     return nil
 }
+
+func (g *Group) GetNameByIds(ids []int) (map[int]string, error){
+    list, ok := userGroupModel.List(baseModel.QueryParam{
+        Fields: "id, name",
+        Where: []baseModel.WhereParam{
+            baseModel.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: ids,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get user group list failed")
+    }
+    groupNameList := make(map[int]string)
+    for _, g := range list {
+        groupNameList[g.ID] = g.Name
+    }
+    return groupNameList, nil
+}

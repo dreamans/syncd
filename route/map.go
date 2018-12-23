@@ -17,6 +17,7 @@ const (
     API_PROJECT_SPACE_EXISTS = "GET /api/project/space/exists"
     API_PROJECT_SPACE_USER_ADD = "POST /api/project/space/user/add"
     API_PROJECT_SPACE_USER_LIST = "GET /api/project/space/user/list"
+    API_PROJECT_SPACE_USER_REMOVE = "POST /api/project/space/user/remove"
 
     API_SERVER_GROUP_UPDATE = "POST /api/server/group/update"
     API_SERVER_GROUP_LIST = "GET /api/server/group/list"

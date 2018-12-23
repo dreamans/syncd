@@ -11,7 +11,6 @@ import (
     "github.com/tinystack/goutil"
     baseModel "github.com/tinystack/syncd/model"
     userModel "github.com/tinystack/syncd/model/user"
-    userGroupModel "github.com/tinystack/syncd/model/user/group"
 )
 
 type User struct {
@@ -134,8 +133,6 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
     if !ok {
         return nil, 0, errors.New("get user total count failed")
     }
-
-    var groupIdList []int
     for _, u := range list {
         userList = append(userList, UserItem{
             ID: u.ID,
@@ -146,33 +143,7 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
             LastLoginIp: u.LastLoginIp,
             LastLoginTime: u.LastLoginTime,
         })
-        groupIdList = append(groupIdList, u.GroupId)
     }
-    if len(groupIdList) > 0 {
-        glist, ok := userGroupModel.List(baseModel.QueryParam{
-            Fields: "id, name",
-            Where: []baseModel.WhereParam{
-                baseModel.WhereParam{
-                    Field: "id",
-                    Tag: "IN",
-                    Prepare: groupIdList,
-                },
-            },
-        })
-        if !ok {
-            return nil, 0, errors.New("get user group list failed")
-        }
-        groupNameList := make(map[int]string)
-        for _, g := range glist {
-            groupNameList[g.ID] = g.Name
-        }
-        for k, v := range userList {
-            if groupName, exists := groupNameList[v.GroupId]; exists {
-                userList[k].GroupName = groupName
-            }
-        }
-    }
-
     return userList, total, nil
 }
 
@@ -262,12 +233,8 @@ func (u *User) Search() ([]UserItem, error){
         return nil, errors.New("get user list failed")
     }
 
-    var (
-        groupIdList []int
-        userList []UserItem
-    )
+    var userList []UserItem
     for _, l := range list {
-        groupIdList = append(groupIdList, l.GroupId)
         userList = append(userList, UserItem{
             ID: l.ID,
             GroupId: l.GroupId,
@@ -276,30 +243,35 @@ func (u *User) Search() ([]UserItem, error){
             LockStatus: l.LockStatus,
         })
     }
+    return userList, nil
+}
 
-    if len(groupIdList) > 0 {
-        glist, ok := userGroupModel.List(baseModel.QueryParam{
-            Fields: "id, name",
-            Where: []baseModel.WhereParam{
-                baseModel.WhereParam{
-                    Field: "id",
-                    Tag: "IN",
-                    Prepare: groupIdList,
-                },
+func (u *User) GetListByIds(ids []int) ([]UserItem, error){
+    list, ok := userModel.List(baseModel.QueryParam{
+        Fields: "id, name, group_id, email, lock_status, last_login_ip, last_login_time",
+        Order: "id DESC",
+        Where: []baseModel.WhereParam{
+            baseModel.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: ids,
             },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get user list failed")
+    }
+    var userList []UserItem
+    for _, l := range list {
+        userList = append(userList, UserItem{
+            ID: l.ID,
+            GroupId: l.GroupId,
+            Name: l.Name,
+            Email: l.Email,
+            LockStatus: l.LockStatus,
+            LastLoginTime: l.LastLoginTime,
+            LastLoginIp: l.LastLoginIp,
         })
-        if !ok {
-            return nil, errors.New("get user group list failed")
-        }
-        groupNameList := make(map[int]string)
-        for _, g := range glist {
-            groupNameList[g.ID] = g.Name
-        }
-        for k, v := range userList {
-            if groupName, exists := groupNameList[v.GroupId]; exists {
-                userList[k].GroupName = groupName
-            }
-        }
     }
     return userList, nil
 }
