@@ -8,4 +8,5 @@ import (
     _ "github.com/tinystack/syncd/module/project"
     _ "github.com/tinystack/syncd/module/server"
     _ "github.com/tinystack/syncd/module/user"
+    _ "github.com/tinystack/syncd/module/deploy"
 )

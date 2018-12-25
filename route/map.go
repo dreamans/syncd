@@ -10,6 +10,7 @@ const (
     API_PROJECT_LIST = "GET /api/project/list"
     API_PROJECT_DETAIL = "GET /api/project/detail"
     API_PROJECT_EXISTS = "GET /api/project/exists"
+    API_PROJECT_STATUS_CHANGE = "POST /api/project/status/change"
     API_PROJECT_SPACE_UPDATE = "POST /api/project/space/update"
     API_PROJECT_SPACE_LIST = "GET /api/project/space/list"
     API_PROJECT_SPACE_DETAIL = "GET /api/project/space/detail"
@@ -41,4 +42,8 @@ const (
     API_USER_EXISTS = "GET /api/user/exists"
     API_USER_DELETE = "POST /api/user/delete"
     API_USER_SEARCH = "GET /api/user/search"
+
+    API_DEPLOY_REPO_TAGLIST = "GET /api/deploy/repo/taglist"
+    API_DEPLOY_REPO_RESET = "POST /api/deploy/repo/reset"
+    API_DEPLOY_REPO_COMMITLIST = "GET /api/deploy/repo/commitlist"
 )

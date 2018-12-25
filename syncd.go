@@ -9,6 +9,7 @@ import (
     "io"
     "os"
 
+    "github.com/tinystack/goutil"
     "github.com/tinystack/goweb"
     "github.com/tinystack/golog"
     "github.com/jinzhu/gorm"
@@ -23,6 +24,8 @@ var (
     Logger          *golog.Logger
     Orm             *gorm.DB
     DbInstance      *DB
+    DataDir         string
+    TmpDir          string
 )
 
 func NewSyncd(cfg *Config) *Syncd {
@@ -74,4 +77,23 @@ func (s *Syncd) RegisterLog() {
         loggerHandler = golog.NewFileHandler(s.config.Log.Path)
     }
     Logger = golog.New(loggerHandler)
+}
+
+func (s *Syncd) InitEnv() {
+    DataDir = s.config.Syncd.Dir
+    if s.config.Syncd.Dir == "" {
+        path, err := goutil.CurrentPath()
+        if err != nil {
+            panic(err)
+        }
+        DataDir = path + "/data"
+    }
+    if err := goutil.CreatePath(DataDir); err != nil {
+        panic(err)
+    }
+
+    TmpDir = DataDir + "/tmp"
+    if err := goutil.CreatePath(TmpDir); err != nil {
+        panic(err)
+    }
 }

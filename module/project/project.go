@@ -19,15 +19,15 @@ func init() {
     route.Register(route.API_PROJECT_DETAIL, detailProject)
     route.Register(route.API_PROJECT_DELETE, deleteProject)
     route.Register(route.API_PROJECT_EXISTS, existsProject)
+    route.Register(route.API_PROJECT_STATUS_CHANGE, changeStatusProject)
 }
 
 type ProjectParamValid struct {
     Name            string      `valid:"required" errmsg:"required=project name cannot be empty"`
     Description     string      `valid:"require" errmsg:"required=project description cannot be empty"`
     SpaceId         int         `valid:"int_min=1" errmsg:"required=space_id cannot be empty"`
-    Space           string      `valid:"require" errmsg:"required=project space cannot be empty"`
-    Repo            string      `valid:"require" errmsg:"required=repo type cannot be empty"`
     RepoMode        int         `valid:"int_min=1" errmsg:"required=repo_mode cannot be empty"`
+    Repo            string      `valid:"require" errmsg:"required=repo type cannot be empty"`
     RepoUrl         string      `valid:"require" errmsg:"required=repo remote addr cannot be empty"`
     DeployServer    []string    `valid:"require" errmsg:"required=deploy server cannot be empty"`
     DeployUser      string      `valid:"require" errmsg:"required=deploy user cannot be epmty"`
@@ -40,26 +40,30 @@ func updateProject(c *goweb.Context) error {
         Name: c.PostForm("name"),
         Description: c.PostForm("description"),
         SpaceId: c.PostFormInt("space_id"),
-        Space: c.PostForm("space"),
         Repo: c.PostForm("repo"),
-        RepoMode: c.PostFormInt("repoMode"),
-        RepoUrl: c.PostForm("repoUrl"),
-        DeployServer: c.PostFormArray("deployServer"),
-        DeployUser: c.PostForm("deployUser"),
-        DeployPath: c.PostForm("deployPath"),
-        DeployHistory: c.PostFormInt("deployHistory"),
+        RepoMode: c.PostFormInt("repo_mode"),
+        RepoUrl: c.PostForm("repo_url"),
+        DeployServer: c.PostFormArray("deploy_server"),
+        DeployUser: c.PostForm("deploy_user"),
+        DeployPath: c.PostForm("deploy_path"),
+        DeployHistory: c.PostFormInt("deploy_history"),
     }
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
         syncd.RenderParamError(c, valid.LastFailed().Msg)
         return nil
     }
 
+    repoBranch := c.PostForm("repo_branch")
+    if params.RepoMode == 1 && repoBranch == "" {
+        syncd.RenderParamError(c, "repo_branch can not be empty")
+        return nil
+    }
+
     var (
-        needAudit, status int
+        needAudit int
         exists bool
         err error
     )
-
     projExists := &projectService.Project{
         ID: c.PostFormInt("id"),
         SpaceId: params.SpaceId,
@@ -76,11 +80,8 @@ func updateProject(c *goweb.Context) error {
     }
 
     deployServer := goutil.StrSlice2IntSlice(params.DeployServer)
-    if c.PostFormInt("needAudit") != 0 {
+    if c.PostFormInt("need_audit") != 0 {
         needAudit = 1
-    }
-    if c.PostFormInt("status") != 0 {
-        status = 1
     }
 
     project := &projectService.Project{
@@ -88,21 +89,19 @@ func updateProject(c *goweb.Context) error {
         Name: params.Name,
         Description: params.Description,
         SpaceId: params.SpaceId,
-        Space: params.Space,
         Repo: params.Repo,
         RepoUrl: params.RepoUrl,
         RepoMode: params.RepoMode,
+        RepoBranch: repoBranch,
+        RepoUser: c.PostForm("repo_user"),
+        RepoPass: c.PostForm("repo_pass"),
         DeployServer: deployServer,
         DeployUser: params.DeployUser,
         DeployPath: params.DeployPath,
         DeployHistory: params.DeployHistory,
-        PreDeployCmd: c.PostForm("preDeployCmd"),
-        PostDeployCmd: c.PostForm("postDeployCmd"),
+        PreDeployCmd: c.PostForm("pre_deploy_cmd"),
+        PostDeployCmd: c.PostForm("post_deploy_cmd"),
         NeedAudit: needAudit,
-        Status: status,
-        RepoUser: c.PostForm("repoUser"),
-        RepoPass: c.PostForm("repoPass"),
-        BuildScript: c.PostForm("buildScript"),
     }
     if err = project.CreateOrUpdate(); err != nil {
         syncd.RenderAppError(c, err.Error())
@@ -184,5 +183,19 @@ func existsProject(c *goweb.Context) error {
     syncd.RenderJson(c, goweb.JSON{
         "exists": exists,
     })
+    return nil
+}
+
+func changeStatusProject(c *goweb.Context) error {
+    id, status := c.PostFormInt("id"), c.PostFormInt("status")
+    project := &projectService.Project{
+        ID: id,
+        Status: status,
+    }
+    if err := project.ChangeStatus(); err != nil {
+        syncd.RenderAppError(c, err.Error())
+        return nil
+    }
+    syncd.RenderJson(c, nil)
     return nil
 }

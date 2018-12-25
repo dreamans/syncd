@@ -9,6 +9,11 @@ type (
         Serve   *ServeConfig
         Db      *DbConfig
         Log     *LogConfig
+        Syncd   *SyncdConfig
+    }
+
+    SyncdConfig struct {
+        Dir string
     }
 
     LogConfig struct {

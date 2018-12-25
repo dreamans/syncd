@@ -43,7 +43,6 @@ func Update(id int, data Project) bool {
     updateFields := map[string]interface{}{
         "name": data.Name,
         "description": data.Description,
-        "space": data.Space,
         "repo": data.Repo,
         "repo_url": data.RepoUrl,
         "deploy_server": data.DeployServer,
@@ -53,11 +52,10 @@ func Update(id int, data Project) bool {
         "pre_deploy_cmd": data.PreDeployCmd,
         "post_deploy_cmd": data.PostDeployCmd,
         "need_audit": data.NeedAudit,
-        "status": data.Status,
         "repo_user": data.RepoUser,
         "repo_pass": data.RepoPass,
         "repo_mode": data.RepoMode,
-        "build_script": data.BuildScript,
+        "repo_branch": data.RepoBranch,
         "utime": int(time.Now().Unix()),
     }
     ok := model.Update(TableName, updateFields, model.QueryParam{
@@ -73,5 +71,17 @@ func Update(id int, data Project) bool {
 
 func Delete(id int) bool {
     ok := model.DeleteByPk(TableName, Project{ID: id})
+    return ok
+}
+
+func UpdateFields(id int, data map[string]interface{}) bool {
+    ok := model.Update(TableName, data, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: id,
+            },
+        },
+    })
     return ok
 }

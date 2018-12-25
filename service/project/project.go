@@ -18,7 +18,6 @@ type Project struct {
     Name            string  `json:"name"`
     Description     string  `json:"description"`
     SpaceId         int     `json:"space_id"`
-    Space           string  `json:"space"`
     Repo            string  `json:"repo"`
     RepoUrl         string  `json:"repo_url"`
     DeployServer    []int   `json:"deploy_server"`
@@ -32,7 +31,7 @@ type Project struct {
     RepoUser        string  `json:"repo_user"`
     RepoPass        string  `json:"repo_pass"`
     RepoMode        int     `json:"repo_mode"`
-    BuildScript     string  `json:"build_script"`
+    RepoBranch      string  `json:"repo_branch"`
 }
 
 type ProjectItem struct {
@@ -121,7 +120,6 @@ func (p *Project) Get() error {
     p.Name = detail.Name
     p.Description = detail.Description
     p.SpaceId = detail.SpaceId
-    p.Space = detail.Space
     p.Repo = detail.Repo
     p.RepoUrl = detail.RepoUrl
     p.DeployServer = goutil.StrSplit2IntSlice(detail.DeployServer, ",")
@@ -135,7 +133,7 @@ func (p *Project) Get() error {
     p.RepoUser = detail.RepoUser
     p.RepoPass = detail.RepoPass
     p.RepoMode = detail.RepoMode
-    p.BuildScript = detail.BuildScript
+    p.RepoBranch = detail.RepoBranch
 
     return nil
 }
@@ -145,7 +143,6 @@ func (p *Project) CreateOrUpdate() error {
         Name: p.Name,
         Description: p.Description,
         SpaceId: p.SpaceId,
-        Space: p.Space,
         Repo: p.Repo,
         RepoUrl: p.RepoUrl,
         DeployServer: goutil.JoinIntSlice2String(p.DeployServer, ","),
@@ -155,11 +152,10 @@ func (p *Project) CreateOrUpdate() error {
         PreDeployCmd: p.PreDeployCmd,
         PostDeployCmd: p.PostDeployCmd,
         NeedAudit: p.NeedAudit,
-        Status: p.Status,
         RepoUser: p.RepoUser,
         RepoPass: p.RepoPass,
         RepoMode: p.RepoMode,
-        BuildScript: p.BuildScript,
+        RepoBranch: p.RepoBranch,
     }
     if p.ID > 0 {
         if ok := projectModel.Update(p.ID, project); !ok {
@@ -224,4 +220,17 @@ func (p *Project) CheckProjectExists() (bool, error) {
         return false, errors.New("get project one data failed")
     }
     return detail.ID > 0, nil
+}
+
+func (p *Project) ChangeStatus() error {
+    if p.ID == 0 {
+        return errors.New("id can not be empty")
+    }
+    ok := projectModel.UpdateFields(p.ID, map[string]interface{}{
+        "status": p.Status,
+    })
+    if !ok {
+        return errors.New("project status update failed")
+    }
+    return nil
 }
