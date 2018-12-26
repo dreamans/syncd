@@ -8,7 +8,6 @@ import (
     "fmt"
     "time"
     "errors"
-    "strings"
 
     "github.com/tinystack/syncd"
     "github.com/tinystack/goutil"
@@ -28,9 +27,10 @@ type Repo struct {
 
 type Repository interface {
     SetRepo(r *Repo)
-    UpdateRepoCmd(branch string) (string, error)
-    ResetRepoCmd() string
-    TagListCmd() string
+    UpdateRepo(branch string) error
+    ResetRepo() error
+    TagListRepo() ([]string, error)
+    CommitListRepo() ([]string, error)
 }
 
 func NewRepo(r *Repo) (*Repo, error) {
@@ -48,32 +48,22 @@ func NewRepo(r *Repo) (*Repo, error) {
 }
 
 func (r *Repo) ResetRepo() error {
-    resetCmd := r.fd.ResetRepoCmd()
-    return r.newCommand(resetCmd).Run()
+    return r.fd.ResetRepo()
 }
 
 func (r *Repo) TagListRepo() ([]string, error) {
-    tagListCmd := r.fd.TagListCmd()
-    println(tagListCmd)
-    cmd := r.newCommand(tagListCmd)
-    if err := cmd.Run(); err != nil {
-        return nil, errors.New(err.Error() + ", " + string(cmd.Stderr()))
-    }
-    tagList := strings.Split(string(cmd.Stdout()), "\n")
-    tagList = goutil.StringSliceRsort(tagList)
+    return r.fd.TagListRepo()
+}
 
-    return tagList, nil
+func (r *Repo) CommitListRepo() ([]string, error){
+    return r.fd.CommitListRepo()
 }
 
 func (r *Repo) UpdateRepo(branch string) error {
-    updateCmd, err := r.fd.UpdateRepoCmd(branch)
-    if err != nil {
-        return nil
-    }
-    return r.newCommand(updateCmd).Run()
+    return r.fd.UpdateRepo(branch)
 }
 
-func (r *Repo) newCommand(cmd string) *gocmd.Command {
+func (r *Repo) NewCommand(cmd string) *gocmd.Command {
     return &gocmd.Command{
         Cmd: cmd,
         Timeout: time.Second * r.CmdRunTimeout,

@@ -10,6 +10,17 @@ import (
     "github.com/tinystack/syncd/model"
 )
 
+type ProjectUser struct {
+    ID          int      `gorm:"primary_key"`
+    SpaceId     int      `gorm:"type:int(11);not null;default:0"`
+    UserId      int      `gorm:"type:int(11);not null;default:0"`
+    Ctime       int      `gorm:"type:int(11);not null;default:0"`
+}
+
+const (
+    TableName = "project_user"
+)
+
 func Create(data *ProjectUser) bool {
     data.Ctime = int(time.Now().Unix())
     return model.Create(TableName, data)

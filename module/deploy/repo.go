@@ -19,20 +19,7 @@ func init() {
 }
 
 func resetRepo(c *goweb.Context) error {
-    project := &projectService.Project{
-        ID: c.PostFormInt("project_id"),
-    }
-    if err := project.Get(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
-    }
-    repo, err := deployService.NewRepo(&deployService.Repo{
-        ID: project.ID,
-        Repo: project.Repo,
-        Url: project.RepoUrl,
-        User: project.RepoUser,
-        Pass: project.RepoPass,
-    })
+    repo, err := deployServiceRepo(c.PostFormInt("project_id"))
     if err != nil {
         syncd.RenderAppError(c, err.Error())
         return nil
@@ -43,26 +30,11 @@ func resetRepo(c *goweb.Context) error {
         return nil
     }
 
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
 func tagListRepo(c *goweb.Context) error {
-    project := &projectService.Project{
-        ID: c.QueryInt("id"),
-    }
-    if err := project.Get(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
-    }
-
-    repo, err := deployService.NewRepo(&deployService.Repo{
-        ID: project.ID,
-        Repo: project.Repo,
-        Url: project.RepoUrl,
-        User: project.RepoUser,
-        Pass: project.RepoPass,
-    })
+    repo, err := deployServiceRepo(c.QueryInt("id"))
     if err != nil {
         syncd.RenderAppError(c, err.Error())
         return nil
@@ -80,5 +52,35 @@ func tagListRepo(c *goweb.Context) error {
 }
 
 func commitListRepo(c *goweb.Context) error {
-    return nil
+    repo, err := deployServiceRepo(c.QueryInt("id"))
+    if err != nil {
+        return syncd.RenderAppError(c, err.Error())
+    }
+    list, err := repo.CommitListRepo()
+    if err != nil {
+        return syncd.RenderAppError(c, err.Error())
+    }
+    return syncd.RenderJson(c, goweb.JSON{
+        "list": list,
+    })
+}
+
+func deployServiceRepo(id int) (*deployService.Repo, error) {
+    project := &projectService.Project{
+        ID: id,
+    }
+    if err := project.Get(); err != nil {
+        return nil, err
+    }
+    repo, err := deployService.NewRepo(&deployService.Repo{
+        ID: project.ID,
+        Repo: project.Repo,
+        Url: project.RepoUrl,
+        User: project.RepoUser,
+        Pass: project.RepoPass,
+    })
+    if err != nil {
+        return nil, err
+    }
+    return repo, nil
 }

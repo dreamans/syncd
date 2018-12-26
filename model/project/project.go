@@ -10,6 +10,32 @@ import (
     "github.com/tinystack/syncd/model"
 )
 
+type Project struct {
+    ID              int     `gorm:"primary_key"`
+    Name            string  `gorm:"type:varchar(100);not null;default:''"`
+    Description     string  `gorm:"type:varchar(100);not null;default:''"`
+    SpaceId         int     `gorm:"type:int(11);not null;default:0"`
+    Repo            string  `gorm:"type:varchar(20);not null;default:''"`
+    RepoUrl         string  `gorm:"type:varchar(200);not null;default:''"`
+    RepoUser        string  `gorm:"type:varchar(100);not null;default:''"`
+    RepoPass        string  `gorm:"type:varchar(100);not null;default:''"`
+    RepoMode        int     `gorm:"type:int(11);not null;default:0"`
+    RepoBranch      string  `gorm:"type:varchar(20);not null;default:''"`
+    DeployServer    string  `gorm:"type:varchar(2000);not null;default:''"`
+    DeployUser      string  `gorm:"type:varchar(20);not null;default:''"`
+    DeployPath      string  `gorm:"type:varchar(100);not null;default:''"`
+    DeployHistory   int     `gorm:"type:int(11);not null;default:0"`
+    PreDeployCmd    string  `gorm:"type:varchar(2000);not null;default:''"`
+    PostDeployCmd   string  `gorm:"type:varchar(2000);not null;default:''"`
+    NeedAudit       int     `gorm:"type:int(11);not null;default:0"`
+    Status          int     `gorm:"type:int(11);not null;default:0"`
+    Utime           int     `gorm:"type:int(11);not null;default:0"`
+}
+
+const (
+    TableName = "project"
+)
+
 func Create(data *Project) bool {
     data.Utime = int(time.Now().Unix())
     return model.Create(TableName, data)

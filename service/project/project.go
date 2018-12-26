@@ -42,6 +42,59 @@ type ProjectItem struct {
     Status      int     `json:"status"`
 }
 
+func ProjectGetByPk(id int) (*Project, error) {
+    project := &Project{
+        ID: id,
+    }
+    if err := project.Get(); err != nil {
+        return nil, err
+    }
+    return project, nil
+}
+
+func ProjectGetMapByIds(ids []int) (map[int]ProjectItem, error) {
+    list, err := ProjectGetListByIds(ids)
+    if err != nil {
+        return nil, err
+    }
+    maps := map[int]ProjectItem{}
+    for _, l := range list {
+        maps[l.ID] = l
+    }
+    return maps, nil
+}
+
+func ProjectGetListByIds(ids []int) ([]ProjectItem, error) {
+    if len(ids) == 0 {
+        return nil, nil
+    }
+    list, ok := projectModel.List(baseModel.QueryParam{
+        Fields: "id, name, repo_mode, need_audit, status",
+        Order: "id DESC",
+        Where: []baseModel.WhereParam{
+            baseModel.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: ids,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get project list failed")
+    }
+    var projList []ProjectItem
+    for _, l := range list {
+        projList = append(projList, ProjectItem{
+            ID: l.ID,
+            Name: l.Name,
+            RepoMode: l.RepoMode,
+            NeedAudit: l.NeedAudit,
+            Status: l.Status,
+        })
+    }
+    return projList, nil
+}
+
 func (p *Project) List(keyword string, offset, limit int) ([]ProjectItem, int, error) {
     var (
         projectId int
@@ -51,6 +104,12 @@ func (p *Project) List(keyword string, offset, limit int) ([]ProjectItem, int, e
         where = append(where, baseModel.WhereParam{
             Field: "space_id",
             Prepare: p.SpaceId,
+        })
+    }
+    if p.Status == 1 {
+        where = append(where, baseModel.WhereParam{
+            Field: "status",
+            Prepare: p.Status,
         })
     }
     if keyword != "" {

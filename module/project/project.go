@@ -49,16 +49,13 @@ func updateProject(c *goweb.Context) error {
         DeployHistory: c.PostFormInt("deploy_history"),
     }
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
-        syncd.RenderParamError(c, valid.LastFailed().Msg)
-        return nil
+        return syncd.RenderParamError(c, valid.LastFailed().Msg)
     }
-
     repoBranch := c.PostForm("repo_branch")
     if params.RepoMode == 1 && repoBranch == "" {
         syncd.RenderParamError(c, "repo_branch can not be empty")
         return nil
     }
-
     var (
         needAudit int
         exists bool
@@ -78,12 +75,10 @@ func updateProject(c *goweb.Context) error {
         syncd.RenderAppError(c, "project update failed, project name have exists")
         return nil
     }
-
     deployServer := goutil.StrSlice2IntSlice(params.DeployServer)
     if c.PostFormInt("need_audit") != 0 {
         needAudit = 1
     }
-
     project := &projectService.Project{
         ID: c.PostFormInt("id"),
         Name: params.Name,
@@ -112,10 +107,11 @@ func updateProject(c *goweb.Context) error {
 }
 
 func listProject(c *goweb.Context) error {
-    offset, limit, keyword, spaceId := c.QueryInt("offset"), c.QueryInt("limit"), c.Query("keyword"), c.QueryInt("space_id")
+    offset, limit, keyword, spaceId, status := c.QueryInt("offset"), c.QueryInt("limit"), c.Query("keyword"), c.QueryInt("space_id"), c.QueryInt("status")
 
     project := &projectService.Project{
         SpaceId: spaceId,
+        Status: status,
     }
     list, total, err := project.List(keyword, offset, limit)
     if err != nil {

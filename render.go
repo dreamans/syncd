@@ -18,31 +18,35 @@ const (
     CODE_ERR_DATA_REPEAT = 1003
 )
 
-func RenderParamError(c *goweb.Context, msg string) {
+func RenderParamError(c *goweb.Context, msg string) error {
     c.Json(http.StatusOK, goweb.JSON{
         "code": CODE_ERR_PARAM,
         "message": msg,
     })
+    return nil
 }
 
-func RenderAppError(c *goweb.Context, msg string) {
+func RenderAppError(c *goweb.Context, msg string) error {
     c.Json(http.StatusOK, goweb.JSON{
         "code": CODE_ERR_APP,
         "message": msg,
     })
+    return nil
 }
 
-func RenderJson(c *goweb.Context, data interface{}) {
+func RenderJson(c *goweb.Context, data interface{}) error {
     c.Json(http.StatusOK, goweb.JSON{
         "code": CODE_OK,
         "message": "success",
         "data": data,
     })
+    return nil
 }
 
-func RenderCustomerError(c *goweb.Context, code int, msg string) {
+func RenderCustomerError(c *goweb.Context, code int, msg string) error {
     c.Json(http.StatusOK, goweb.JSON{
         "code": code,
         "message": msg,
     })
+    return nil
 }

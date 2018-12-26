@@ -15,15 +15,19 @@ func (s *Svn) SetRepo(r *Repo) {
     s.repo = r
 }
 
-func (s *Svn) UpdateRepoCmd(branch string) (string, error) {
+func (s *Svn) UpdateRepo(branch string) error {
 
-    return "", nil
+    return nil
 }
 
-func (s *Svn) ResetRepoCmd() string {
-    return ""
+func (s *Svn) ResetRepo() error {
+    return nil
 }
 
-func (s *Svn) TagListCmd() string {
-    return ""
+func (s *Svn) TagListRepo() ([]string, error) {
+    return nil, nil
+}
+
+func (s *Svn) CommitListRepo() ([]string, error) {
+    return nil, nil
 }

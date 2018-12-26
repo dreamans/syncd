@@ -19,6 +19,46 @@ type Space struct {
     Ctime       int     `json:"ctime"`
 }
 
+func SpaceGetMapByIds(ids []int) (map[int]Space, error) {
+    list, err := SpaceGetListByIds(ids)
+    if err != nil {
+        return nil, err
+    }
+    maps := map[int]Space{}
+    for _, l := range list {
+        maps[l.ID] = l
+    }
+    return maps, nil
+}
+
+func SpaceGetListByIds(ids []int) ([]Space, error) {
+    if len(ids) == 0 {
+        return nil, nil
+    }
+    list, ok := projectSpaceModel.List(baseModel.QueryParam{
+        Fields: "id, name",
+        Order: "id DESC",
+        Where: []baseModel.WhereParam{
+            baseModel.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: ids,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get project space list failed")
+    }
+    var spaceList []Space
+    for _, l := range list {
+        spaceList = append(spaceList, Space{
+            ID: l.ID,
+            Name: l.Name,
+        })
+    }
+    return spaceList, nil
+}
+
 func (s *Space) CreateOrUpdate() error {
     var ok bool
     space := projectSpaceModel.ProjectSpace{

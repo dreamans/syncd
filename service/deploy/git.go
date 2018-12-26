@@ -7,6 +7,8 @@ package deploy
 import (
     "net/url"
     "fmt"
+    "errors"
+    "strings"
 
     "github.com/tinystack/goutil"
 )
@@ -19,10 +21,10 @@ func (g *Git) SetRepo(r *Repo) {
     g.repo = r
 }
 
-func (g *Git) UpdateRepoCmd(branch string) (string, error) {
+func (g *Git) UpdateRepo(branch string) error {
     exists, err := goutil.PathExists(g.repo.LocalPath)
     if err != nil {
-        return "", err
+        return err
     }
     var cmd string
     if exists {
@@ -41,10 +43,10 @@ func (g *Git) UpdateRepoCmd(branch string) (string, error) {
             fmt.Sprintf("git clone -q %s -b %s .", branch, g.getRemoteUrl()),
         )
     }
-    return cmd, nil
+    return g.repo.NewCommand(cmd).Run()
 }
 
-func (g *Git) ResetRepoCmd() string {
+func (g *Git) ResetRepo() error {
     cmd := goutil.JoinSepStrings(
         " && ",
         fmt.Sprintf("rm -rf %s", g.repo.LocalPath),
@@ -52,11 +54,29 @@ func (g *Git) ResetRepoCmd() string {
         fmt.Sprintf("cd %s", g.repo.LocalPath),
         fmt.Sprintf("git clone -q %s .", g.getRemoteUrl()),
     )
-    return cmd
+    return g.repo.NewCommand(cmd).Run()
 }
 
-func (g *Git) TagListCmd() string {
-    return fmt.Sprintf("cd %s && git tag -l", g.repo.LocalPath)
+func (g *Git) TagListRepo() ([]string, error) {
+    tagListCmd := fmt.Sprintf("cd %s && git tag -l", g.repo.LocalPath)
+    cmd := g.repo.NewCommand(tagListCmd)
+    if err := cmd.Run(); err != nil {
+        return nil, errors.New(err.Error() + ", " + string(cmd.Stderr()))
+    }
+    tagList := strings.Split(string(cmd.Stdout()), "\n")
+    tagList = goutil.StringSliceRsort(tagList)
+    return tagList, nil
+}
+
+func (g *Git) CommitListRepo() ([]string, error) {
+    commitListCmd := fmt.Sprintf("cd %s && git log -100 --pretty=format:\"%%h - %%ad - %%an %%s \" --date=format:\"%%Y-%%m-%%d %%H:%%M:%%S\"", g.repo.LocalPath)
+    //--date=format:"%Y-%m-%d %H:%M:%S"
+    cmd := g.repo.NewCommand(commitListCmd)
+    if err := cmd.Run(); err != nil {
+        return nil, err
+    }
+    commitList := strings.Split(string(cmd.Stdout()), "\n")
+    return commitList, nil
 }
 
 func (g *Git) getRemoteUrl() string {

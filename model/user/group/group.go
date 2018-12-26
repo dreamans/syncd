@@ -10,6 +10,18 @@ import (
     "github.com/tinystack/syncd/model"
 )
 
+type UserGroup struct {
+    ID      int         `gorm:"primary_key"`
+    Name    string      `gorm:"type:varchar(100);not null;default:''"`
+    Priv    string      `gorm:"type:varchar(10000);not null;default:''"`
+    Utime   int         `gorm:"type:int(11);not null;default:0"`
+}
+
+const (
+    TableName = "user_group"
+)
+
+
 func Create(data *UserGroup) bool {
     data.Utime = int(time.Now().Unix())
     return model.Create(TableName, data)

@@ -10,6 +10,19 @@ import (
     "github.com/tinystack/syncd/model"
 )
 
+type Server struct {
+    ID      int         `gorm:"primary_key"`
+    GroupId int         `gorm:"type:int(11);not null;default:0"`
+    Name    string      `gorm:"type:varchar(100);not null;default:''"`
+    Ip      string      `gorm:"type:varchar(15);not null;default:''"`
+    SshPort int         `gorm:"type:int(11);not null;default:22"`
+    Utime   int         `gorm:"type:int(11);not null;default:0"`
+}
+
+const (
+    TableName = "server"
+)
+
 func Create(data *Server) bool {
     data.Utime = int(time.Now().Unix())
     return model.Create(TableName, data)

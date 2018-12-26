@@ -46,4 +46,6 @@ const (
     API_DEPLOY_REPO_TAGLIST = "GET /api/deploy/repo/taglist"
     API_DEPLOY_REPO_RESET = "POST /api/deploy/repo/reset"
     API_DEPLOY_REPO_COMMITLIST = "GET /api/deploy/repo/commitlist"
+    API_DEPLOY_APPLY_SUBMIT = "POST /api/deploy/apply/submit"
+    API_DEPLOY_APPLY_LIST = "GET /api/deploy/apply/list"
 )
