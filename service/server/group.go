@@ -8,7 +8,8 @@ import (
     "errors"
     "fmt"
 
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gostring"
+    "github.com/tinystack/goutil/gois"
     baseModel "github.com/tinystack/syncd/model"
     serverGroupModel "github.com/tinystack/syncd/model/server/group"
 )
@@ -82,8 +83,8 @@ func (g *Group) List(keyword string, offset, limit int) ([]Group, int, error){
         where []baseModel.WhereParam
     )
     if keyword != "" {
-        if goutil.IsInteger(keyword) {
-            groupId = goutil.Str2Int(keyword)
+        if gois.IsInteger(keyword) {
+            groupId = gostring.Str2Int(keyword)
             if groupId > 0 {
                 where = append(where, baseModel.WhereParam{
                     Field: "id",

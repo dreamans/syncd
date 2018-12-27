@@ -6,7 +6,7 @@ package server
 
 import (
     "github.com/tinystack/goweb"
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/syncd"
     "github.com/tinystack/syncd/route"
     serverService "github.com/tinystack/syncd/service/server"
@@ -57,7 +57,7 @@ func listServerGroup(c *goweb.Context) error {
 }
 
 func multiServerGroup(c *goweb.Context) error {
-    ids := goutil.StrSplit2IntSlice(c.Query("ids"), ",")
+    ids := gostring.StrSplit2IntSlice(c.Query("ids"), ",")
     serverGroup := &serverService.Group{}
     list, err := serverGroup.GetMultiById(ids)
     if err != nil {

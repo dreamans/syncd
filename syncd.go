@@ -8,8 +8,10 @@ import (
     "time"
     "io"
     "os"
+    "errors"
+    "encoding/base64"
 
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gopath"
     "github.com/tinystack/goweb"
     "github.com/tinystack/golog"
     "github.com/jinzhu/gorm"
@@ -26,6 +28,7 @@ var (
     DbInstance      *DB
     DataDir         string
     TmpDir          string
+    CipherKey       []byte
 )
 
 func NewSyncd(cfg *Config) *Syncd {
@@ -82,18 +85,28 @@ func (s *Syncd) RegisterLog() {
 func (s *Syncd) InitEnv() {
     DataDir = s.config.Syncd.Dir
     if s.config.Syncd.Dir == "" {
-        path, err := goutil.CurrentPath()
+        path, err := gopath.CurrentPath()
         if err != nil {
             panic(err)
         }
         DataDir = path + "/data"
     }
-    if err := goutil.CreatePath(DataDir); err != nil {
+    if err := gopath.CreatePath(DataDir); err != nil {
         panic(err)
     }
 
     TmpDir = DataDir + "/tmp"
-    if err := goutil.CreatePath(TmpDir); err != nil {
+    if err := gopath.CreatePath(TmpDir); err != nil {
         panic(err)
     }
+
+    if s.config.Syncd.Cipher == "" {
+        panic(errors.New("syncd config 'Cipher' not setting"))
+    }
+
+    dec, err := base64.StdEncoding.DecodeString(s.config.Syncd.Cipher)
+    if err != nil {
+        panic(err)
+    }
+    CipherKey = dec
 }

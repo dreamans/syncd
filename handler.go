@@ -9,14 +9,14 @@ import (
     "net/http"
 
     "github.com/tinystack/goweb"
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gostring"
 )
 
 func beforeHandler(c *goweb.Context) error {
     var origin string
     if referer := c.Request.Referer(); referer != "" {
         if u, err := url.Parse(referer); err == nil {
-            origin = goutil.JoinStrings(u.Scheme, "://", u.Host)
+            origin = gostring.JoinStrings(u.Scheme, "://", u.Host)
         }
     }
     c.SetHeader("Access-Control-Allow-Origin", origin)

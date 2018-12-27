@@ -5,7 +5,7 @@
 package project
 
 import (
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
     "github.com/tinystack/syncd/route"
@@ -75,7 +75,7 @@ func updateProject(c *goweb.Context) error {
         syncd.RenderAppError(c, "project update failed, project name have exists")
         return nil
     }
-    deployServer := goutil.StrSlice2IntSlice(params.DeployServer)
+    deployServer := gostring.StrSlice2IntSlice(params.DeployServer)
     if c.PostFormInt("need_audit") != 0 {
         needAudit = 1
     }

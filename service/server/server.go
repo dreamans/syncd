@@ -8,7 +8,8 @@ import (
     "errors"
     "fmt"
 
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gois"
+    "github.com/tinystack/goutil/gostring"
     baseModel "github.com/tinystack/syncd/model"
     serverModel "github.com/tinystack/syncd/model/server"
 )
@@ -46,8 +47,8 @@ func (g *Server) List(keyword string, groupId, offset, limit int) ([]Server, int
         where []baseModel.WhereParam
     )
     if keyword != "" {
-        if goutil.IsInteger(keyword) {
-            serverId = goutil.Str2Int(keyword)
+        if gois.IsInteger(keyword) {
+            serverId = gostring.Str2Int(keyword)
             if serverId > 0 {
                 where = append(where, baseModel.WhereParam{
                     Field: "id",
@@ -55,7 +56,7 @@ func (g *Server) List(keyword string, groupId, offset, limit int) ([]Server, int
                 })
             }
         } else {
-            if goutil.IsIp(keyword) {
+            if gois.IsIp(keyword) {
                 where = append(where, baseModel.WhereParam{
                     Field: "ip",
                     Prepare: keyword,

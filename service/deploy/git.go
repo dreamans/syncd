@@ -10,7 +10,8 @@ import (
     "errors"
     "strings"
 
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gostring"
+    "github.com/tinystack/goutil/gopath"
 )
 
 type Git struct {
@@ -22,13 +23,13 @@ func (g *Git) SetRepo(r *Repo) {
 }
 
 func (g *Git) UpdateRepo(branch string) error {
-    exists, err := goutil.PathExists(g.repo.LocalPath)
+    exists, err := gopath.PathExists(g.repo.LocalPath)
     if err != nil {
         return err
     }
     var cmd string
     if exists {
-        cmd = goutil.JoinSepStrings(
+        cmd = gostring.JoinSepStrings(
             " && ",
             fmt.Sprintf("cd %s", g.repo.LocalPath),
             fmt.Sprintf("git checkout -q %s", branch),
@@ -36,7 +37,7 @@ func (g *Git) UpdateRepo(branch string) error {
             fmt.Sprintf("git reset -q --hard origin/%s", branch),
         )
     } else {
-        cmd = goutil.JoinSepStrings(
+        cmd = gostring.JoinSepStrings(
             " && ",
             fmt.Sprintf("mkdir %s", g.repo.LocalPath),
             fmt.Sprintf("cd %s", g.repo.LocalPath),
@@ -47,7 +48,7 @@ func (g *Git) UpdateRepo(branch string) error {
 }
 
 func (g *Git) ResetRepo() error {
-    cmd := goutil.JoinSepStrings(
+    cmd := gostring.JoinSepStrings(
         " && ",
         fmt.Sprintf("rm -rf %s", g.repo.LocalPath),
         fmt.Sprintf("mkdir %s", g.repo.LocalPath),
@@ -64,13 +65,12 @@ func (g *Git) TagListRepo() ([]string, error) {
         return nil, errors.New(err.Error() + ", " + string(cmd.Stderr()))
     }
     tagList := strings.Split(string(cmd.Stdout()), "\n")
-    tagList = goutil.StringSliceRsort(tagList)
+    tagList = gostring.StringSliceRsort(tagList)
     return tagList, nil
 }
 
 func (g *Git) CommitListRepo() ([]string, error) {
     commitListCmd := fmt.Sprintf("cd %s && git log -100 --pretty=format:\"%%h - %%ad - %%an %%s \" --date=format:\"%%Y-%%m-%%d %%H:%%M:%%S\"", g.repo.LocalPath)
-    //--date=format:"%Y-%m-%d %H:%M:%S"
     cmd := g.repo.NewCommand(commitListCmd)
     if err := cmd.Run(); err != nil {
         return nil, err

@@ -5,7 +5,7 @@
 package user
 
 import (
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
     "github.com/tinystack/syncd/route"
@@ -23,20 +23,17 @@ func init() {
 func updateUserGroup(c *goweb.Context) error {
     id, name, priv := c.PostFormInt("id"), c.PostForm("name"), c.PostFormArray("priv")
     if name == "" {
-        syncd.RenderParamError(c, "user group name can not empty")
-        return nil
+        return syncd.RenderParamError(c, "user group name can not empty")
     }
     userGroup := &userService.Group{
         ID: id,
         Name: name,
-        Priv: goutil.StrSlice2IntSlice(goutil.StrFilterSliceEmpty(priv)),
+        Priv: gostring.StrSlice2IntSlice(gostring.StrFilterSliceEmpty(priv)),
     }
     if err := userGroup.CreateOrUpdate(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(c, err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
 func listUserGroup(c *goweb.Context) error {

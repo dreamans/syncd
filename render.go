@@ -11,11 +11,12 @@ import (
 )
 
 const (
-    CODE_OK         = 0
+    CODE_OK = 0
     CODE_ERR_SYSTEM = 1000
-    CODE_ERR_APP    = 1001
-    CODE_ERR_PARAM  = 1002
+    CODE_ERR_APP = 1001
+    CODE_ERR_PARAM = 1002
     CODE_ERR_DATA_REPEAT = 1003
+    CODE_ERR_LOGIN_FAILED = 1004
 )
 
 func RenderParamError(c *goweb.Context, msg string) error {

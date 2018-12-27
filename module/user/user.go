@@ -7,7 +7,7 @@ package user
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gois"
     "github.com/tinystack/syncd"
     "github.com/tinystack/syncd/route"
     userService "github.com/tinystack/syncd/service/user"
@@ -37,15 +37,13 @@ func updateUser(c *goweb.Context) error {
         Mobile: c.PostForm("mobile"),
     }
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
-        syncd.RenderParamError(c, valid.LastFailed().Msg)
-        return nil
+        return syncd.RenderParamError(c, valid.LastFailed().Msg)
     }
     id := c.PostFormInt("id")
     password := c.PostForm("password")
     if id == 0 {
         if password == "" || len(password) != 32 {
-            syncd.RenderParamError(c, "password incorrect")
-            return nil
+            return syncd.RenderParamError(c, "password incorrect")
         }
     }
 
@@ -61,8 +59,7 @@ func updateUser(c *goweb.Context) error {
     }
     exists, err = existsUser.CheckUserExists()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(c, err.Error())
     }
     if exists {
         syncd.RenderAppError(c, "user name exists")
@@ -142,7 +139,16 @@ func detailUser(c *goweb.Context) error {
         syncd.RenderAppError(c, err.Error())
         return nil
     }
-    syncd.RenderJson(c, user)
+
+    syncd.RenderJson(c, goweb.JSON{
+        "id": user.ID,
+        "group_id": user.GroupId,
+        "name": user.Name,
+        "email": user.Email,
+        "true_name": user.TrueName,
+        "mobile": user.Mobile,
+        "lock_status": user.LockStatus,
+    })
     return nil
 }
 
@@ -191,7 +197,7 @@ func searchUser(c *goweb.Context) error {
     }
 
     user := &userService.User{}
-    if goutil.IsEmail(keyword) {
+    if gois.IsEmail(keyword) {
         user.Email = keyword
     } else {
         user.Name = keyword

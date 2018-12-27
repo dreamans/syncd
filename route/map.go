@@ -42,6 +42,7 @@ const (
     API_USER_EXISTS = "GET /api/user/exists"
     API_USER_DELETE = "POST /api/user/delete"
     API_USER_SEARCH = "GET /api/user/search"
+    API_USER_LOGIN = "POST /api/user/login"
 
     API_DEPLOY_REPO_TAGLIST = "GET /api/deploy/repo/taglist"
     API_DEPLOY_REPO_RESET = "POST /api/deploy/repo/reset"

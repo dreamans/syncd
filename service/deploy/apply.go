@@ -8,7 +8,8 @@ import (
     "errors"
     "fmt"
 
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gois"
+    "github.com/tinystack/goutil/gostring"
     baseModel "github.com/tinystack/syncd/model"
     deployApplyModel "github.com/tinystack/syncd/model/deploy/apply"
 )
@@ -38,8 +39,8 @@ type ApplyRepoData struct {
 func (a *Apply) List(keyword string, offset, limit int) ([]Apply, int, error) {
     var where []baseModel.WhereParam
     if keyword != "" {
-        if goutil.IsInteger(keyword) {
-            applyId := goutil.Str2Int(keyword)
+        if gois.IsInteger(keyword) {
+            applyId := gostring.Str2Int(keyword)
             if applyId > 0 {
                 where = append(where, baseModel.WhereParam{
                     Field: "id",
@@ -85,7 +86,7 @@ func (a *Apply) List(keyword string, offset, limit int) ([]Apply, int, error) {
 }
 
 func (a *Apply) Create() error {
-    repoData, err := goutil.JsonEncode(a.RepoData)
+    repoData, err := gostring.JsonEncode(a.RepoData)
     if err != nil {
         return err
     }

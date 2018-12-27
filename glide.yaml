@@ -4,7 +4,12 @@ import:
   version: v1.4.1
 - package: github.com/jinzhu/gorm
   version: v1.9.2
+- package: github.com/tinystack/gocmd
 - package: github.com/tinystack/golog
 - package: github.com/tinystack/goutil
+  subpackages:
+  - gois
+  - gopath
+  - gostring
 - package: github.com/tinystack/govalidate
 - package: github.com/tinystack/goweb

@@ -10,7 +10,7 @@ import (
     "errors"
 
     "github.com/tinystack/syncd"
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/gocmd"
 )
 
@@ -42,7 +42,7 @@ func NewRepo(r *Repo) (*Repo, error) {
     default:
         return nil, errors.New(fmt.Sprintf("repository type error, want '%s', but '%s'", "git or svn", r.Repo))
     }
-    r.LocalPath = goutil.JoinStrings(syncd.DataDir, "/", goutil.Int2Str(r.ID))
+    r.LocalPath = gostring.JoinStrings(syncd.DataDir, "/", gostring.Int2Str(r.ID))
     r.fd.SetRepo(r)
     return r, nil
 }

@@ -8,7 +8,8 @@ import (
     "errors"
     "fmt"
 
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gois"
+    "github.com/tinystack/goutil/gostring"
     baseModel "github.com/tinystack/syncd/model"
     userModel "github.com/tinystack/syncd/model/user"
 )
@@ -22,6 +23,7 @@ type User struct {
     TrueName    string  `json:"true_name"`
     Mobile      string  `json:"mobile"`
     LockStatus  int     `json:"lock_status"`
+    Salt        string  `json:"salt"`
 }
 
 type UserItem struct {
@@ -48,8 +50,8 @@ func (u *User) CreateOrUpdate() error {
     }
     var salt, password string
     if u.Password != "" {
-        salt = goutil.StrRandom(10)
-        password = goutil.StrMd5(goutil.JoinStrings(u.Password, salt))
+        salt = gostring.StrRandom(10)
+        password = gostring.StrMd5(gostring.JoinStrings(u.Password, salt))
     }
     if u.ID > 0 {
         updateData := map[string]interface{}{
@@ -86,21 +88,21 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
     if keyword != "" {
         var w *baseModel.WhereParam
         switch {
-        case goutil.IsInteger(keyword):
-            userId = goutil.Str2Int(keyword)
+        case gois.IsInteger(keyword):
+            userId = gostring.Str2Int(keyword)
             if userId > 0 {
                 w = &baseModel.WhereParam{
                     Field: "id",
                     Prepare: userId,
                 }
             }
-        case goutil.IsEmail(keyword):
+        case gois.IsEmail(keyword):
             w = &baseModel.WhereParam{
                 Field: "email",
                 Tag: "LIKE",
                 Prepare: fmt.Sprintf("%%%s%%", keyword),
             }
-        case goutil.IsMobile(keyword):
+        case gois.IsMobile(keyword):
             w = &baseModel.WhereParam{
                 Field: "mobile",
                 Tag: "LIKE",
@@ -155,16 +157,26 @@ func (u *User) Get() error {
     if !ok {
         return errors.New("get user detail data failed")
     }
+    u.transmitUserDetail(detail)
+    return nil
+}
 
-    u.ID = detail.ID
-    u.GroupId = detail.GroupId
-    u.Name = detail.Name
-    u.Password = detail.Password
-    u.Email = detail.Email
-    u.TrueName = detail.TrueName
-    u.Mobile = detail.Mobile
-    u.LockStatus = detail.LockStatus
-
+func (u *User) GetByName() error {
+    if u.Name == "" {
+        return errors.New("name can not be empty")
+    }
+    detail, ok := userModel.GetOne(baseModel.QueryParam{
+        Where: []baseModel.WhereParam{
+            baseModel.WhereParam{
+                Field: "name",
+                Prepare: u.Name,
+            },
+        },
+    })
+    if !ok {
+        return errors.New("get user detail data failed")
+    }
+    u.transmitUserDetail(detail)
     return nil
 }
 
@@ -274,4 +286,16 @@ func (u *User) GetListByIds(ids []int) ([]UserItem, error){
         })
     }
     return userList, nil
+}
+
+func (u *User) transmitUserDetail(detail userModel.User) {
+    u.ID = detail.ID
+    u.GroupId = detail.GroupId
+    u.Name = detail.Name
+    u.Password = detail.Password
+    u.Email = detail.Email
+    u.TrueName = detail.TrueName
+    u.Mobile = detail.Mobile
+    u.LockStatus = detail.LockStatus
+    u.Salt = detail.Salt
 }

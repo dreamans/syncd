@@ -13,7 +13,8 @@ type (
     }
 
     SyncdConfig struct {
-        Dir string
+        Dir     string
+        Cipher  string
     }
 
     LogConfig struct {

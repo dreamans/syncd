@@ -9,7 +9,8 @@ import (
     "strings"
     "fmt"
 
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gostring"
+    "github.com/tinystack/goutil/gois"
     baseModel "github.com/tinystack/syncd/model"
     userGroupModel "github.com/tinystack/syncd/model/user/group"
 )
@@ -37,8 +38,8 @@ func (g *Group) Get() error {
 
     privList := []int{}
     if detail.Priv != "" {
-        strPrivList := goutil.StrFilterSliceEmpty(strings.Split(detail.Priv, ","))
-        privList = goutil.StrSlice2IntSlice(strPrivList)
+        strPrivList := gostring.StrFilterSliceEmpty(strings.Split(detail.Priv, ","))
+        privList = gostring.StrSlice2IntSlice(strPrivList)
     }
 
     g.ID = detail.ID
@@ -53,7 +54,7 @@ func (g *Group) CreateOrUpdate() error {
     var ok bool
     group := userGroupModel.UserGroup{
         Name: g.Name,
-        Priv: strings.Join(goutil.IntSlice2StrSlice(g.Priv), ","),
+        Priv: strings.Join(gostring.IntSlice2StrSlice(g.Priv), ","),
     }
     if g.ID > 0 {
         ok = userGroupModel.Update(g.ID, map[string]interface{}{
@@ -77,8 +78,8 @@ func (g *Group) List(keyword string, offset, limit int) ([]GroupItem, int, error
         groupList []GroupItem
     )
     if keyword != "" {
-        if goutil.IsInteger(keyword) {
-            groupId = goutil.Str2Int(keyword)
+        if gois.IsInteger(keyword) {
+            groupId = gostring.Str2Int(keyword)
             if groupId > 0 {
                 where = append(where, baseModel.WhereParam{
                     Field: "id",

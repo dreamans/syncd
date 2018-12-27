@@ -8,7 +8,8 @@ import (
     "errors"
     "fmt"
 
-    "github.com/tinystack/goutil"
+    "github.com/tinystack/goutil/gois"
+    "github.com/tinystack/goutil/gostring"
     baseModel "github.com/tinystack/syncd/model"
     projectModel "github.com/tinystack/syncd/model/project"
 )
@@ -113,8 +114,8 @@ func (p *Project) List(keyword string, offset, limit int) ([]ProjectItem, int, e
         })
     }
     if keyword != "" {
-        if goutil.IsInteger(keyword) {
-            projectId = goutil.Str2Int(keyword)
+        if gois.IsInteger(keyword) {
+            projectId = gostring.Str2Int(keyword)
             if projectId > 0 {
                 where = append(where, baseModel.WhereParam{
                     Field: "id",
@@ -122,7 +123,7 @@ func (p *Project) List(keyword string, offset, limit int) ([]ProjectItem, int, e
                 })
             }
         } else {
-            if goutil.IsIp(keyword) {
+            if gois.IsIp(keyword) {
                 where = append(where, baseModel.WhereParam{
                     Field: "ip",
                     Prepare: keyword,
@@ -181,7 +182,7 @@ func (p *Project) Get() error {
     p.SpaceId = detail.SpaceId
     p.Repo = detail.Repo
     p.RepoUrl = detail.RepoUrl
-    p.DeployServer = goutil.StrSplit2IntSlice(detail.DeployServer, ",")
+    p.DeployServer = gostring.StrSplit2IntSlice(detail.DeployServer, ",")
     p.DeployUser = detail.DeployUser
     p.DeployPath = detail.DeployPath
     p.DeployHistory = detail.DeployHistory
@@ -204,7 +205,7 @@ func (p *Project) CreateOrUpdate() error {
         SpaceId: p.SpaceId,
         Repo: p.Repo,
         RepoUrl: p.RepoUrl,
-        DeployServer: goutil.JoinIntSlice2String(p.DeployServer, ","),
+        DeployServer: gostring.JoinIntSlice2String(p.DeployServer, ","),
         DeployUser: p.DeployUser,
         DeployPath: p.DeployPath,
         DeployHistory: p.DeployHistory,
