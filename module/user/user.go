@@ -9,18 +9,8 @@ import (
     "github.com/tinystack/govalidate"
     "github.com/tinystack/goutil/gois"
     "github.com/tinystack/syncd"
-    "github.com/tinystack/syncd/route"
     userService "github.com/tinystack/syncd/service/user"
 )
-
-func init() {
-    route.Register(route.API_USER_UPDATE, updateUser)
-    route.Register(route.API_USER_LIST, listUser)
-    route.Register(route.API_USER_DETAIL, detailUser)
-    route.Register(route.API_USER_EXISTS, existsUser)
-    route.Register(route.API_USER_DELETE, deleteUser)
-    route.Register(route.API_USER_SEARCH, searchUser)
-}
 
 type UserParamValid struct {
     GroupId     int     `valid:"required" errmsg:"required=user group can not be empty"`
@@ -29,7 +19,7 @@ type UserParamValid struct {
     Mobile      string  `valid:"mobile" errmsg:"mobile=mobile format incorrect"`
 }
 
-func updateUser(c *goweb.Context) error {
+func UserUpdate(c *goweb.Context) error {
     params := UserParamValid{
         GroupId: c.PostFormInt("group_id"),
         Name: c.PostForm("name"),
@@ -37,17 +27,16 @@ func updateUser(c *goweb.Context) error {
         Mobile: c.PostForm("mobile"),
     }
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
-        return syncd.RenderParamError(c, valid.LastFailed().Msg)
+        return syncd.RenderParamError(valid.LastFailed().Msg)
     }
     id := c.PostFormInt("id")
     password := c.PostForm("password")
     if id == 0 {
         if password == "" || len(password) != 32 {
-            return syncd.RenderParamError(c, "password incorrect")
+            return syncd.RenderParamError("password incorrect")
         }
     }
 
-    // check name is exists
     var (
         existsUser *userService.User
         exists bool
@@ -59,25 +48,23 @@ func updateUser(c *goweb.Context) error {
     }
     exists, err = existsUser.CheckUserExists()
     if err != nil {
-        return syncd.RenderAppError(c, err.Error())
+        return syncd.RenderAppError(err.Error())
     }
     if exists {
-        syncd.RenderAppError(c, "user name exists")
-        return nil
+        return syncd.RenderCustomerError(syncd.CODE_ERR_DATA_REPEAT, "user name exists")
     }
-    // check email is exists
+
     existsUser = &userService.User{
         ID: id,
         Email: params.Email,
     }
     exists, err = existsUser.CheckUserExists()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
+        syncd.RenderAppError(err.Error())
         return nil
     }
     if exists {
-        syncd.RenderAppError(c, "email exists")
-        return nil
+        return syncd.RenderCustomerError(syncd.CODE_ERR_DATA_REPEAT, "email exists")
     }
 
     user := &userService.User{
@@ -91,20 +78,17 @@ func updateUser(c *goweb.Context) error {
         LockStatus: c.PostFormInt("lock_status"),
     }
     if err := user.CreateOrUpdate(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
-func listUser(c *goweb.Context) error {
+func UserList(c *goweb.Context) error {
     offset, limit, keyword := c.QueryInt("offset"), c.QueryInt("limit"), c.Query("keyword")
     user := &userService.User{}
     list, total, err := user.List(keyword, offset, limit)
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
     var groupIdList []int
     for _, l := range list {
@@ -114,7 +98,7 @@ func listUser(c *goweb.Context) error {
         group := &userService.Group{}
         groupNameList, err := group.GetNameByIds(groupIdList)
         if err != nil {
-            syncd.RenderAppError(c, err.Error())
+            syncd.RenderAppError(err.Error())
             return nil
         }
         for k, v := range list {
@@ -124,23 +108,20 @@ func listUser(c *goweb.Context) error {
         }
     }
 
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "list": list,
         "total": total,
     })
-    return nil
 }
 
-func detailUser(c *goweb.Context) error {
+func UserDetail(c *goweb.Context) error {
     user := &userService.User{
         ID: c.QueryInt("id"),
     }
     if err := user.Get(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "id": user.ID,
         "group_id": user.GroupId,
         "name": user.Name,
@@ -149,10 +130,9 @@ func detailUser(c *goweb.Context) error {
         "mobile": user.Mobile,
         "lock_status": user.LockStatus,
     })
-    return nil
 }
 
-func existsUser(c *goweb.Context) error {
+func UserExists(c *goweb.Context) error {
     checkType := c.Query("type")
     keyword := c.Query("keyword")
     id := c.QueryInt("id")
@@ -168,34 +148,28 @@ func existsUser(c *goweb.Context) error {
     }
     exists, err := user.CheckUserExists()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "exists": exists,
     })
-    return nil
 }
 
-func deleteUser(c *goweb.Context) error {
+func UserDelete(c *goweb.Context) error {
     user := &userService.User{
         ID: c.PostFormInt("id"),
     }
     if err := user.Delete(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
-func searchUser(c *goweb.Context) error {
+func UserSearch(c *goweb.Context) error {
     keyword := c.Query("keyword")
     if keyword == "" {
-        syncd.RenderJson(c, nil)
-        return nil
+        return syncd.RenderJson(c, nil)
     }
-
     user := &userService.User{}
     if gois.IsEmail(keyword) {
         user.Email = keyword
@@ -204,11 +178,9 @@ func searchUser(c *goweb.Context) error {
     }
     list, err := user.Search()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
 
-    //append group_name
     var groupIds []int
     for _, l := range list {
         groupIds = append(groupIds, l.GroupId)
@@ -217,8 +189,7 @@ func searchUser(c *goweb.Context) error {
         group := &userService.Group{}
         groupNameList, err := group.GetNameByIds(groupIds)
         if err != nil {
-            syncd.RenderAppError(c, err.Error())
-            return nil
+            return syncd.RenderAppError(err.Error())
         }
         for k, l := range list {
             val, key := groupNameList[l.GroupId]
@@ -228,8 +199,7 @@ func searchUser(c *goweb.Context) error {
         }
     }
 
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "list": list,
     })
-    return nil
 }

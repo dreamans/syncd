@@ -6,6 +6,8 @@ package syncd
 
 import (
     "net/http"
+    "errors"
+    "fmt"
 
     "github.com/tinystack/goweb"
 )
@@ -17,22 +19,20 @@ const (
     CODE_ERR_PARAM = 1002
     CODE_ERR_DATA_REPEAT = 1003
     CODE_ERR_LOGIN_FAILED = 1004
+    CODE_ERR_NO_LOGIN = 1005
+    CODE_ERR_NO_PRIV = 1006
 )
 
-func RenderParamError(c *goweb.Context, msg string) error {
-    c.Json(http.StatusOK, goweb.JSON{
-        "code": CODE_ERR_PARAM,
-        "message": msg,
-    })
-    return nil
+func RenderParamError(msg string) error {
+    return RenderCustomerError(CODE_ERR_PARAM, msg)
 }
 
-func RenderAppError(c *goweb.Context, msg string) error {
-    c.Json(http.StatusOK, goweb.JSON{
-        "code": CODE_ERR_APP,
-        "message": msg,
-    })
-    return nil
+func RenderAppError(msg string) error {
+    return RenderCustomerError(CODE_ERR_APP, msg)
+}
+
+func RenderCustomerError(code int, msg string) error {
+    return errors.New(fmt.Sprintf("%d=>%s", code, msg))
 }
 
 func RenderJson(c *goweb.Context, data interface{}) error {
@@ -40,14 +40,6 @@ func RenderJson(c *goweb.Context, data interface{}) error {
         "code": CODE_OK,
         "message": "success",
         "data": data,
-    })
-    return nil
-}
-
-func RenderCustomerError(c *goweb.Context, code int, msg string) error {
-    c.Json(http.StatusOK, goweb.JSON{
-        "code": code,
-        "message": msg,
     })
     return nil
 }

@@ -7,58 +7,44 @@ package deploy
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
-    "github.com/tinystack/syncd/route"
-    projectService "github.com/tinystack/syncd/service/project"
     deployService "github.com/tinystack/syncd/service/deploy"
+    projectService "github.com/tinystack/syncd/service/project"
 )
 
-func init() {
-    route.Register(route.API_DEPLOY_REPO_TAGLIST, tagListRepo)
-    route.Register(route.API_DEPLOY_REPO_RESET, resetRepo)
-    route.Register(route.API_DEPLOY_REPO_COMMITLIST, commitListRepo)
-}
-
-func resetRepo(c *goweb.Context) error {
+func RepoReset(c *goweb.Context) error {
     repo, err := deployServiceRepo(c.PostFormInt("project_id"))
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-
     if err := repo.ResetRepo(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-
     return syncd.RenderJson(c, nil)
 }
 
-func tagListRepo(c *goweb.Context) error {
+func RepoTagList(c *goweb.Context) error {
     repo, err := deployServiceRepo(c.QueryInt("id"))
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
 
     list, err := repo.TagListRepo()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "list": list,
     })
-    return nil
 }
 
-func commitListRepo(c *goweb.Context) error {
+func RepoCommitList(c *goweb.Context) error {
     repo, err := deployServiceRepo(c.QueryInt("id"))
     if err != nil {
-        return syncd.RenderAppError(c, err.Error())
+        return syncd.RenderAppError(err.Error())
     }
     list, err := repo.CommitListRepo()
     if err != nil {
-        return syncd.RenderAppError(c, err.Error())
+        return syncd.RenderAppError(err.Error())
     }
     return syncd.RenderJson(c, goweb.JSON{
         "list": list,

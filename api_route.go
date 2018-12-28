@@ -2,7 +2,7 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package route
+package syncd
 
 const (
     API_PROJECT_UPDATE = "POST /api/project/update"
@@ -34,7 +34,6 @@ const (
     API_USER_GROUP_LIST = "GET /api/user/group/list"
     API_USER_GROUP_DETAIL = "GET /api/user/group/detail"
     API_USER_PRIV_LIST = "GET /api/user/priv/list"
-    API_USER_GROUP_PRIV = "GET /api/user/group/priv"
     API_USER_GROUP_DELETE = "POST /api/user/group/delete"
     API_USER_UPDATE = "POST /api/user/update"
     API_USER_LIST = "GET /api/user/list"
@@ -43,6 +42,8 @@ const (
     API_USER_DELETE = "POST /api/user/delete"
     API_USER_SEARCH = "GET /api/user/search"
     API_USER_LOGIN = "POST /api/user/login"
+    API_USER_LOGOUT = "POST /api/user/logout"
+    API_USER_LOGIN_STATUS = "GET /api/user/login/status"
 
     API_DEPLOY_REPO_TAGLIST = "GET /api/deploy/repo/taglist"
     API_DEPLOY_REPO_RESET = "POST /api/deploy/repo/reset"

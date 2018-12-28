@@ -22,6 +22,14 @@ type Syncd struct {
     serve   *goweb.Serve
 }
 
+type ServeHandler struct {
+    BeforeHandler           goweb.HandlerFunc
+    AfterHandler            goweb.HandlerFunc
+    ServerErrorHandler      func(error, *goweb.Context, int)
+    NotFoundHandler         goweb.HandlerFunc
+    MethodNotAllowHandler   goweb.HandlerFunc
+}
+
 var (
     Logger          *golog.Logger
     Orm             *gorm.DB
@@ -39,13 +47,6 @@ func NewSyncd(cfg *Config) *Syncd {
     syncd.serve.ReadTimeout = time.Second * time.Duration(cfg.Serve.ReadTimeout)
     syncd.serve.WriteTimeout = time.Second * time.Duration(cfg.Serve.WriteTimeout)
     syncd.serve.IdleTimeout = time.Second * time.Duration(cfg.Serve.IdleTimeout)
-
-    syncd.serve.BeforeHandler = beforeHandler
-    syncd.serve.AfterHandler = afterHandler
-    syncd.serve.ServerErrorHandler = serverErrorHandler
-    syncd.serve.NotFoundHandler = notFoundHandler
-    syncd.serve.MethodNotAllowHandler = notFoundHandler
-
     return syncd
 }
 
@@ -55,6 +56,14 @@ func (s *Syncd) Start() error {
 
 func (s *Syncd) RegisterRoute(method, path string, handler goweb.HandlerFunc) {
     s.serve.Handler(method, path, handler)
+}
+
+func (s *Syncd) RegisterServeHandler(h ServeHandler) {
+    s.serve.BeforeHandler = h.BeforeHandler
+    s.serve.AfterHandler = h.AfterHandler
+    s.serve.ServerErrorHandler = h.ServerErrorHandler
+    s.serve.NotFoundHandler = h.NotFoundHandler
+    s.serve.MethodNotAllowHandler = h.MethodNotAllowHandler
 }
 
 func (s *Syncd) UnRegisterRoute() {}

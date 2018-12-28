@@ -6,16 +6,11 @@ package user
 
 import (
     "github.com/tinystack/goweb"
-    "github.com/tinystack/syncd/route"
     "github.com/tinystack/syncd"
     privModel "github.com/tinystack/syncd/model/user/priv"
 )
 
-func init() {
-    route.Register(route.API_USER_PRIV_LIST, listUserPriv)
-}
-
-func listUserPriv(c *goweb.Context) error {
+func PrivList(c *goweb.Context) error {
     syncd.RenderJson(c, goweb.JSON{
         "list": privModel.PrivList,
     })

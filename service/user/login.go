@@ -17,8 +17,8 @@ import (
 type Login struct {
     Name        string
     Pass        string
-    token       string
-    userDetail  *User
+    Token       string
+    UserDetail  *User
 }
 
 func (u *Login) Login() error {
@@ -51,8 +51,7 @@ func (u *Login) Login() error {
         return err
     }
 
-    // u.token = gostring.Base64UrlEncode(tokenBytes)
-    u.token = gostring.Base64Encode(tokenBytes)
+    u.Token = gostring.Base64UrlEncode(tokenBytes)
 
     token := &Token{
         UserId: user.ID,
@@ -63,15 +62,7 @@ func (u *Login) Login() error {
         return err
     }
 
-    u.userDetail = user
+    u.UserDetail = user
 
     return nil
-}
-
-func (u *Login) GetToken() string {
-    return u.token
-}
-
-func (u *Login) GetUserDetail() *User {
-    return u.userDetail
 }

@@ -50,3 +50,15 @@ func GetOne(query model.QueryParam) (UserToken, bool) {
     ok := model.GetOne(TableName, &data, query)
     return data, ok
 }
+
+func DeleteByUserId(id int) bool {
+    ok := model.Delete(TableName, UserToken{}, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "user_id",
+                Prepare: id,
+            },
+        },
+    })
+    return ok
+}

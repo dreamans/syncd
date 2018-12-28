@@ -52,3 +52,39 @@ func (t *Token) CreateOrUpdate() error {
 
     return nil
 }
+
+func (t *Token) ValidateToken() bool {
+    if t.UserId == 0 || t.Token == "" {
+        return false
+    }
+    detail, ok := userTokenModel.GetOne(baseModel.QueryParam{
+        Where: []baseModel.WhereParam{
+            baseModel.WhereParam{
+                Field: "user_id",
+                Prepare: t.UserId,
+            },
+            baseModel.WhereParam{
+                Field: "token",
+                Prepare: t.Token,
+            },
+        },
+    })
+    if !ok {
+        return false
+    }
+    if detail.ID == 0 {
+        return false
+    }
+    return true
+}
+
+func (t *Token) DeleteByUserId() error {
+    if t.UserId == 0 {
+        return errors.New("user_id can not be empty")
+    }
+    if ok := userTokenModel.DeleteByUserId(t.UserId); !ok {
+        return errors.New("token delete failed")
+    }
+
+    return nil
+}

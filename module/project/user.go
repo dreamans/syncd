@@ -7,57 +7,39 @@ package project
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
-    "github.com/tinystack/syncd/route"
     projectService "github.com/tinystack/syncd/service/project"
     userService "github.com/tinystack/syncd/service/user"
 )
 
-func init() {
-    route.Register(route.API_PROJECT_SPACE_USER_ADD, addProjectSpaceUser)
-    route.Register(route.API_PROJECT_SPACE_USER_LIST, listProjectSpaceUser)
-    route.Register(route.API_PROJECT_SPACE_USER_REMOVE, removeProjectSpaceUser)
-}
-
-func addProjectSpaceUser(c *goweb.Context) error {
+func UserAdd2Space(c *goweb.Context) error {
     spaceId, userId := c.PostFormInt("space_id"), c.PostFormInt("user_id")
     if spaceId == 0 || userId == 0 {
-        syncd.RenderParamError(c, "param error")
-        return nil
+        return syncd.RenderParamError("param empty")
     }
     user := &projectService.User{
         SpaceId: spaceId,
         UserId: userId,
     }
-
-    //check exists
     exists, err := user.CheckUserExists()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
     if exists {
-        syncd.RenderCustomerError(c, syncd.CODE_ERR_DATA_REPEAT, "用户已经存在")
-        return nil
+        return syncd.RenderCustomerError(syncd.CODE_ERR_DATA_REPEAT, "用户已经存在")
     }
-
     if err := user.Add(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
-func listProjectSpaceUser(c *goweb.Context) error {
+func UserList(c *goweb.Context) error {
     offset, limit := c.QueryInt("offset"), c.QueryInt("limit")
-
     projectUser := &projectService.User{}
     list, total, err := projectUser.List(offset, limit)
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-
     var userIdList []int
     for _, l := range list {
         userIdList = append(userIdList, l.UserId)
@@ -65,8 +47,7 @@ func listProjectSpaceUser(c *goweb.Context) error {
     user := &userService.User{}
     userList, err := user.GetListByIds(userIdList)
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
 
     var groupIdList []int
@@ -76,8 +57,7 @@ func listProjectSpaceUser(c *goweb.Context) error {
     group := &userService.Group{}
     groupNameList, err := group.GetNameByIds(groupIdList)
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
     if len(groupNameList) > 0 {
         for k, v := range userList {
@@ -107,21 +87,18 @@ func listProjectSpaceUser(c *goweb.Context) error {
         projectUserList = append(projectUserList, item)
     }
 
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "list": projectUserList,
         "total": total,
     })
-    return nil
 }
 
-func removeProjectSpaceUser(c *goweb.Context) error {
+func UserRemoveFromSpace(c *goweb.Context) error {
     user := &projectService.User{
         ID: c.PostFormInt("id"),
     }
     if err := user.Delete(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }

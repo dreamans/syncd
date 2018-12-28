@@ -8,16 +8,8 @@ import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
     "github.com/tinystack/syncd"
-    "github.com/tinystack/syncd/route"
     serverService "github.com/tinystack/syncd/service/server"
 )
-
-func init() {
-    route.Register(route.API_SERVER_UPDATE, updateServer)
-    route.Register(route.API_SERVER_LIST, listServer)
-    route.Register(route.API_SERVER_DETAIL, detailServer)
-    route.Register(route.API_SERVER_DELETE, deleteServer)
-}
 
 type ServerParamValid struct {
     GroupId     int         `valid:"required" errmsg:"required=sverver group cannot be empty"`
@@ -26,7 +18,7 @@ type ServerParamValid struct {
     SshPort     int         `valid:"required|int_min=1|int_max=65535" errmsg:"required=ssh port cannot be empty|int_min=ssh port must be between 1 and 65535|int_max=ssh port must be between 1 and 65535"`
 }
 
-func updateServer(c *goweb.Context) error {
+func ServerUpdate(c *goweb.Context) error {
     params := ServerParamValid{
         GroupId: c.PostFormInt("group_id"),
         Name: c.PostForm("name"),
@@ -34,8 +26,7 @@ func updateServer(c *goweb.Context) error {
         SshPort: c.PostFormInt("ssh_port"),
     }
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
-        syncd.RenderParamError(c, valid.LastFailed().Msg)
-        return nil
+        return syncd.RenderParamError(valid.LastFailed().Msg)
     }
     server := &serverService.Server{
         ID: c.PostFormInt("id"),
@@ -45,50 +36,41 @@ func updateServer(c *goweb.Context) error {
         SshPort: params.SshPort,
     }
     if err := server.CreateOrUpdate(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
-func listServer(c *goweb.Context) error {
+func ServerList(c *goweb.Context) error {
     groupId, offset, limit := c.QueryInt("group_id"), c.QueryInt("offset"), c.QueryInt("limit")
     keyword := c.Query("keyword")
-
     server := &serverService.Server{}
     list, total, err := server.List(keyword, groupId, offset, limit)
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "list": list,
         "total": total,
     })
-    return nil
 }
 
-func detailServer(c *goweb.Context) error {
+func ServerDetail(c *goweb.Context) error {
     server := &serverService.Server{
         ID: c.QueryInt("id"),
     }
     if err := server.Get(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, server)
-    return nil
+    return syncd.RenderJson(c, server)
 }
 
-func deleteServer(c *goweb.Context) error {
+func ServerDelete(c *goweb.Context) error {
     server := &serverService.Server{
         ID: c.PostFormInt("id"),
     }
     if err := server.Delete(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }

@@ -7,73 +7,53 @@ package project
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
-    "github.com/tinystack/syncd/route"
     projectService "github.com/tinystack/syncd/service/project"
 )
 
-func init() {
-    route.Register(route.API_PROJECT_SPACE_UPDATE, updateProjectSpace)
-    route.Register(route.API_PROJECT_SPACE_LIST, listProjectSpace)
-    route.Register(route.API_PROJECT_SPACE_DETAIL, detailProjectSpace)
-    route.Register(route.API_PROJECT_SPACE_DELETE, deleteProjectSpace)
-    route.Register(route.API_PROJECT_SPACE_EXISTS, existsProjectSpace)
-}
-
-func updateProjectSpace(c *goweb.Context) error {
+func SpaceUpdate(c *goweb.Context) error {
     id, name := c.PostFormInt("id"), c.PostForm("name")
     if name == "" {
-        syncd.RenderParamError(c, "name can not be empty")
-        return nil
+        return syncd.RenderParamError("name can not be empty")
     }
-
     spaceExists := &projectService.Space{
         ID: id,
         Name: name,
     }
     exists, err := spaceExists.CheckSpaceExists()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
     if exists {
-        syncd.RenderAppError(c, "space data update failed, space name have exists")
-        return nil
+        return syncd.RenderAppError("space data update failed, space name have exists")
     }
-
     projectSpace := &projectService.Space{
         ID: id,
         Name: name,
         Description: c.PostForm("description"),
     }
     if err := projectSpace.CreateOrUpdate(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
-func listProjectSpace(c *goweb.Context) error {
-    offset, limit := c.QueryInt("offset"), c.QueryInt("limit")
-    keyword := c.Query("keyword")
-
+func SpaceList(c *goweb.Context) error {
+    offset, limit, keyword := c.QueryInt("offset"), c.QueryInt("limit"), c.Query("keyword")
     projectSpace := &projectService.Space{}
     list, total, err := projectSpace.List(keyword, offset, limit)
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
 
     //check if project exists in the space
     var newList []map[string]interface{}
     for _, l := range list {
-        projService := &projectService.Project{
+        project := &projectService.Project{
             SpaceId: l.ID,
         }
-        exists, err := projService.CheckSpaceHaveProject()
+        exists, err := project.CheckSpaceHaveProject()
         if err != nil {
-            syncd.RenderAppError(c, err.Error())
-            return nil
+            return syncd.RenderAppError(err.Error())
         }
         newList = append(newList, map[string]interface{}{
             "id": l.ID,
@@ -83,26 +63,23 @@ func listProjectSpace(c *goweb.Context) error {
             "ctime": l.Ctime,
         })
     }
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "list": newList,
         "total": total,
     })
-    return nil
 }
 
-func detailProjectSpace(c *goweb.Context) error {
+func SpaceDetail(c *goweb.Context) error {
     projectSpace := &projectService.Space{
         ID: c.QueryInt("id"),
     }
     if err := projectSpace.Get(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, projectSpace)
-    return nil
+    return syncd.RenderJson(c, projectSpace)
 }
 
-func deleteProjectSpace(c *goweb.Context) error {
+func SpaceDelete(c *goweb.Context) error {
     var (
         id int
         exists bool
@@ -114,31 +91,24 @@ func deleteProjectSpace(c *goweb.Context) error {
     }
     exists, err = proj.CheckSpaceHaveProject()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
     if exists {
-        syncd.RenderAppError(c, "space delete failed, project in space is not empty")
-        return nil
+        return syncd.RenderAppError("space delete failed, project in space is not empty")
     }
-
     projectSpace := &projectService.Space{
         ID: id,
     }
     if err = projectSpace.Delete(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
-func existsProjectSpace(c *goweb.Context) error {
-    keyword := c.Query("keyword")
-    id := c.QueryInt("id")
+func SpaceExists(c *goweb.Context) error {
+    keyword, id := c.Query("keyword"), c.QueryInt("id")
     if keyword == "" {
-        syncd.RenderParamError(c, "params error")
-        return nil
+        return syncd.RenderParamError("params error")
     }
     projectSpace := &projectService.Space{
         ID: id,
@@ -146,11 +116,9 @@ func existsProjectSpace(c *goweb.Context) error {
     }
     exists, err := projectSpace.CheckSpaceExists()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "exists": exists,
     })
-    return nil
 }

@@ -8,19 +8,9 @@ import (
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
-    "github.com/tinystack/syncd/route"
     "github.com/tinystack/syncd"
     projectService "github.com/tinystack/syncd/service/project"
 )
-
-func init() {
-    route.Register(route.API_PROJECT_UPDATE, updateProject)
-    route.Register(route.API_PROJECT_LIST, listProject)
-    route.Register(route.API_PROJECT_DETAIL, detailProject)
-    route.Register(route.API_PROJECT_DELETE, deleteProject)
-    route.Register(route.API_PROJECT_EXISTS, existsProject)
-    route.Register(route.API_PROJECT_STATUS_CHANGE, changeStatusProject)
-}
 
 type ProjectParamValid struct {
     Name            string      `valid:"required" errmsg:"required=project name cannot be empty"`
@@ -35,7 +25,7 @@ type ProjectParamValid struct {
     DeployHistory   int         `valid:"int_min=3" errmsg:"int_min=deploy history at least 3"`
 }
 
-func updateProject(c *goweb.Context) error {
+func ProjectUpdate(c *goweb.Context) error {
     params := ProjectParamValid{
         Name: c.PostForm("name"),
         Description: c.PostForm("description"),
@@ -49,12 +39,11 @@ func updateProject(c *goweb.Context) error {
         DeployHistory: c.PostFormInt("deploy_history"),
     }
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
-        return syncd.RenderParamError(c, valid.LastFailed().Msg)
+        return syncd.RenderParamError(valid.LastFailed().Msg)
     }
     repoBranch := c.PostForm("repo_branch")
     if params.RepoMode == 1 && repoBranch == "" {
-        syncd.RenderParamError(c, "repo_branch can not be empty")
-        return nil
+        return syncd.RenderParamError("repo_branch can not be empty")
     }
     var (
         needAudit int
@@ -68,12 +57,10 @@ func updateProject(c *goweb.Context) error {
     }
     exists, err = projExists.CheckProjectExists()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
     if exists {
-        syncd.RenderAppError(c, "project update failed, project name have exists")
-        return nil
+        return syncd.RenderAppError("project update failed, project name have exists")
     }
     deployServer := gostring.StrSlice2IntSlice(params.DeployServer)
     if c.PostFormInt("need_audit") != 0 {
@@ -99,72 +86,57 @@ func updateProject(c *goweb.Context) error {
         NeedAudit: needAudit,
     }
     if err = project.CreateOrUpdate(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
-func listProject(c *goweb.Context) error {
+func ProjectList(c *goweb.Context) error {
     offset, limit, keyword, spaceId, status := c.QueryInt("offset"), c.QueryInt("limit"), c.Query("keyword"), c.QueryInt("space_id"), c.QueryInt("status")
-
     project := &projectService.Project{
         SpaceId: spaceId,
         Status: status,
     }
     list, total, err := project.List(keyword, offset, limit)
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "list": list,
         "total": total,
     })
-    return nil
 }
 
-func detailProject(c *goweb.Context) error {
+func ProjectDetail(c *goweb.Context) error {
     project := &projectService.Project{
         ID: c.QueryInt("id"),
     }
     if err := project.Get(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, project)
-    return nil
+    return syncd.RenderJson(c, project)
 }
 
-func deleteProject(c *goweb.Context) error {
+func ProjectDelete(c *goweb.Context) error {
     project := &projectService.Project{
         ID: c.PostFormInt("id"),
     }
     if err := project.Get(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-
     if project.Status != 0 {
-        syncd.RenderAppError(c, "project delete falied, project status must be unavailable")
-        return nil
+        return syncd.RenderAppError("project delete falied, project status must be unavailable")
     }
-
     if err := project.Delete(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }
 
-func existsProject(c *goweb.Context) error {
+func ProjectExists(c *goweb.Context) error {
     id, spaceId, keyword := c.QueryInt("id"), c.QueryInt("space_id"), c.Query("keyword")
     if spaceId == 0 || keyword == "" {
-        syncd.RenderParamError(c, "params error")
-        return nil
+        return syncd.RenderParamError("params error")
     }
     project := &projectService.Project{
         ID: id,
@@ -173,25 +145,21 @@ func existsProject(c *goweb.Context) error {
     }
     exists, err := project.CheckProjectExists()
     if err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, goweb.JSON{
+    return syncd.RenderJson(c, goweb.JSON{
         "exists": exists,
     })
-    return nil
 }
 
-func changeStatusProject(c *goweb.Context) error {
+func ProjectChangeStatus(c *goweb.Context) error {
     id, status := c.PostFormInt("id"), c.PostFormInt("status")
     project := &projectService.Project{
         ID: id,
         Status: status,
     }
     if err := project.ChangeStatus(); err != nil {
-        syncd.RenderAppError(c, err.Error())
-        return nil
+        return syncd.RenderAppError(err.Error())
     }
-    syncd.RenderJson(c, nil)
-    return nil
+    return syncd.RenderJson(c, nil)
 }

@@ -21,7 +21,7 @@ type (
 
 var routeGroup []*Route
 
-func Register(key string, handler goweb.HandlerFunc) {
+func register(key string, handler goweb.HandlerFunc) {
     arrMap := strings.Split(key, " ")
     if len(arrMap) != 2 {
         panic(fmt.Sprintf("register router map failed, want \"Method /path\", have \"%v\"", key))
