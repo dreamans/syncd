@@ -25,7 +25,16 @@ type ProjectParamValid struct {
     DeployHistory   int         `valid:"int_min=3" errmsg:"int_min=deploy history at least 3"`
 }
 
-func ProjectUpdate(c *goweb.Context) error {
+func ProjectNew(c *goweb.Context) error {
+    return projectUpdate(c, 0)
+}
+
+func ProjectEdit(c *goweb.Context) error {
+    id := c.PostFormInt("id")
+    return projectUpdate(c, id)
+}
+
+func projectUpdate(c *goweb.Context, id int) error {
     params := ProjectParamValid{
         Name: c.PostForm("name"),
         Description: c.PostForm("description"),
@@ -51,7 +60,7 @@ func ProjectUpdate(c *goweb.Context) error {
         err error
     )
     projExists := &projectService.Project{
-        ID: c.PostFormInt("id"),
+        ID: id,
         SpaceId: params.SpaceId,
         Name: params.Name,
     }
@@ -67,7 +76,7 @@ func ProjectUpdate(c *goweb.Context) error {
         needAudit = 1
     }
     project := &projectService.Project{
-        ID: c.PostFormInt("id"),
+        ID: id,
         Name: params.Name,
         Description: params.Description,
         SpaceId: params.SpaceId,

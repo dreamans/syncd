@@ -11,11 +11,23 @@ import (
     serverService "github.com/tinystack/syncd/service/server"
 )
 
-func GroupUpdate(c *goweb.Context) error {
-    id, name := c.PostFormInt("id"), c.PostForm("name")
+func GroupNew(c *goweb.Context) error {
+    name := c.PostForm("name")
     if name == "" {
         return syncd.RenderParamError("name can not be empty")
     }
+    return groupUpdate(c, 0, name)
+}
+
+func GroupEdit(c *goweb.Context) error {
+    id, name := c.PostFormInt("id"), c.PostForm("name")
+    if name == "" || id == 0 {
+        return syncd.RenderParamError("id or name can not be empty")
+    }
+    return groupUpdate(c, id, name)
+}
+
+func groupUpdate(c *goweb.Context, id int, name string) error {
     serverGroup := &serverService.Group{
         ID: id,
         Name: name,

@@ -18,7 +18,19 @@ type ServerParamValid struct {
     SshPort     int         `valid:"required|int_min=1|int_max=65535" errmsg:"required=ssh port cannot be empty|int_min=ssh port must be between 1 and 65535|int_max=ssh port must be between 1 and 65535"`
 }
 
-func ServerUpdate(c *goweb.Context) error {
+func ServerNew(c *goweb.Context) error {
+    return serverUpdate(c, 0)
+}
+
+func ServerEdit(c *goweb.Context) error {
+    id := c.PostFormInt("id")
+    if id == 0 {
+        return syncd.RenderParamError("id can not be empty")
+    }
+    return serverUpdate(c, id)
+}
+
+func serverUpdate(c *goweb.Context, id int) error {
     params := ServerParamValid{
         GroupId: c.PostFormInt("group_id"),
         Name: c.PostForm("name"),
@@ -29,7 +41,7 @@ func ServerUpdate(c *goweb.Context) error {
         return syncd.RenderParamError(valid.LastFailed().Msg)
     }
     server := &serverService.Server{
-        ID: c.PostFormInt("id"),
+        ID: id,
         GroupId: params.GroupId,
         Name: params.Name,
         Ip: params.Ip,

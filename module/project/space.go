@@ -10,8 +10,17 @@ import (
     projectService "github.com/tinystack/syncd/service/project"
 )
 
-func SpaceUpdate(c *goweb.Context) error {
-    id, name := c.PostFormInt("id"), c.PostForm("name")
+func SpaceNew(c *goweb.Context) error {
+    return spaceUpdate(c, 0)
+}
+
+func SpaceEdit(c *goweb.Context) error {
+    id := c.PostFormInt("id")
+    return spaceUpdate(c, id)
+}
+
+func spaceUpdate(c *goweb.Context, id int) error {
+    name := c.PostForm("name")
     if name == "" {
         return syncd.RenderParamError("name can not be empty")
     }

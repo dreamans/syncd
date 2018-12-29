@@ -11,8 +11,20 @@ import (
     userService "github.com/tinystack/syncd/service/user"
 )
 
-func GroupUpdate(c *goweb.Context) error {
-    id, name, priv := c.PostFormInt("id"), c.PostForm("name"), c.PostFormArray("priv")
+func GroupNew(c *goweb.Context) error {
+    return groupUpdate(c, 0)
+}
+
+func GroupEdit(c *goweb.Context) error {
+     id := c.PostFormInt("id")
+     if id == 0 {
+         return syncd.RenderParamError("user group id can not empty")
+     }
+     return groupUpdate(c, id)
+}
+
+func groupUpdate(c *goweb.Context, id int) error {
+    name, priv := c.PostForm("name"), c.PostFormArray("priv")
     if name == "" {
         return syncd.RenderParamError("user group name can not empty")
     }

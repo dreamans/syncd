@@ -19,7 +19,16 @@ type UserParamValid struct {
     Mobile      string  `valid:"mobile" errmsg:"mobile=mobile format incorrect"`
 }
 
-func UserUpdate(c *goweb.Context) error {
+func UserNew(c *goweb.Context) error {
+    return userUpdate(c, 0)
+}
+
+func UserEdit(c *goweb.Context) error {
+    id := c.PostFormInt("id")
+    return userUpdate(c, id)
+}
+
+func userUpdate(c *goweb.Context, id int) error {
     params := UserParamValid{
         GroupId: c.PostFormInt("group_id"),
         Name: c.PostForm("name"),
@@ -29,14 +38,12 @@ func UserUpdate(c *goweb.Context) error {
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
         return syncd.RenderParamError(valid.LastFailed().Msg)
     }
-    id := c.PostFormInt("id")
     password := c.PostForm("password")
     if id == 0 {
         if password == "" || len(password) != 32 {
             return syncd.RenderParamError("password incorrect")
         }
     }
-
     var (
         existsUser *userService.User
         exists bool
