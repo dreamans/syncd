@@ -40,7 +40,7 @@ func groupUpdate(c *goweb.Context, id int) error {
 }
 
 func GroupList(c *goweb.Context) error {
-    offset, limit, keyword := c.QueryInt("offset"), c.QueryInt("limit"), c.Query("keyword")
+    offset, limit, keyword := c.QueryInt("offset"), c.GetInt("limit"), c.Query("keyword")
     userGroup := &userService.Group{}
     list, total, err := userGroup.List(keyword, offset, limit)
     if err != nil {
@@ -56,10 +56,16 @@ func GroupDetail(c *goweb.Context) error {
     userGroup := &userService.Group{
         ID: c.QueryInt("id"),
     }
-    if err := userGroup.Get(); err != nil {
+    if err := userGroup.Detail(); err != nil {
         return syncd.RenderAppError(err.Error())
     }
     return syncd.RenderJson(c, userGroup)
+}
+
+func GroupPlainPriv(c *goweb.Context) error {
+    return syncd.RenderJson(c, goweb.JSON{
+        "list": userService.PrivList,
+    })
 }
 
 func GroupDelete(c *goweb.Context) error {
@@ -71,3 +77,4 @@ func GroupDelete(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, nil)
 }
+

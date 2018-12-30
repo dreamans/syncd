@@ -6,7 +6,7 @@ package server
 
 import (
     "github.com/tinystack/goweb"
-    "github.com/tinystack/goutil/gostring"
+    //"github.com/tinystack/goutil/gostring"
     "github.com/tinystack/syncd"
     serverService "github.com/tinystack/syncd/service/server"
 )
@@ -38,9 +38,18 @@ func groupUpdate(c *goweb.Context, id int, name string) error {
     return syncd.RenderJson(c, nil)
 }
 
+func GroupDetail(c *goweb.Context) error {
+    serverGroup := &serverService.Group{
+        ID: c.QueryInt("id"),
+    }
+    if err := serverGroup.Detail(); err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    return syncd.RenderJson(c, serverGroup)
+}
+
 func GroupList(c *goweb.Context) error {
-    offset, limit := c.QueryInt("offset"), c.QueryInt("limit")
-    keyword := c.Query("keyword")
+    offset, limit, keyword := c.QueryInt("offset"), c.GetInt("limit"), c.Query("keyword")
     serverGroup := &serverService.Group{}
     list, total, err := serverGroup.List(keyword, offset, limit)
     if err != nil {
@@ -52,28 +61,6 @@ func GroupList(c *goweb.Context) error {
     })
 }
 
-func GroupMulti(c *goweb.Context) error {
-    ids := gostring.StrSplit2IntSlice(c.Query("ids"), ",")
-    serverGroup := &serverService.Group{}
-    list, err := serverGroup.GetMultiById(ids)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": list,
-    })
-}
-
-func GroupDetail(c *goweb.Context) error {
-    serverGroup := &serverService.Group{
-        ID: c.QueryInt("id"),
-    }
-    if err := serverGroup.Detail(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, serverGroup)
-}
-
 func GroupDelete(c *goweb.Context) error {
     serverGroup := &serverService.Group{
         ID: c.PostFormInt("id"),
@@ -83,3 +70,4 @@ func GroupDelete(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, nil)
 }
+

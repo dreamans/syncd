@@ -8,7 +8,7 @@ import (
     "errors"
 
     baseModel "github.com/tinystack/syncd/model"
-    userTokenModel "github.com/tinystack/syncd/model/user/token"
+    userTokenModel "github.com/tinystack/syncd/model/user_token"
 )
 
 type Token struct {
@@ -49,7 +49,6 @@ func (t *Token) CreateOrUpdate() error {
             return errors.New("user token update failed")
         }
     }
-
     return nil
 }
 

@@ -29,7 +29,7 @@ func (db *DB) Open() error {
         return err
     }
 
-    //c.LogMode(true)
+    c.LogMode(true)
     c.DB().SetMaxIdleConns(db.cfg.MaxIdleConns)
     c.DB().SetMaxOpenConns(db.cfg.MaxOpenConns)
     c.DB().SetConnMaxLifetime(time.Second * time.Duration(db.cfg.ConnMaxLifeTime))

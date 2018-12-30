@@ -10,7 +10,7 @@ import (
 
     "github.com/tinystack/goutil/gois"
     "github.com/tinystack/goutil/gostring"
-    baseModel "github.com/tinystack/syncd/model"
+    "github.com/tinystack/syncd/model"
     serverModel "github.com/tinystack/syncd/model/server"
 )
 
@@ -23,7 +23,7 @@ type Server struct {
 }
 
 func (s *Server) CreateOrUpdate() error {
-    smodel := serverModel.Server{
+    server := serverModel.Server{
         GroupId: s.GroupId,
         Name: s.Name,
         Ip: s.Ip,
@@ -31,9 +31,9 @@ func (s *Server) CreateOrUpdate() error {
     }
     var ok bool
     if s.ID > 0 {
-        ok = serverModel.Update(s.ID, smodel)
+        ok = serverModel.Update(s.ID, server)
     } else {
-        ok = serverModel.Create(&smodel)
+        ok = serverModel.Create(&server)
     }
     if !ok {
         return errors.New("server data update failed")
@@ -44,25 +44,25 @@ func (s *Server) CreateOrUpdate() error {
 func (g *Server) List(keyword string, groupId, offset, limit int) ([]Server, int, error){
     var (
         serverId int
-        where []baseModel.WhereParam
+        where []model.WhereParam
     )
     if keyword != "" {
         if gois.IsInteger(keyword) {
             serverId = gostring.Str2Int(keyword)
             if serverId > 0 {
-                where = append(where, baseModel.WhereParam{
+                where = append(where, model.WhereParam{
                     Field: "id",
                     Prepare: serverId,
                 })
             }
         } else {
             if gois.IsIp(keyword) {
-                where = append(where, baseModel.WhereParam{
+                where = append(where, model.WhereParam{
                     Field: "ip",
                     Prepare: keyword,
                 })
             } else {
-                where = append(where, baseModel.WhereParam{
+                where = append(where, model.WhereParam{
                     Field: "name",
                     Tag: "LIKE",
                     Prepare: fmt.Sprintf("%%%s%%", keyword),
@@ -72,13 +72,13 @@ func (g *Server) List(keyword string, groupId, offset, limit int) ([]Server, int
     }
 
     if groupId > 0 {
-        where = append(where, baseModel.WhereParam{
+        where = append(where, model.WhereParam{
             Field: "group_id",
             Prepare: groupId,
         })
     }
 
-    list, ok := serverModel.List(baseModel.QueryParam{
+    list, ok := serverModel.List(model.QueryParam{
         Fields: "id, group_id, name, ip, ssh_port",
         Offset: offset,
         Limit: limit,
@@ -89,7 +89,7 @@ func (g *Server) List(keyword string, groupId, offset, limit int) ([]Server, int
         return nil, 0, errors.New("get server list data failed")
     }
 
-    total, ok := serverModel.Total(baseModel.QueryParam{
+    total, ok := serverModel.Total(model.QueryParam{
         Where: where,
     })
     if !ok {
@@ -117,11 +117,13 @@ func (s *Server) Get() error {
     if !ok {
         return errors.New("get server detail data failed")
     }
+    if detail.ID == 0 {
+        return errors.New("server detail data not exists")
+    }
     s.GroupId = detail.GroupId
     s.Name = detail.Name
     s.Ip = detail.Ip
     s.SshPort = detail.SshPort
-
     return nil
 }
 
@@ -129,9 +131,13 @@ func (s *Server) Delete() error {
     if s.ID == 0 {
         return errors.New("id can not be empty")
     }
+    if err := s.Get(); err != nil {
+        return err
+    }
     ok := serverModel.Delete(s.ID)
     if !ok {
         return errors.New("delete server data failed")
     }
     return nil
 }
+

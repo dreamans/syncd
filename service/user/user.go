@@ -10,7 +10,7 @@ import (
 
     "github.com/tinystack/goutil/gois"
     "github.com/tinystack/goutil/gostring"
-    baseModel "github.com/tinystack/syncd/model"
+    "github.com/tinystack/syncd/model"
     userModel "github.com/tinystack/syncd/model/user"
 )
 
@@ -82,34 +82,34 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
     var (
         ok bool
         userId, total int
-        where []baseModel.WhereParam
+        where []model.WhereParam
         userList []UserItem
     )
     if keyword != "" {
-        var w *baseModel.WhereParam
+        var w *model.WhereParam
         switch {
         case gois.IsInteger(keyword):
             userId = gostring.Str2Int(keyword)
             if userId > 0 {
-                w = &baseModel.WhereParam{
+                w = &model.WhereParam{
                     Field: "id",
                     Prepare: userId,
                 }
             }
         case gois.IsEmail(keyword):
-            w = &baseModel.WhereParam{
+            w = &model.WhereParam{
                 Field: "email",
                 Tag: "LIKE",
                 Prepare: fmt.Sprintf("%%%s%%", keyword),
             }
         case gois.IsMobile(keyword):
-            w = &baseModel.WhereParam{
+            w = &model.WhereParam{
                 Field: "mobile",
                 Tag: "LIKE",
                 Prepare: fmt.Sprintf("%%%s%%", keyword),
             }
         default:
-            w = &baseModel.WhereParam{
+            w = &model.WhereParam{
                 Field: "name",
                 Tag: "LIKE",
                 Prepare: fmt.Sprintf("%%%s%%", keyword),
@@ -119,7 +119,7 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
             where = append(where, *w)
         }
     }
-    list, ok := userModel.List(baseModel.QueryParam{
+    list, ok := userModel.List(model.QueryParam{
         Fields: "id, name, group_id, email, lock_status, last_login_ip, last_login_time",
         Offset: offset,
         Limit: limit,
@@ -129,7 +129,7 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
     if !ok {
         return nil, 0, errors.New("get user list data failed")
     }
-    total, ok = userModel.Total(baseModel.QueryParam{
+    total, ok = userModel.Total(model.QueryParam{
         Where: where,
     })
     if !ok {
@@ -149,13 +149,16 @@ func (u *User) List(keyword string, offset, limit int) ([]UserItem, int, error) 
     return userList, total, nil
 }
 
-func (u *User) Get() error {
+func (u *User) Detail() error {
     if u.ID == 0 {
         return errors.New("id can not be empty")
     }
     detail, ok := userModel.Get(u.ID)
     if !ok {
         return errors.New("get user detail data failed")
+    }
+    if detail.ID == 0 {
+        return errors.New("user not exists")
     }
     u.transmitUserDetail(detail)
     return nil
@@ -165,9 +168,9 @@ func (u *User) GetByName() error {
     if u.Name == "" {
         return errors.New("name can not be empty")
     }
-    detail, ok := userModel.GetOne(baseModel.QueryParam{
-        Where: []baseModel.WhereParam{
-            baseModel.WhereParam{
+    detail, ok := userModel.GetOne(model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
                 Field: "name",
                 Prepare: u.Name,
             },
@@ -181,27 +184,27 @@ func (u *User) GetByName() error {
 }
 
 func (u *User) CheckUserExists() (bool, error) {
-    var where []baseModel.WhereParam
+    var where []model.WhereParam
     if u.Name != "" {
-        where = append(where, baseModel.WhereParam{
+        where = append(where, model.WhereParam{
             Field: "name",
             Prepare: u.Name,
         })
     }
     if u.Email != "" {
-        where = append(where, baseModel.WhereParam{
+        where = append(where, model.WhereParam{
             Field: "email",
             Prepare: u.Email,
         })
     }
     if u.ID > 0 {
-        where = append(where, baseModel.WhereParam{
+        where = append(where, model.WhereParam{
             Field: "id",
             Tag: "!=",
             Prepare: u.ID,
         })
     }
-    detail, ok := userModel.GetOne(baseModel.QueryParam{
+    detail, ok := userModel.GetOne(model.QueryParam{
         Where: where,
     })
     if !ok {
@@ -214,6 +217,9 @@ func (u *User) Delete() error {
     if u.ID == 0 {
         return errors.New("id can not be empty")
     }
+    if err := u.Detail(); err != nil {
+        return err
+    }
     ok := userModel.Delete(u.ID)
     if !ok {
         return errors.New("user delete failed")
@@ -222,21 +228,21 @@ func (u *User) Delete() error {
 }
 
 func (u *User) Search() ([]UserItem, error){
-    var where []baseModel.WhereParam
+    var where []model.WhereParam
     if u.Name != "" {
-        where = append(where, baseModel.WhereParam{
+        where = append(where, model.WhereParam{
             Field: "name",
             Tag: "LIKE",
             Prepare: fmt.Sprintf("%%%s%%", u.Name),
         })
     }
     if u.Email != "" {
-        where = append(where, baseModel.WhereParam{
+        where = append(where, model.WhereParam{
             Field: "email",
             Prepare: u.Email,
         })
     }
-    list, ok := userModel.List(baseModel.QueryParam{
+    list, ok := userModel.List(model.QueryParam{
         Fields: "id, name, group_id, email, lock_status",
         Order: "id DESC",
         Where: where,
@@ -259,11 +265,11 @@ func (u *User) Search() ([]UserItem, error){
 }
 
 func (u *User) GetListByIds(ids []int) ([]UserItem, error){
-    list, ok := userModel.List(baseModel.QueryParam{
+    list, ok := userModel.List(model.QueryParam{
         Fields: "id, name, group_id, email, lock_status, last_login_ip, last_login_time",
         Order: "id DESC",
-        Where: []baseModel.WhereParam{
-            baseModel.WhereParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
                 Field: "id",
                 Tag: "IN",
                 Prepare: ids,
@@ -299,3 +305,4 @@ func (u *User) transmitUserDetail(detail userModel.User) {
     u.LockStatus = detail.LockStatus
     u.Salt = detail.Salt
 }
+

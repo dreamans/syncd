@@ -50,7 +50,6 @@ func (u *Login) Login() error {
     if err != nil {
         return err
     }
-
     u.Token = gostring.Base64UrlEncode(tokenBytes)
 
     token := &Token{
@@ -66,3 +65,4 @@ func (u *Login) Login() error {
 
     return nil
 }
+

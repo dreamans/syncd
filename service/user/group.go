@@ -12,14 +12,14 @@ import (
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goutil/gois"
     baseModel "github.com/tinystack/syncd/model"
-    userGroupModel "github.com/tinystack/syncd/model/user/group"
+    userGroupModel "github.com/tinystack/syncd/model/user_group"
 )
 
 type Group struct {
     ID      int     `json:"id"`
     Name    string  `json:"name"`
     Priv    []int   `json:"priv"`
-    Utime   int     `json:"utime"`
+    Ctime   int     `json:"ctime"`
 }
 
 type GroupItem struct {
@@ -27,7 +27,27 @@ type GroupItem struct {
     Name    string  `json:"name"`
 }
 
-func (g *Group) Get() error {
+func GroupUserListFillGroupName(list []UserItem) ([]UserItem, error) {
+    var groupIdList []int
+    for _, l := range list {
+        groupIdList = append(groupIdList, l.GroupId)
+    }
+    if len(groupIdList) > 0 {
+        group := &Group{}
+        groupNameList, err := group.GetNameByIds(groupIdList)
+        if err != nil {
+            return nil, err
+        }
+        for k, v := range list {
+            if groupName, exists := groupNameList[v.GroupId]; exists {
+                list[k].GroupName = groupName
+            }
+        }
+    }
+    return list, nil
+}
+
+func (g *Group) Detail() error {
     if g.ID == 0 {
         return errors.New("id can not be empty")
     }
@@ -35,18 +55,18 @@ func (g *Group) Get() error {
     if !ok {
         return errors.New("get user group detail data failed")
     }
-
+    if detail.ID == 0 {
+        return errors.New("user group not exists")
+    }
     privList := []int{}
     if detail.Priv != "" {
         strPrivList := gostring.StrFilterSliceEmpty(strings.Split(detail.Priv, ","))
         privList = gostring.StrSlice2IntSlice(strPrivList)
     }
-
     g.ID = detail.ID
     g.Name = detail.Name
     g.Priv = privList
-    g.Utime = detail.Utime
-
+    g.Ctime = detail.Ctime
     return nil
 }
 
@@ -110,7 +130,6 @@ func (g *Group) List(keyword string, offset, limit int) ([]GroupItem, int, error
     if !ok {
         return nil, 0, errors.New("get user group total count failed")
     }
-
     for _, g := range list {
         groupList = append(groupList, GroupItem{
             ID: g.ID,
@@ -123,6 +142,9 @@ func (g *Group) List(keyword string, offset, limit int) ([]GroupItem, int, error
 func (g *Group) Delete() error {
     if g.ID == 0 {
         return errors.New("id can not be empty")
+    }
+    if err := g.Detail(); err != nil {
+        return errors.New("user group not exists")
     }
     ok := userGroupModel.Delete(g.ID)
     if !ok {

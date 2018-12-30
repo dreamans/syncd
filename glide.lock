@@ -1,5 +1,5 @@
-hash: ccadedaf5d5f8322a62445c9b1c6aadb05103a336f0be27a70d3d303adf8d623
-updated: 2018-12-27T15:41:07.394291+08:00
+hash: dab2a4abf69ecad311b3902111fee632283c4886731b993b90ded04ebd77a9d8
+updated: 2018-12-30T12:38:03.762254+08:00
 imports:
 - name: github.com/go-sql-driver/mysql
   version: 72cd26f257d44c1114970e19afddcd812016007e
@@ -7,20 +7,14 @@ imports:
   version: 472c70caa40267cb89fd8facb07fe6454b578626
 - name: github.com/jinzhu/inflection
   version: 04140366298a54a039076d798123ffa108fff46c
-- name: github.com/tinystack/gocmd
-  version: 58ee6f95df7522eb17ca5fc4b7b3b4f92934ecec
 - name: github.com/tinystack/golog
   version: e27b639158fdc265ff8efbec5bc7a3bc097a546a
 - name: github.com/tinystack/goutil
-  version: 937f03955325535cecbe1c0fa1ff7f0c7f7da0d2
+  version: 4bada5af97a26ffde3b47c73735a942d125ffc4b
   subpackages:
-  - gois
   - gopath
-  - gostring
-- name: github.com/tinystack/govalidate
-  version: 00fad4be752bf4c27dfda35764ff2614fa8b288e
 - name: github.com/tinystack/goweb
-  version: 5563a173b9598cbc4b7a5b93a7a196d22424a82a
+  version: bc93715bdf813c2392a4087df12b5187736e5210
 - name: google.golang.org/appengine
   version: e9657d882bb81064595ca3b56cbe2546bbabf7b1
   subpackages:

@@ -14,21 +14,19 @@ type UserGroup struct {
     ID      int         `gorm:"primary_key"`
     Name    string      `gorm:"type:varchar(100);not null;default:''"`
     Priv    string      `gorm:"type:varchar(10000);not null;default:''"`
-    Utime   int         `gorm:"type:int(11);not null;default:0"`
+    Ctime   int         `gorm:"type:int(11);not null;default:0"`
 }
 
 const (
     TableName = "user_group"
 )
 
-
 func Create(data *UserGroup) bool {
-    data.Utime = int(time.Now().Unix())
+    data.Ctime = int(time.Now().Unix())
     return model.Create(TableName, data)
 }
 
 func Update(id int, data map[string]interface{}) bool {
-    data["utime"] = int(time.Now().Unix())
     ok := model.Update(TableName, data, model.QueryParam{
         Where: []model.WhereParam{
             model.WhereParam{
@@ -62,3 +60,4 @@ func Delete(id int) bool {
     ok := model.DeleteByPk(TableName, UserGroup{ID: id})
     return ok
 }
+

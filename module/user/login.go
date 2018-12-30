@@ -39,7 +39,6 @@ func LoginStatus(c *goweb.Context) error {
         "email": c.GetString("email"),
         "priv": c.GetIntSlice("priv"),
     })
-
 }
 
 func Logout(c *goweb.Context) error {
@@ -52,3 +51,4 @@ func Logout(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, nil)
 }
+

@@ -43,3 +43,4 @@ func RenderJson(c *goweb.Context, data interface{}) error {
     })
     return nil
 }
+

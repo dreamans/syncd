@@ -54,7 +54,7 @@ func serverUpdate(c *goweb.Context, id int) error {
 }
 
 func ServerList(c *goweb.Context) error {
-    groupId, offset, limit := c.QueryInt("group_id"), c.QueryInt("offset"), c.QueryInt("limit")
+    groupId, offset, limit := c.QueryInt("group_id"), c.QueryInt("offset"), c.GetInt("limit")
     keyword := c.Query("keyword")
     server := &serverService.Server{}
     list, total, err := server.List(keyword, groupId, offset, limit)
@@ -86,3 +86,4 @@ func ServerDelete(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, nil)
 }
+
