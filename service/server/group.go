@@ -20,6 +20,30 @@ type Group struct {
     Name    string      `json:"name"`
 }
 
+func GroupListByIds(ids []int) ([]Group, error) {
+    list, ok := serverGroupModel.List(model.QueryParam{
+        Fields: "id, name",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: ids,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get group list failed")
+    }
+    var groupList []Group
+    for _, l := range list {
+        groupList = append(groupList, Group{
+            ID: l.ID,
+            Name: l.Name,
+        })
+    }
+    return groupList, nil
+}
+
 func (g *Group) CreateOrUpdate() error {
     var ok bool
     serverGroup := serverGroupModel.ServerGroup{

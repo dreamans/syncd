@@ -45,27 +45,25 @@ const (
     API_PROJECT_SPACE_DELETE = "POST /api/project/space/delete"
     API_PROJECT_SPACE_EXISTS = "GET /api/project/space/exists"
 
-    /*
+    API_PROJECT_USER_ADD = "POST /api/project/user/add"
+    API_PROJECT_USER_LIST = "GET /api/project/user/list"
+    API_PROJECT_USER_REMOVE = "POST /api/project/user/remove"
+    API_PROJECT_USER_SEARCH = "GET /api/project/user/search"
+
     API_PROJECT_NEW = "POST /api/project/new"
     API_PROJECT_UPDATE = "POST /api/project/update"
+    API_PROJECT_DETAIL = "GET /api/project/detail"
     API_PROJECT_DELETE = "POST /api/project/delete"
     API_PROJECT_LIST = "GET /api/project/list"
-    API_PROJECT_LISTBYUSERSPACE = "GET /api/project/listbyuserspace"
-    API_PROJECT_DETAIL = "GET /api/project/detail"
-    API_PROJECT_DETAILBYUSERSPACE = "GET /api/project/detailbyuserspace"
     API_PROJECT_EXISTS = "GET /api/project/exists"
     API_PROJECT_STATUS_CHANGE = "POST /api/project/status/change"
+    API_PROJECT_REPO_RESET = "POST /api/project/repo/reset"
 
-
-    API_PROJECT_SPACE_USER_ADD = "POST /api/project/space/user/add"
-    API_PROJECT_SPACE_USER_LIST = "GET /api/project/space/user/list"
-    API_PROJECT_SPACE_USER_REMOVE = "POST /api/project/space/user/remove"
-
-
-
+    /*
+    API_PROJECT_LISTBYUSERSPACE = "GET /api/project/listbyuserspace"
+    API_PROJECT_DETAILBYUSERSPACE = "GET /api/project/detailbyuserspace"
 
     API_DEPLOY_REPO_TAGLIST = "GET /api/deploy/repo/taglist"
-    API_DEPLOY_REPO_RESET = "POST /api/deploy/repo/reset"
     API_DEPLOY_REPO_COMMITLIST = "GET /api/deploy/repo/commitlist"
     API_DEPLOY_APPLY_SUBMIT = "POST /api/deploy/apply/submit"
     API_DEPLOY_APPLY_LIST = "GET /api/deploy/apply/list"

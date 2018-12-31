@@ -37,6 +37,36 @@ type UserItem struct {
     LastLoginIp     string  `json:"last_login_ip"`
 }
 
+func UserGetListByIds(ids []int) ([]UserItem, error){
+    list, ok := userModel.List(model.QueryParam{
+        Fields: "id, name, group_id, email, lock_status, last_login_ip, last_login_time",
+        Order: "id DESC",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: ids,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get user list failed")
+    }
+    var userList []UserItem
+    for _, l := range list {
+        userList = append(userList, UserItem{
+            ID: l.ID,
+            GroupId: l.GroupId,
+            Name: l.Name,
+            Email: l.Email,
+            LockStatus: l.LockStatus,
+            LastLoginTime: l.LastLoginTime,
+            LastLoginIp: l.LastLoginIp,
+        })
+    }
+    return userList, nil
+}
+
 func (u *User) CreateOrUpdate() error {
     var ok bool
     user := userModel.User{
@@ -259,36 +289,6 @@ func (u *User) Search() ([]UserItem, error){
             Name: l.Name,
             Email: l.Email,
             LockStatus: l.LockStatus,
-        })
-    }
-    return userList, nil
-}
-
-func (u *User) GetListByIds(ids []int) ([]UserItem, error){
-    list, ok := userModel.List(model.QueryParam{
-        Fields: "id, name, group_id, email, lock_status, last_login_ip, last_login_time",
-        Order: "id DESC",
-        Where: []model.WhereParam{
-            model.WhereParam{
-                Field: "id",
-                Tag: "IN",
-                Prepare: ids,
-            },
-        },
-    })
-    if !ok {
-        return nil, errors.New("get user list failed")
-    }
-    var userList []UserItem
-    for _, l := range list {
-        userList = append(userList, UserItem{
-            ID: l.ID,
-            GroupId: l.GroupId,
-            Name: l.Name,
-            Email: l.Email,
-            LockStatus: l.LockStatus,
-            LastLoginTime: l.LastLoginTime,
-            LastLoginIp: l.LastLoginIp,
         })
     }
     return userList, nil

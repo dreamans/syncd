@@ -51,7 +51,27 @@ func handler() {
         syncd.API_USER_GROUP_DELETE: userModule.GroupDelete,
 
         // project api
-        syncd.
+        syncd.API_PROJECT_SPACE_NEW: projectModule.SpaceNew,
+        syncd.API_PROJECT_SPACE_UPDATE: projectModule.SpaceEdit,
+        syncd.API_PROJECT_SPACE_LIST: projectModule.SpaceList,
+        syncd.API_PROJECT_SPACE_DETAIL: projectModule.SpaceDetail,
+        syncd.API_PROJECT_SPACE_DELETE: projectModule.SpaceDelete,
+        syncd.API_PROJECT_SPACE_EXISTS: projectModule.SpaceExists,
+
+        syncd.API_PROJECT_USER_ADD: projectModule.UserAdd,
+        syncd.API_PROJECT_USER_LIST: projectModule.UserList,
+        syncd.API_PROJECT_USER_REMOVE: projectModule.UserRemove,
+        syncd.API_PROJECT_USER_SEARCH: projectModule.UserSearch,
+
+        syncd.API_PROJECT_NEW: projectModule.ProjectNew,
+        syncd.API_PROJECT_UPDATE: projectModule.ProjectEdit,
+        syncd.API_PROJECT_DETAIL: projectModule.ProjectDetail,
+        syncd.API_PROJECT_DELETE: projectModule.ProjectDelete,
+        syncd.API_PROJECT_LIST: projectModule.ProjectList,
+        syncd.API_PROJECT_EXISTS: projectModule.ProjectExists,
+        syncd.API_PROJECT_STATUS_CHANGE: projectModule.ProjectChangeStatus,
+        syncd.API_PROJECT_REPO_RESET: projectModule.RepoReset,
+
     }
 
     for k, v := range h {

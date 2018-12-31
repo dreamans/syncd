@@ -120,11 +120,10 @@ func AfterHandler(c *goweb.Context) error {
 }
 
 func NotFoundHandler(c *goweb.Context) error {
-    /*
     c.Json(http.StatusNotFound, goweb.JSON{
         "code": http.StatusNotFound,
         "message": "Page Not Found",
-    })*/
+    })
     return nil
 }
 
