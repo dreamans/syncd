@@ -6,135 +6,145 @@ package user
 
 import (
     "github.com/tinystack/goutil/goslice"
+    "github.com/tinystack/syncd"
 )
 
 var privToApiMap = map[int][]string{
-    /*
-    userPrivModel.DEPLOY_APPLY: []string{
-        syncd.API_PROJECT_SPACE_LISTBYUSER,
-        syncd.API_PROJECT_LISTBYUSERSPACE,
-        syncd.API_PROJECT_DETAILBYUSERSPACE,
-        syncd.API_DEPLOY_REPO_TAGLIST,
-        syncd.API_DEPLOY_REPO_COMMITLIST,
-        syncd.API_DEPLOY_APPLY_SUBMIT,
-    },
-    userPrivModel.DEPLOY_VIEW: []string{
-        syncd.API_DEPLOY_APPLY_LIST,
-    },
-
-    // project priv
-    userPrivModel.PROJECT_SPACE_VIEW: []string{
-        syncd.API_PROJECT_SPACE_LIST,
-    },
-    userPrivModel.PROJECT_SPACE_NEW: []string{
-        syncd.API_PROJECT_SPACE_NEW,
-        syncd.API_PROJECT_SPACE_EXISTS,
-    },
-    userPrivModel.PROJECT_SPACE_EDIT: []string{
-        syncd.API_PROJECT_SPACE_DETAIL,
-        syncd.API_PROJECT_SPACE_UPDATE,
-    },
-    userPrivModel.PROJECT_SPACE_DEL: []string{
-        syncd.API_PROJECT_SPACE_DELETE,
-    },
-    userPrivModel.PROJECT_VIEW: []string{
-        syncd.API_PROJECT_SPACE_DETAIL,
-        syncd.API_PROJECT_LIST,
-        syncd.API_PROJECT_DETAIL,
-    },
-    userPrivModel.PROJECT_NEW: []string{
+    SERVER_GROUP_VIEW: []string{
         syncd.API_SERVER_GROUP_LIST,
-        syncd.API_PROJECT_EXISTS,
-        syncd.API_PROJECT_NEW,
+        syncd.API_SERVER_GROUP_DETAIL,
     },
-    userPrivModel.PROJECT_EDIT: []string{
-        syncd.API_PROJECT_UPDATE,
-        syncd.API_PROJECT_EXISTS,
-        syncd.API_PROJECT_DETAIL,
+    SERVER_GROUP_NEW: []string{
+        syncd.API_SERVER_GROUP_NEW,
     },
-    userPrivModel.PROJECT_DEL: []string{
-        syncd.API_PROJECT_DELETE,
+    SERVER_GROUP_EDIT: []string{
+        syncd.API_SERVER_GROUP_UPDATE,
+        syncd.API_SERVER_GROUP_DETAIL,
     },
-    userPrivModel.PROJECT_AUDIT: []string{
-        syncd.API_PROJECT_STATUS_CHANGE,
+    SERVER_GROUP_DEL: []string{
+        syncd.API_SERVER_GROUP_DELETE,
     },
-    userPrivModel.PROJECT_REPO: []string{
-        syncd.API_DEPLOY_REPO_RESET,
+    SERVER_VIEW: []string{
+        syncd.API_SERVER_LIST,
+        syncd.API_SERVER_DETAIL,
     },
-    userPrivModel.PROJECT_USER_VIEW: []string{
-        syncd.API_PROJECT_SPACE_USER_LIST,
-        syncd.API_PROJECT_SPACE_DETAIL,
+    SERVER_NEW: []string{
+        syncd.API_SERVER_NEW,
     },
-    userPrivModel.PROJECT_USER_NEW: []string{
-        syncd.API_PROJECT_SPACE_USER_ADD,
-        syncd.API_USER_SEARCH,
+    SERVER_EDIT: []string{
+        syncd.API_SERVER_UPDATE,
+        syncd.API_SERVER_DETAIL,
     },
-    userPrivModel.PROJECT_USER_DEL: []string{
-        syncd.API_PROJECT_SPACE_USER_REMOVE,
+    SERVER_DEL: []string{
+        syncd.API_SERVER_DELETE,
     },
+    SERVER_CHECK: []string{
 
-    // user priv
-    userPrivModel.USER_ROLE_VIEW: []string{
+    },
+    USER_ROLE_VIEW: []string{
         syncd.API_USER_GROUP_LIST,
     },
-    userPrivModel.USER_ROLE_NEW: []string{
-        syncd.API_USER_GROUP_NEW,
-        syncd.API_USER_PRIV_LIST,
+    USER_ROLE_NEW: []string{
+        syncd.API_USER_GROUP_PRIV,
     },
-    userPrivModel.USER_ROLE_EDIT: []string{
+    USER_ROLE_EDIT: []string{
+        syncd.API_USER_GROUP_PRIV,
         syncd.API_USER_GROUP_DETAIL,
         syncd.API_USER_GROUP_UPDATE,
     },
-    userPrivModel.USER_ROLE_DEL: []string{
+    USER_ROLE_DEL: []string{
         syncd.API_USER_GROUP_DELETE,
     },
-    userPrivModel.USER_VIEW: []string{
+    USER_VIEW: []string{
         syncd.API_USER_LIST,
     },
-    userPrivModel.USER_NEW: []string{
+    USER_NEW: []string{
         syncd.API_USER_NEW,
         syncd.API_USER_EXISTS,
     },
-    userPrivModel.USER_EDIT: []string{
-        syncd.API_USER_DETAIL,
+    USER_EDIT: []string{
+        syncd.API_USER_EXISTS,
         syncd.API_USER_UPDATE,
-        syncd.API_USER_GROUP_LIST,
+        syncd.API_USER_DETAIL,
     },
-    userPrivModel.USER_DEL: []string{
+    USER_DEL: []string{
         syncd.API_USER_DELETE,
     },
-
-    // server priv
-    userPrivModel.SERVER_GROUP_VIEW: []string{
+    PROJECT_SPACE_VIEW: []string{
+        syncd.API_PROJECT_SPACE_LIST,
+    },
+    PROJECT_SPACE_NEW: []string{
+        syncd.API_PROJECT_SPACE_NEW,
+        syncd.API_PROJECT_SPACE_EXISTS,
+    },
+    PROJECT_SPACE_EDIT: []string{
+        syncd.API_PROJECT_SPACE_DETAIL,
+        syncd.API_PROJECT_SPACE_EXISTS,
+        syncd.API_PROJECT_SPACE_UPDATE,
+    },
+    PROJECT_SPACE_DEL: []string{
+        syncd.API_PROJECT_SPACE_DELETE,
+    },
+    PROJECT_USER_VIEW: []string{
+        syncd.API_PROJECT_USER_LIST,
+    },
+    PROJECT_USER_NEW: []string{
+        syncd.API_PROJECT_USER_ADD,
+        syncd.API_PROJECT_USER_SEARCH,
+    },
+    PROJECT_USER_DEL: []string{
+        syncd.API_PROJECT_USER_REMOVE,
+    },
+    PROJECT_VIEW: []string{
+        syncd.API_PROJECT_SPACE_DETAIL,
+        syncd.API_PROJECT_LIST,
+    },
+    PROJECT_NEW: []string{
+        syncd.API_PROJECT_NEW,
         syncd.API_SERVER_GROUP_LIST,
+        syncd.API_PROJECT_EXISTS,
     },
-    userPrivModel.SERVER_GROUP_NEW: []string{
-        syncd.API_SERVER_GROUP_NEW,
+    PROJECT_EDIT: []string{
+        syncd.API_PROJECT_DETAIL,
+        syncd.API_SERVER_GROUP_LIST,
+        syncd.API_PROJECT_UPDATE,
+        syncd.API_PROJECT_EXISTS,
     },
-    userPrivModel.SERVER_GROUP_EDIT: []string{
-        syncd.API_SERVER_GROUP_DETAIL,
-        syncd.API_SERVER_GROUP_UPDATE,
+    PROJECT_DEL: []string{
+        syncd.API_PROJECT_DELETE,
     },
-    userPrivModel.SERVER_GROUP_DEL: []string{
-        syncd.API_SERVER_GROUP_DELETE,
+    PROJECT_AUDIT: []string{
+        syncd.API_PROJECT_STATUS_CHANGE,
     },
-    userPrivModel.SERVER_VIEW: []string{
-        syncd.API_SERVER_LIST,
+    PROJECT_REPO: []string{
+        syncd.API_PROJECT_REPO_RESET,
     },
-    userPrivModel.SERVER_NEW: []string{
-        syncd.API_SERVER_NEW,
-    },
-    userPrivModel.SERVER_EDIT: []string{
-        syncd.API_SERVER_DETAIL,
-        syncd.API_SERVER_UPDATE,
-    },
-    userPrivModel.SERVER_DEL: []string{
-        syncd.API_SERVER_DELETE,
-    },
-    userPrivModel.SERVER_CHECK: []string{
-
-    },
+    /*
+    DEPLOY_APPLY      = 1001 // 填写上线单
+    DEPLOY_VIEW_MY    = 1002 // 查看上线单(自己)
+    DEPLOY_VIEW_ALL   = 1003 // 查看上线单(全部)
+    DEPLOY_AUDIT      = 1004 // 审核上线单
+    DEPLOY_DEPLOY_MY  = 1005 // 上线操作(自己)
+    DEPLOY_DEPLOY_ALL = 1006 // 上线操作(全部)
+    DEPLOY_DROP_MY    = 1007 // 废弃上线单(自己)
+    DEPLOY_DROP_ALL   = 1008 // 废弃上线单(全部)
     */
+    DEPLOY_APPLY: []string{
+        syncd.API_DEPLOY_APPLY_SPACE_LIST,
+        syncd.API_DEPLOY_APPLY_PROJECT_LIST,
+        syncd.API_DEPLOY_APPLY_PROJECT_DETAIL,
+        syncd.API_DEPLOY_APPLY_TAGLIST,
+        syncd.API_DEPLOY_APPLY_COMMITLIST,
+        syncd.API_DEPLOY_APPLY_SUBMIT,
+    },
+    DEPLOY_VIEW_MY: []string{
+        syncd.API_DEPLOY_APPLY_LIST,
+        syncd.API_DEPLOY_APPLY_DETAIL,
+    },
+    DEPLOY_VIEW_ALL: []string{
+        syncd.API_DEPLOY_APPLY_LIST,
+        syncd.API_DEPLOY_APPLY_DETAIL,
+    },
 }
 
 var apiToPrivMap = map[string][]int{}
@@ -156,6 +166,10 @@ func CheckHavePriv(api string, priv []int) bool {
     return len(goslice.SliceIntersectInt(privMap, priv)) > 0
 }
 
+func PrivIn(privCode int, privList []int) bool {
+    return goslice.InSliceInt(privCode, privList)
+}
+
 type PrivItem struct {
     Label   string  `json:"label"`
     Value   int     `json:"value"`
@@ -167,11 +181,14 @@ type PrivGroup struct {
 }
 
 const (
-    DEPLOY_APPLY  = 1001 // 填写上线单
-    DEPLOY_VIEW   = 1002 // 查看上线单
-    DEPLOY_AUDIT  = 1003 // 审核上线单
-    DEPLOY_DEPLOY = 1004 // 上线
-    DEPLOY_DROP   = 1005 // 废弃上线单
+    DEPLOY_APPLY      = 1001 // 填写上线单
+    DEPLOY_VIEW_MY    = 1002 // 查看上线单(自己)
+    DEPLOY_VIEW_ALL   = 1003 // 查看上线单(全部)
+    DEPLOY_AUDIT      = 1004 // 审核上线单
+    DEPLOY_DEPLOY_MY  = 1005 // 上线操作(自己)
+    DEPLOY_DEPLOY_ALL = 1006 // 上线操作(全部)
+    DEPLOY_DROP_MY    = 1007 // 废弃上线单(自己)
+    DEPLOY_DROP_ALL   = 1008 // 废弃上线单(全部)
 
     PROJECT_SPACE_VIEW  = 2001 // 查看空间
     PROJECT_SPACE_NEW   = 2002 // 新增空间
@@ -215,10 +232,13 @@ var privDeploy = PrivGroup{
     Label: "发布",
     Items: []PrivItem{
         PrivItem{ Label: "上线单-申请", Value: DEPLOY_APPLY },
-        PrivItem{ Label: "上线单-查看", Value: DEPLOY_VIEW },
-        PrivItem{ Label: "上线单-审核", Value: DEPLOY_AUDIT },
-        PrivItem{ Label: "上线单-上线", Value: DEPLOY_DEPLOY },
-        PrivItem{ Label: "上线单-废弃", Value: DEPLOY_DROP },
+        PrivItem{ Label: "上线单-查看", Value: DEPLOY_VIEW_MY },
+        PrivItem{ Label: "上线单-上线", Value: DEPLOY_DEPLOY_MY },
+        PrivItem{ Label: "上线单-废弃", Value: DEPLOY_DROP_MY },
+        PrivItem{ Label: "上线单-查看全部", Value: DEPLOY_VIEW_ALL },
+        PrivItem{ Label: "上线单-审核全部", Value: DEPLOY_AUDIT },
+        PrivItem{ Label: "上线单-上线全部", Value: DEPLOY_DEPLOY_ALL },
+        PrivItem{ Label: "上线单-废弃全部", Value: DEPLOY_DROP_ALL },
     },
 }
 

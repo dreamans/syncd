@@ -66,3 +66,4 @@ func Delete(id int) bool {
     ok := model.DeleteByPk(TableName, ProjectSpace{ID: id})
     return ok
 }
+

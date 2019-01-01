@@ -37,6 +37,28 @@ type UserItem struct {
     LastLoginIp     string  `json:"last_login_ip"`
 }
 
+func UserGetByPk(id int) (*User, error) {
+    user := &User{
+        ID: id,
+    }
+    if err := user.Detail(); err != nil {
+        return nil, err
+    }
+    return user, nil
+}
+
+func UserGetMapByIds(ids []int) (map[int]UserItem, error) {
+    list, err := UserGetListByIds(ids)
+    if err != nil {
+        return nil, err
+    }
+    maps := map[int]UserItem{}
+    for _, l := range list {
+        maps[l.ID] = l
+    }
+    return maps, nil
+}
+
 func UserGetListByIds(ids []int) ([]UserItem, error){
     list, ok := userModel.List(model.QueryParam{
         Fields: "id, name, group_id, email, lock_status, last_login_ip, last_login_time",

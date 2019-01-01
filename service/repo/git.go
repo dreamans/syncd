@@ -62,7 +62,7 @@ func (g *Git) TagListRepo() string {
 }
 
 func (g *Git) CommitListRepo() string {
-    cmd := fmt.Sprintf("cd %s && git log -100 --pretty=format:\"%%h - %%ad - %%an %%s \" --date=format:\"%%Y-%%m-  %%d %%H:%%M:%%S\"", g.repo.localPath)
+    cmd := fmt.Sprintf("cd %s && git log -100 --pretty=format:\"%%h - %%ad - %%an %%s \" --date=format:\"%%Y-%%m-%%d %%H:%%M:%%S\"", g.repo.localPath)
     return cmd
 }
 

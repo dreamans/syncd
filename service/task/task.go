@@ -141,8 +141,8 @@ func (t *Task) recordTaskLog(msg string) {
     })
 }
 
-func (t *Task) Stdout() []string {
-    return t.stdout
+func (t *Task) Stdout() string {
+    return gostring.JoinSepStrings("\n", t.stdout...)
 }
 
 func (t *Task) Stderr() []string {

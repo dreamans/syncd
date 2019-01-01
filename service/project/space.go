@@ -10,6 +10,7 @@ import (
 
     baseModel "github.com/tinystack/syncd/model"
     projectSpaceModel "github.com/tinystack/syncd/model/project_space"
+    projectUserModel "github.com/tinystack/syncd/model/project_user"
 )
 
 type Space struct {
@@ -17,6 +18,82 @@ type Space struct {
     Name        string  `json:"name"`
     Description string  `json:"description"`
     Ctime       int     `json:"ctime"`
+}
+
+func SpaceGetByPk(id int) (*Space, error) {
+    space := &Space{
+        ID: id,
+    }
+    if err := space.Detail(); err != nil {
+        return nil, err
+    }
+    return space, nil
+}
+
+func SpaceGetMapByIds(ids []int) (map[int]Space, error) {
+    list, err := SpaceGetListByIds(ids)
+    if err != nil {
+        return nil, err
+    }
+    maps := map[int]Space{}
+    for _, l := range list {
+        maps[l.ID] = l
+    }
+    return maps, nil
+}
+
+func SpaceGetListByIds(ids []int) ([]Space, error) {
+    if len(ids) == 0 {
+        return nil, nil
+    }
+    list, ok := projectSpaceModel.List(baseModel.QueryParam{
+        Fields: "id, name",
+        Order: "id DESC",
+        Where: []baseModel.WhereParam{
+            baseModel.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: ids,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get project space list failed")
+    }
+    var spaceList []Space
+    for _, l := range list {
+        spaceList = append(spaceList, Space{
+            ID: l.ID,
+            Name: l.Name,
+        })
+    }
+    return spaceList, nil
+}
+
+func SpaceGetListByUserId(userId int) ([]Space, error) {
+    spaceIds, ok := projectUserModel.GetSpaceIdsByUserId(userId)
+    if !ok {
+        return nil, errors.New("get space ids failed")
+    }
+    list, ok := projectSpaceModel.List(baseModel.QueryParam{
+        Where: []baseModel.WhereParam{
+            baseModel.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: spaceIds,
+            },
+        },
+    })
+
+    var spaceList []Space
+    for _, l := range list {
+        spaceList = append(spaceList, Space{
+            ID: l.ID,
+            Name: l.Name,
+        })
+    }
+
+    return spaceList, nil
 }
 
 func (s *Space) CreateOrUpdate() error {

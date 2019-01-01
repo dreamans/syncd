@@ -9,6 +9,7 @@ import (
     serverModule "github.com/tinystack/syncd/module/server"
     userModule "github.com/tinystack/syncd/module/user"
     projectModule "github.com/tinystack/syncd/module/project"
+    deployModule "github.com/tinystack/syncd/module/deploy"
 )
 
 func init() {
@@ -72,6 +73,15 @@ func handler() {
         syncd.API_PROJECT_STATUS_CHANGE: projectModule.ProjectChangeStatus,
         syncd.API_PROJECT_REPO_RESET: projectModule.RepoReset,
 
+        // deploy api
+        syncd.API_DEPLOY_APPLY_SPACE_LIST: deployModule.ApplySpaceList,
+        syncd.API_DEPLOY_APPLY_PROJECT_LIST: deployModule.ApplyProjectList,
+        syncd.API_DEPLOY_APPLY_PROJECT_DETAIL: deployModule.ApplyProjectDetail,
+        syncd.API_DEPLOY_APPLY_TAGLIST: deployModule.ApplyRepoTagList,
+        syncd.API_DEPLOY_APPLY_SUBMIT: deployModule.ApplySubmit,
+        syncd.API_DEPLOY_APPLY_COMMITLIST: deployModule.ApplyRepoCommitList,
+        syncd.API_DEPLOY_APPLY_LIST: deployModule.ApplyList,
+        syncd.API_DEPLOY_APPLY_DETAIL: deployModule.ApplyDetail,
     }
 
     for k, v := range h {

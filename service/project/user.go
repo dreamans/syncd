@@ -29,7 +29,7 @@ func (u *User) Add() error {
     return nil
 }
 
-func (u *User) CheckUserExists() (bool, error) {
+func (u *User) CheckUserInSpace() (bool, error) {
     where := []baseModel.WhereParam{
         baseModel.WhereParam{
             Field: "space_id",
@@ -84,3 +84,4 @@ func (u *User) Delete() error {
     }
     return nil
 }
+

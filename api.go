@@ -9,7 +9,6 @@ const (
     API_SERVER_GROUP_NEW = "POST /api/server/group/new"
     API_SERVER_GROUP_UPDATE = "POST /api/server/group/update"
     API_SERVER_GROUP_LIST = "GET /api/server/group/list"
-    API_SERVER_GROUP_MULTI = "GET /api/server/group/multi"
     API_SERVER_GROUP_DETAIL = "GET /api/server/group/detail"
     API_SERVER_GROUP_DELETE = "POST /api/server/group/delete"
 
@@ -40,7 +39,6 @@ const (
     API_PROJECT_SPACE_NEW = "POST /api/project/space/new"
     API_PROJECT_SPACE_UPDATE = "POST /api/project/space/update"
     API_PROJECT_SPACE_LIST = "GET /api/project/space/list"
-    API_PROJECT_SPACE_LISTBYUSER = "GET /api/project/space/listbyuser"
     API_PROJECT_SPACE_DETAIL = "GET /api/project/space/detail"
     API_PROJECT_SPACE_DELETE = "POST /api/project/space/delete"
     API_PROJECT_SPACE_EXISTS = "GET /api/project/space/exists"
@@ -59,14 +57,13 @@ const (
     API_PROJECT_STATUS_CHANGE = "POST /api/project/status/change"
     API_PROJECT_REPO_RESET = "POST /api/project/repo/reset"
 
-    /*
-    API_PROJECT_LISTBYUSERSPACE = "GET /api/project/listbyuserspace"
-    API_PROJECT_DETAILBYUSERSPACE = "GET /api/project/detailbyuserspace"
-
-    API_DEPLOY_REPO_TAGLIST = "GET /api/deploy/repo/taglist"
-    API_DEPLOY_REPO_COMMITLIST = "GET /api/deploy/repo/commitlist"
+    API_DEPLOY_APPLY_SPACE_LIST = "GET /api/deploy/apply/space/list"
+    API_DEPLOY_APPLY_PROJECT_LIST = "GET /api/deploy/apply/project/list"
+    API_DEPLOY_APPLY_PROJECT_DETAIL = "GET /api/deploy/apply/project/detail"
+    API_DEPLOY_APPLY_TAGLIST = "GET /api/deploy/apply/repo/taglist"
+    API_DEPLOY_APPLY_COMMITLIST = "GET /api/deploy/apply/repo/commitlist"
     API_DEPLOY_APPLY_SUBMIT = "POST /api/deploy/apply/submit"
     API_DEPLOY_APPLY_LIST = "GET /api/deploy/apply/list"
-    */
+    API_DEPLOY_APPLY_DETAIL = "GET /api/deploy/apply/detail"
 )
 

@@ -75,3 +75,4 @@ func Delete(id int) bool {
     ok := model.DeleteByPk(TableName, ProjectUser{ID: id})
     return ok
 }
+

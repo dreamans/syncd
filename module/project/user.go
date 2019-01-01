@@ -45,7 +45,7 @@ func UserAdd(c *goweb.Context) error {
         SpaceId: spaceId,
         UserId: userId,
     }
-    exists, err := user.CheckUserExists()
+    exists, err := user.CheckUserInSpace()
     if err != nil {
         return syncd.RenderAppError(err.Error())
     }

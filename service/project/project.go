@@ -66,20 +66,35 @@ func ProjectGetMapByIds(ids []int) (map[int]ProjectItem, error) {
     return maps, nil
 }
 
+func ProjectGetListBySpaceId(spaceId int) ([]ProjectItem, error) {
+    return projectGetListByConds(
+        baseModel.WhereParam{
+            Field: "space_id",
+            Prepare: spaceId,
+        },
+        baseModel.WhereParam{
+            Field: "status",
+            Prepare: 1,
+        },
+    )
+}
+
 func ProjectGetListByIds(ids []int) ([]ProjectItem, error) {
     if len(ids) == 0 {
         return nil, nil
     }
+    return projectGetListByConds(baseModel.WhereParam{
+        Field: "id",
+        Tag: "IN",
+        Prepare: ids,
+    })
+}
+
+func projectGetListByConds(where ...baseModel.WhereParam) ([]ProjectItem, error) {
     list, ok := projectModel.List(baseModel.QueryParam{
         Fields: "id, name, repo_mode, need_audit, status",
         Order: "id DESC",
-        Where: []baseModel.WhereParam{
-            baseModel.WhereParam{
-                Field: "id",
-                Tag: "IN",
-                Prepare: ids,
-            },
-        },
+        Where: where,
     })
     if !ok {
         return nil, errors.New("get project list failed")
@@ -171,6 +186,9 @@ func (p *Project) Detail() error {
     if !ok {
         return errors.New("get project detail data failed")
     }
+    if detail.ID == 0 {
+        return errors.New("project detail data empty")
+    }
     p.Name = detail.Name
     p.Description = detail.Description
     p.SpaceId = detail.SpaceId
@@ -188,7 +206,6 @@ func (p *Project) Detail() error {
     p.RepoPass = detail.RepoPass
     p.RepoMode = detail.RepoMode
     p.RepoBranch = detail.RepoBranch
-
     return nil
 }
 
