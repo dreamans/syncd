@@ -82,6 +82,10 @@ func handler() {
         syncd.API_DEPLOY_APPLY_COMMITLIST: deployModule.ApplyRepoCommitList,
         syncd.API_DEPLOY_APPLY_LIST: deployModule.ApplyList,
         syncd.API_DEPLOY_APPLY_DETAIL: deployModule.ApplyDetail,
+        syncd.API_DEPLOY_APPLY_AUDIT: deployModule.ApplyAudit,
+        syncd.API_DEPLOY_APPLY_UNAUDIT: deployModule.ApplyUnAudit,
+        syncd.API_DEPLOY_APPLY_DISCARD: deployModule.ApplyDiscard,
+        syncd.API_DEPLOY_APPLY_PROJECT_ALL: deployModule.ApplyProjectAll,
     }
 
     for k, v := range h {

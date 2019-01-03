@@ -70,6 +70,18 @@ func SpaceGetListByIds(ids []int) ([]Space, error) {
     return spaceList, nil
 }
 
+func SpaceGetIdListByUserId(userId int) ([]int, error) {
+    spaceList, err := SpaceGetListByUserId(userId)
+    if err != nil {
+        return nil, err
+    }
+    var idList []int
+    for _, l := range spaceList {
+        idList = append(idList, l.ID)
+    }
+    return idList, nil
+}
+
 func SpaceGetListByUserId(userId int) ([]Space, error) {
     spaceIds, ok := projectUserModel.GetSpaceIdsByUserId(userId)
     if !ok {
@@ -152,7 +164,7 @@ func (s *Space) List(keyword string, offset, limit int) ([]Space, int, error) {
 
 func (s *Space) Detail() error {
     if s.ID == 0 {
-        return errors.New("id can not be empty")
+        return errors.New("space id not exists")
     }
     detail, ok := projectSpaceModel.Get(s.ID)
     if !ok {

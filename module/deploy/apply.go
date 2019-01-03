@@ -6,9 +6,11 @@ package deploy
 
 import (
     "strings"
+    "time"
 
     "github.com/tinystack/govalidate"
     "github.com/tinystack/goutil/gostring"
+    "github.com/tinystack/goutil/goslice"
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
     projectService "github.com/tinystack/syncd/service/project"
@@ -50,6 +52,44 @@ func ApplyProjectList(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, goweb.JSON{
         "list": list,
+    })
+}
+
+func ApplyProjectAll(c *goweb.Context) error {
+    userId := c.GetInt("user_id")
+    spaceList, err := projectService.SpaceGetListByUserId(userId)
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+
+    spaceIds := []int{}
+    spaceNameMap := map[int]string{}
+    for _, l := range spaceList {
+        spaceIds = append(spaceIds, l.ID)
+        spaceNameMap[l.ID] = l.Name
+    }
+    projectList, err := projectService.ProjectGetListBySpaceIds(spaceIds)
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+
+    projList := []map[string]interface{}{}
+    for _, pjl := range projectList {
+        var spaceName string
+        vv, exists := spaceNameMap[pjl.SpaceId]
+        if exists {
+            spaceName = vv
+        }
+        projList = append(projList, map[string]interface{}{
+            "id": pjl.ID,
+            "name": pjl.Name,
+            "space_name": spaceName,
+            "status": pjl.Status,
+        })
+    }
+
+    return syncd.RenderJson(c, goweb.JSON{
+        "list": projList,
     })
 }
 
@@ -149,7 +189,7 @@ func ApplySubmit(c *goweb.Context) error {
     }
     var status int
     if project.NeedAudit == 0 {
-        status = 2
+        status = 3
     }
     apply := &deployService.Apply{
         ProjectId: project.ID,
@@ -176,13 +216,24 @@ func ApplySubmit(c *goweb.Context) error {
 }
 
 func ApplyList(c *goweb.Context) error {
-    offset, limit, keyword := c.QueryInt("offset"), c.GetInt("limit"), c.Query("keyword")
+    offset, limit, keyword, userId := c.QueryInt("offset"), c.GetInt("limit"), c.Query("keyword"), c.GetInt("user_id")
+    searchTimeDuring, searchProjectId, searchStatus := c.QueryInt("time"), c.QueryInt("project_id"), c.QueryInt("status")
 
-    apply := deployService.Apply{}
-    if havePriv := userService.PrivIn(userService.DEPLOY_VIEW_ALL, c.GetIntSlice("priv")); !havePriv {
-        apply.UserId = c.GetInt("user_id")
+    apply := deployService.Apply{
+        ProjectId: searchProjectId,
+        Status: searchStatus,
     }
-    list, total, err := apply.List(keyword, offset, limit)
+    if searchTimeDuring > 0 {
+        apply.Ctime = int(time.Now().Unix()) - searchTimeDuring * 86400
+    }
+    if havePriv := userService.PrivIn(userService.DEPLOY_VIEW_ALL, c.GetIntSlice("priv")); !havePriv {
+        apply.UserId = userId
+    }
+    userSpaceIds, err := projectService.SpaceGetIdListByUserId(userId)
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    list, total, err := apply.List(keyword, userSpaceIds, offset, limit)
 
     if err != nil {
         return syncd.RenderAppError(err.Error())
@@ -208,7 +259,10 @@ func ApplyList(c *goweb.Context) error {
 
     var newList []map[string]interface{}
     for _, l := range list {
-        var projectName, spaceName, userName, userEmail string
+        var (
+            projectName, spaceName, userName, userEmail string
+            userId int
+        )
         if proj, exists := projMaps[l.ProjectId]; exists {
             projectName = proj.Name
         }
@@ -216,6 +270,7 @@ func ApplyList(c *goweb.Context) error {
             spaceName = space.Name
         }
         if user, exists := userMaps[l.UserId]; exists {
+            userId = user.ID
             userName = user.Name
             userEmail = user.Email
         }
@@ -225,6 +280,7 @@ func ApplyList(c *goweb.Context) error {
             "project_name": projectName,
             "space_name": spaceName,
             "status": l.Status,
+            "user_id": userId,
             "user_name": userName,
             "user_email": userEmail,
             "ctime": l.Ctime,
@@ -249,27 +305,25 @@ func ApplyDetail(c *goweb.Context) error {
             return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
         }
     }
-    space, err := projectService.SpaceGetByPk(apply.SpaceId)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
+    var spaceName, projectName, userName, userEmail string
+    if space, err := projectService.SpaceGetByPk(apply.SpaceId); err == nil {
+        spaceName = space.Name
     }
-    project, err := projectService.ProjectGetByPk(apply.ProjectId)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
+    if project, err := projectService.ProjectGetByPk(apply.ProjectId); err == nil {
+        projectName = project.Name
     }
-    user, err := userService.UserGetByPk(apply.UserId)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
+    if user, err := userService.UserGetByPk(apply.UserId); err == nil {
+        userName, userEmail = user.Name, user.Email
     }
 
     return syncd.RenderJson(c, goweb.JSON{
         "id": apply.ID,
         "name": apply.Name,
         "description": apply.Description,
-        "space_name": space.Name,
-        "project_name": project.Name,
-        "user_name": user.Name,
-        "user_email": user.Email,
+        "space_name": spaceName,
+        "project_name": projectName,
+        "user_name": userName,
+        "user_email": userEmail,
         "repo": apply.RepoData.Repo,
         "repo_branch": apply.RepoData.RepoBranch,
         "repo_commit": apply.RepoData.Commit,
@@ -278,6 +332,42 @@ func ApplyDetail(c *goweb.Context) error {
         "status": apply.Status,
         "ctime": apply.Ctime,
     })
+}
+
+func ApplyAudit(c *goweb.Context) error {
+    return applyChangeStatus(c, userService.DEPLOY_AUDIT_ALL, 3, []int{1})
+}
+
+func ApplyUnAudit(c *goweb.Context) error {
+    return applyChangeStatus(c, userService.DEPLOY_AUDIT_ALL, 1, []int{3})
+}
+
+func ApplyDiscard(c *goweb.Context) error {
+    return applyChangeStatus(c, userService.DEPLOY_DROP_ALL, 7, []int{1, 2, 3, 6})
+}
+
+func applyChangeStatus(c *goweb.Context, privCode int, status int, allowStatus []int) error {
+    id := c.PostFormInt("id")
+    apply, err := deployService.ApplyGetByPk(id)
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    if havePriv := userService.PrivIn(privCode, c.GetIntSlice("priv")); !havePriv {
+        if apply.UserId != c.GetInt("user_id") {
+            return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
+        }
+    }
+    if err := applyCheckUserInSpace(apply.SpaceId, c.GetInt("user_id")); err != nil {
+        return err
+    }
+    if !goslice.InSliceInt(apply.Status, allowStatus)  {
+        return syncd.RenderAppError("apply status wrong")
+    }
+    apply.Status = status
+    if err := apply.UpdateStatus(); err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    return syncd.RenderJson(c, nil)
 }
 
 func applyCheckAndGetProjectDetail(id, userId int) (*projectService.Project, error) {
@@ -296,5 +386,16 @@ func applyCheckAndGetProjectDetail(id, userId int) (*projectService.Project, err
         return nil, syncd.RenderAppError("user have no privilege to access project")
     }
     return project, nil
+}
+
+func applyCheckUserInSpace(spaceId, userId int) error {
+    user := &projectService.User{
+        UserId: userId,
+        SpaceId: spaceId,
+    }
+    if exists, err := user.CheckUserInSpace(); err != nil || !exists {
+        return syncd.RenderAppError("user have no privilege to access project")
+    }
+    return nil
 }
 

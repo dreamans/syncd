@@ -17,7 +17,7 @@ type DeployApply struct {
     Description     string  `gorm:"type:varchar(2000);not null;default:''"`
     SpaceId         int     `gorm:"type:int(11);not null;default:0"`
     RepoData        string  `gorm:"type:varchar(10000);not null;default:''"`
-    Status          int     `gorm:"type:int(11);not null;default:0"`
+    Status          int     `gorm:"type:int(11);not null;default:1"`
     UserId          int     `gorm:"type:int(11);not null;default:0"`
     Ctime           int     `gorm:"type:int(11);not null;default:0"`
 }
@@ -25,6 +25,18 @@ type DeployApply struct {
 const (
     TableName = "deploy_apply"
 )
+
+func Update(id int, data map[string]interface{}) bool {
+    ok := model.Update(TableName, data, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: id,
+            },
+        },
+    })
+    return ok
+}
 
 func Create(data *DeployApply) bool {
     data.Ctime = int(time.Now().Unix())

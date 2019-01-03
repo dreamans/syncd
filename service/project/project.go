@@ -39,6 +39,7 @@ type Project struct {
 type ProjectItem struct {
     ID          int     `json:"id"`
     Name        string  `json:"name"`
+    SpaceId     int     `json:"space_id"`
     RepoMode    int     `json:"repo_mode"`
     NeedAudit   int     `json:"need_audit"`
     Status      int     `json:"status"`
@@ -52,6 +53,14 @@ func ProjectGetByPk(id int) (*Project, error) {
         return nil, err
     }
     return project, nil
+}
+
+func ProjectGetListBySpaceIds(spaceIds []int) ([]ProjectItem, error) {
+    return projectGetListByConds(baseModel.WhereParam{
+        Field: "space_id",
+        Tag: "IN",
+        Prepare: spaceIds,
+    })
 }
 
 func ProjectGetMapByIds(ids []int) (map[int]ProjectItem, error) {
@@ -92,7 +101,7 @@ func ProjectGetListByIds(ids []int) ([]ProjectItem, error) {
 
 func projectGetListByConds(where ...baseModel.WhereParam) ([]ProjectItem, error) {
     list, ok := projectModel.List(baseModel.QueryParam{
-        Fields: "id, name, repo_mode, need_audit, status",
+        Fields: "id, name, space_id, repo_mode, need_audit, status",
         Order: "id DESC",
         Where: where,
     })
@@ -104,6 +113,7 @@ func projectGetListByConds(where ...baseModel.WhereParam) ([]ProjectItem, error)
         projList = append(projList, ProjectItem{
             ID: l.ID,
             Name: l.Name,
+            SpaceId: l.SpaceId,
             RepoMode: l.RepoMode,
             NeedAudit: l.NeedAudit,
             Status: l.Status,
@@ -148,7 +158,7 @@ func (p *Project) List(keyword string, offset, limit int) ([]ProjectItem, int, e
     }
 
     list, ok := projectModel.List(baseModel.QueryParam{
-        Fields: "id, name, repo_mode, need_audit, status",
+        Fields: "id, name, space_id, repo_mode, need_audit, status",
         Offset: offset,
         Limit: limit,
         Order: "id DESC",
@@ -170,6 +180,7 @@ func (p *Project) List(keyword string, offset, limit int) ([]ProjectItem, int, e
         nlist = append(nlist, ProjectItem{
             ID: l.ID,
             Name: l.Name,
+            SpaceId: l.SpaceId,
             RepoMode: l.RepoMode,
             NeedAudit: l.NeedAudit,
             Status: l.Status,
@@ -180,7 +191,7 @@ func (p *Project) List(keyword string, offset, limit int) ([]ProjectItem, int, e
 
 func (p *Project) Detail() error {
     if p.ID == 0 {
-        return errors.New("id can not be empty")
+        return errors.New("project id not exists")
     }
     detail, ok := projectModel.Get(p.ID)
     if !ok {

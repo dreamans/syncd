@@ -59,11 +59,15 @@ const (
 
     API_DEPLOY_APPLY_SPACE_LIST = "GET /api/deploy/apply/space/list"
     API_DEPLOY_APPLY_PROJECT_LIST = "GET /api/deploy/apply/project/list"
+    API_DEPLOY_APPLY_PROJECT_ALL = "GET /api/deploy/apply/project/all"
     API_DEPLOY_APPLY_PROJECT_DETAIL = "GET /api/deploy/apply/project/detail"
     API_DEPLOY_APPLY_TAGLIST = "GET /api/deploy/apply/repo/taglist"
     API_DEPLOY_APPLY_COMMITLIST = "GET /api/deploy/apply/repo/commitlist"
     API_DEPLOY_APPLY_SUBMIT = "POST /api/deploy/apply/submit"
     API_DEPLOY_APPLY_LIST = "GET /api/deploy/apply/list"
     API_DEPLOY_APPLY_DETAIL = "GET /api/deploy/apply/detail"
+    API_DEPLOY_APPLY_AUDIT = "POST /api/deploy/apply/audit"
+    API_DEPLOY_APPLY_UNAUDIT = "POST /api/deploy/apply/unaudit"
+    API_DEPLOY_APPLY_DISCARD = "POST /api/deploy/apply/discard"
 )
 

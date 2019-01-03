@@ -45,6 +45,7 @@ var privToApiMap = map[int][]string{
         syncd.API_USER_GROUP_LIST,
     },
     USER_ROLE_NEW: []string{
+        syncd.API_USER_GROUP_NEW,
         syncd.API_USER_GROUP_PRIV,
     },
     USER_ROLE_EDIT: []string{
@@ -98,6 +99,7 @@ var privToApiMap = map[int][]string{
     PROJECT_VIEW: []string{
         syncd.API_PROJECT_SPACE_DETAIL,
         syncd.API_PROJECT_LIST,
+        syncd.API_PROJECT_DETAIL,
     },
     PROJECT_NEW: []string{
         syncd.API_PROJECT_NEW,
@@ -119,16 +121,6 @@ var privToApiMap = map[int][]string{
     PROJECT_REPO: []string{
         syncd.API_PROJECT_REPO_RESET,
     },
-    /*
-    DEPLOY_APPLY      = 1001 // 填写上线单
-    DEPLOY_VIEW_MY    = 1002 // 查看上线单(自己)
-    DEPLOY_VIEW_ALL   = 1003 // 查看上线单(全部)
-    DEPLOY_AUDIT      = 1004 // 审核上线单
-    DEPLOY_DEPLOY_MY  = 1005 // 上线操作(自己)
-    DEPLOY_DEPLOY_ALL = 1006 // 上线操作(全部)
-    DEPLOY_DROP_MY    = 1007 // 废弃上线单(自己)
-    DEPLOY_DROP_ALL   = 1008 // 废弃上线单(全部)
-    */
     DEPLOY_APPLY: []string{
         syncd.API_DEPLOY_APPLY_SPACE_LIST,
         syncd.API_DEPLOY_APPLY_PROJECT_LIST,
@@ -140,10 +132,26 @@ var privToApiMap = map[int][]string{
     DEPLOY_VIEW_MY: []string{
         syncd.API_DEPLOY_APPLY_LIST,
         syncd.API_DEPLOY_APPLY_DETAIL,
+        syncd.API_DEPLOY_APPLY_PROJECT_ALL,
     },
     DEPLOY_VIEW_ALL: []string{
         syncd.API_DEPLOY_APPLY_LIST,
         syncd.API_DEPLOY_APPLY_DETAIL,
+        syncd.API_DEPLOY_APPLY_PROJECT_ALL,
+    },
+    DEPLOY_AUDIT_MY: []string{
+        syncd.API_DEPLOY_APPLY_AUDIT,
+        syncd.API_DEPLOY_APPLY_UNAUDIT,
+    },
+    DEPLOY_AUDIT_ALL: []string{
+        syncd.API_DEPLOY_APPLY_AUDIT,
+        syncd.API_DEPLOY_APPLY_UNAUDIT,
+    },
+    DEPLOY_DROP_MY: []string{
+        syncd.API_DEPLOY_APPLY_DISCARD,
+    },
+    DEPLOY_DROP_ALL: []string{
+        syncd.API_DEPLOY_APPLY_DISCARD,
     },
 }
 
@@ -184,11 +192,12 @@ const (
     DEPLOY_APPLY      = 1001 // 填写上线单
     DEPLOY_VIEW_MY    = 1002 // 查看上线单(自己)
     DEPLOY_VIEW_ALL   = 1003 // 查看上线单(全部)
-    DEPLOY_AUDIT      = 1004 // 审核上线单
-    DEPLOY_DEPLOY_MY  = 1005 // 上线操作(自己)
-    DEPLOY_DEPLOY_ALL = 1006 // 上线操作(全部)
-    DEPLOY_DROP_MY    = 1007 // 废弃上线单(自己)
-    DEPLOY_DROP_ALL   = 1008 // 废弃上线单(全部)
+    DEPLOY_AUDIT_MY   = 1004 // 审核上线单(自己)
+    DEPLOY_AUDIT_ALL  = 1005 // 审核上线单(全部)
+    DEPLOY_DEPLOY_MY  = 1006 // 上线操作(自己)
+    DEPLOY_DEPLOY_ALL = 1007 // 上线操作(全部)
+    DEPLOY_DROP_MY    = 1008 // 废弃上线单(自己)
+    DEPLOY_DROP_ALL   = 1009 // 废弃上线单(全部)
 
     PROJECT_SPACE_VIEW  = 2001 // 查看空间
     PROJECT_SPACE_NEW   = 2002 // 新增空间
@@ -233,10 +242,11 @@ var privDeploy = PrivGroup{
     Items: []PrivItem{
         PrivItem{ Label: "上线单-申请", Value: DEPLOY_APPLY },
         PrivItem{ Label: "上线单-查看", Value: DEPLOY_VIEW_MY },
+        PrivItem{ Label: "上线单-审核", Value: DEPLOY_AUDIT_MY },
         PrivItem{ Label: "上线单-上线", Value: DEPLOY_DEPLOY_MY },
         PrivItem{ Label: "上线单-废弃", Value: DEPLOY_DROP_MY },
         PrivItem{ Label: "上线单-查看全部", Value: DEPLOY_VIEW_ALL },
-        PrivItem{ Label: "上线单-审核全部", Value: DEPLOY_AUDIT },
+        PrivItem{ Label: "上线单-审核全部", Value: DEPLOY_AUDIT_ALL },
         PrivItem{ Label: "上线单-上线全部", Value: DEPLOY_DEPLOY_ALL },
         PrivItem{ Label: "上线单-废弃全部", Value: DEPLOY_DROP_ALL },
     },
@@ -245,13 +255,13 @@ var privDeploy = PrivGroup{
 var privProject = PrivGroup{
     Label: "项目",
     Items: []PrivItem{
-        PrivItem{ Label: "项目空间-查看", Value: PROJECT_SPACE_VIEW },
-        PrivItem{ Label: "项目空间-新增", Value: PROJECT_SPACE_NEW },
-        PrivItem{ Label: "项目空间-编辑", Value: PROJECT_SPACE_EDIT },
-        PrivItem{ Label: "项目空间-删除", Value: PROJECT_SPACE_DEL },
-        PrivItem{ Label: "项目成员-查看", Value: PROJECT_USER_VIEW },
-        PrivItem{ Label: "项目成员-新增", Value: PROJECT_USER_NEW },
-        PrivItem{ Label: "项目成员-删除", Value: PROJECT_USER_DEL },
+        PrivItem{ Label: "空间-查看", Value: PROJECT_SPACE_VIEW },
+        PrivItem{ Label: "空间-新增", Value: PROJECT_SPACE_NEW },
+        PrivItem{ Label: "空间-编辑", Value: PROJECT_SPACE_EDIT },
+        PrivItem{ Label: "空间-删除", Value: PROJECT_SPACE_DEL },
+        PrivItem{ Label: "成员-查看", Value: PROJECT_USER_VIEW },
+        PrivItem{ Label: "成员-新增", Value: PROJECT_USER_NEW },
+        PrivItem{ Label: "成员-删除", Value: PROJECT_USER_DEL },
         PrivItem{ Label: "项目-查看", Value: PROJECT_VIEW },
         PrivItem{ Label: "项目-新增", Value: PROJECT_NEW },
         PrivItem{ Label: "项目-编辑", Value: PROJECT_EDIT },

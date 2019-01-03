@@ -37,7 +37,17 @@ type ApplyRepoData struct {
     Commit      string      `json:"repo_commit"`
 }
 
-func (a *Apply) List(keyword string, offset, limit int) ([]Apply, int, error) {
+func ApplyGetByPk(id int) (*Apply, error) {
+    apply := &Apply{
+        ID: id,
+    }
+    if err := apply.Detail(); err != nil {
+        return nil, err
+    }
+    return apply, nil
+}
+
+func (a *Apply) List(keyword string, spaceIds []int, offset, limit int) ([]Apply, int, error) {
     var where []baseModel.WhereParam
     if keyword != "" {
         if gois.IsInteger(keyword) {
@@ -62,6 +72,30 @@ func (a *Apply) List(keyword string, offset, limit int) ([]Apply, int, error) {
             Prepare: a.UserId,
         })
     }
+    if a.ProjectId > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "project_id",
+            Prepare: a.ProjectId,
+        })
+    }
+    if a.Ctime > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "ctime",
+            Tag: ">",
+            Prepare: a.Ctime,
+        })
+    }
+    if a.Status > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "status",
+            Prepare: a.Status,
+        })
+    }
+    where = append(where, baseModel.WhereParam{
+        Field: "space_id",
+        Tag: "IN",
+        Prepare: spaceIds,
+    })
     list, ok := deployApplyModel.List(baseModel.QueryParam{
         Fields: "id, project_id, space_id, name, status, user_id, ctime",
         Offset: offset,
@@ -109,6 +143,16 @@ func (a *Apply) Create() error {
     }
     if ok := deployApplyModel.Create(&apply); !ok {
         return errors.New("apply submit failed")
+    }
+    return nil
+}
+
+func (a *Apply) UpdateStatus() error {
+    ok := deployApplyModel.Update(a.ID, map[string]interface{}{
+        "status": a.Status,
+    })
+    if !ok {
+        return errors.New("update apply status failed")
     }
     return nil
 }
