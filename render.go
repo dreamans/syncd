@@ -21,6 +21,7 @@ const (
     CODE_ERR_LOGIN_FAILED = 1004
     CODE_ERR_NO_LOGIN = 1005
     CODE_ERR_NO_PRIV = 1006
+    CODE_ERR_TASK_ERROR = 1007
 )
 
 func RenderParamError(msg string) error {
@@ -29,6 +30,10 @@ func RenderParamError(msg string) error {
 
 func RenderAppError(msg string) error {
     return RenderCustomerError(CODE_ERR_APP, msg)
+}
+
+func RenderTaskError(msg string) error {
+    return RenderCustomerError(CODE_ERR_TASK_ERROR, msg)
 }
 
 func RenderCustomerError(code int, msg string) error {

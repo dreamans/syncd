@@ -27,10 +27,7 @@ type Apply struct {
 }
 
 type ApplyRepoData struct {
-    Repo        string      `json:"repo"`
     RepoUrl     string      `json:"repo_url"`
-    RepoUser    string      `json:"repo_user"`
-    RepoPass    string      `json:"repo_pass"`
     RepoMode    int         `json:"repo_mode"`
     RepoBranch  string      `json:"repo_branch"`
     Tag         string      `json:"repo_tag"`
@@ -127,10 +124,10 @@ func (a *Apply) List(keyword string, spaceIds []int, offset, limit int) ([]Apply
     return nlist, total, nil
 }
 
-func (a *Apply) Create() error {
+func (a *Apply) Create() (int, error) {
     repoData, err := gostring.JsonEncode(a.RepoData)
     if err != nil {
-        return err
+        return 0, err
     }
     apply := deployApplyModel.DeployApply{
         ProjectId: a.ProjectId,
@@ -142,17 +139,36 @@ func (a *Apply) Create() error {
         UserId: a.UserId,
     }
     if ok := deployApplyModel.Create(&apply); !ok {
-        return errors.New("apply submit failed")
+        return 0, errors.New("apply submit failed")
+    }
+    return apply.ID, nil
+}
+
+func (a *Apply) UpdateStatus() error {
+    updateData := map[string]interface{}{
+        "status": a.Status,
+    }
+    ok := deployApplyModel.Update(a.ID, updateData)
+    if !ok {
+        return errors.New("update apply status failed")
     }
     return nil
 }
 
-func (a *Apply) UpdateStatus() error {
-    ok := deployApplyModel.Update(a.ID, map[string]interface{}{
+func (a *Apply) Update() error {
+    repoData, err := gostring.JsonEncode(a.RepoData)
+    if err != nil {
+        return err
+    }
+    updateData := map[string]interface{}{
         "status": a.Status,
-    })
+        "name": a.Name,
+        "description": a.Description,
+        "repo_data": repoData,
+    }
+    ok := deployApplyModel.Update(a.ID, updateData)
     if !ok {
-        return errors.New("update apply status failed")
+        return errors.New("update apply data failed")
     }
     return nil
 }

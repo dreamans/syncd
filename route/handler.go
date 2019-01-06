@@ -72,6 +72,7 @@ func handler() {
         syncd.API_PROJECT_EXISTS: projectModule.ProjectExists,
         syncd.API_PROJECT_STATUS_CHANGE: projectModule.ProjectChangeStatus,
         syncd.API_PROJECT_REPO_RESET: projectModule.RepoReset,
+        syncd.API_PROJECT_SERVER_CHECK: projectModule.ServerCheck,
 
         // deploy api
         syncd.API_DEPLOY_APPLY_SPACE_LIST: deployModule.ApplySpaceList,
@@ -86,6 +87,9 @@ func handler() {
         syncd.API_DEPLOY_APPLY_UNAUDIT: deployModule.ApplyUnAudit,
         syncd.API_DEPLOY_APPLY_DISCARD: deployModule.ApplyDiscard,
         syncd.API_DEPLOY_APPLY_PROJECT_ALL: deployModule.ApplyProjectAll,
+        syncd.API_DEPLOY_APPLY_UPDATE: deployModule.ApplyUpdate,
+        syncd.API_DEPLOY_APPLY_LOG: deployModule.ApplyLog,
+        syncd.API_DEPLOY_DEPLOY_START: deployModule.DeployStart,
     }
 
     for k, v := range h {

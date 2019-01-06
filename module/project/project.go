@@ -5,6 +5,8 @@
 package project
 
 import (
+    "strings"
+
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
@@ -18,12 +20,10 @@ type ProjectParamValid struct {
     Description     string      `valid:"require" errmsg:"required=project description cannot be empty"`
     SpaceId         int         `valid:"int_min=1" errmsg:"required=space_id cannot be empty"`
     RepoMode        int         `valid:"int_min=1" errmsg:"required=repo_mode cannot be empty"`
-    Repo            string      `valid:"require" errmsg:"required=repo type cannot be empty"`
     RepoUrl         string      `valid:"require" errmsg:"required=repo remote addr cannot be empty"`
     DeployServer    []string    `valid:"require" errmsg:"required=deploy server cannot be empty"`
     DeployUser      string      `valid:"require" errmsg:"required=deploy user cannot be epmty"`
     DeployPath      string      `valid:"require" errmsg:"required=deploy path cannot be epmty"`
-    DeployHistory   int         `valid:"int_min=3" errmsg:"int_min=deploy history at least 3"`
 }
 
 func ProjectNew(c *goweb.Context) error {
@@ -43,13 +43,11 @@ func projectUpdate(c *goweb.Context, id int) error {
         Name: c.PostForm("name"),
         Description: c.PostForm("description"),
         SpaceId: c.PostFormInt("space_id"),
-        Repo: c.PostForm("repo"),
         RepoMode: c.PostFormInt("repo_mode"),
         RepoUrl: c.PostForm("repo_url"),
         DeployServer: c.PostFormArray("deploy_server"),
         DeployUser: c.PostForm("deploy_user"),
         DeployPath: c.PostForm("deploy_path"),
-        DeployHistory: c.PostFormInt("deploy_history"),
     }
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
         return syncd.RenderParamError(valid.LastFailed().Msg)
@@ -79,21 +77,28 @@ func projectUpdate(c *goweb.Context, id int) error {
     if c.PostFormInt("need_audit") != 0 {
         needAudit = 1
     }
+
+    excludeFiles := c.PostForm("exclude_files")
+    if excludeFiles != "" {
+        exFileList := strings.Split(excludeFiles, "\n")
+        exFileList = gostring.StrFilterSliceEmpty(exFileList)
+        if len(exFileList) > 0 {
+            excludeFiles = gostring.JoinSepStrings("\n", exFileList...)
+        }
+    }
+
     project := &projectService.Project{
         ID: id,
         Name: params.Name,
         Description: params.Description,
         SpaceId: params.SpaceId,
-        Repo: params.Repo,
         RepoUrl: params.RepoUrl,
         RepoMode: params.RepoMode,
         RepoBranch: repoBranch,
-        RepoUser: c.PostForm("repo_user"),
-        RepoPass: c.PostForm("repo_pass"),
+        ExcludeFiles: excludeFiles,
         DeployServer: deployServer,
         DeployUser: params.DeployUser,
         DeployPath: params.DeployPath,
-        DeployHistory: params.DeployHistory,
         PreDeployCmd: c.PostForm("pre_deploy_cmd"),
         PostDeployCmd: c.PostForm("post_deploy_cmd"),
         NeedAudit: needAudit,

@@ -56,6 +56,7 @@ const (
     API_PROJECT_EXISTS = "GET /api/project/exists"
     API_PROJECT_STATUS_CHANGE = "POST /api/project/status/change"
     API_PROJECT_REPO_RESET = "POST /api/project/repo/reset"
+    API_PROJECT_SERVER_CHECK = "GET /api/project/server/check"
 
     API_DEPLOY_APPLY_SPACE_LIST = "GET /api/deploy/apply/space/list"
     API_DEPLOY_APPLY_PROJECT_LIST = "GET /api/deploy/apply/project/list"
@@ -69,5 +70,8 @@ const (
     API_DEPLOY_APPLY_AUDIT = "POST /api/deploy/apply/audit"
     API_DEPLOY_APPLY_UNAUDIT = "POST /api/deploy/apply/unaudit"
     API_DEPLOY_APPLY_DISCARD = "POST /api/deploy/apply/discard"
+    API_DEPLOY_APPLY_UPDATE = "POST /api/deploy/apply/update"
+    API_DEPLOY_APPLY_LOG = "GET /api/deploy/apply/log"
+    API_DEPLOY_DEPLOY_START = "POST /api/deploy/deploy/start"
 )
 

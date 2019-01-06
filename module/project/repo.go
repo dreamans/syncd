@@ -7,7 +7,6 @@ package project
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
-
     repoService "github.com/tinystack/syncd/service/repo"
     projectService "github.com/tinystack/syncd/service/project"
     taskService "github.com/tinystack/syncd/service/task"
@@ -26,23 +25,25 @@ func RepoReset(c *goweb.Context) error {
     }
     repo := &repoService.Repo{
         ID: id,
-        Repo: project.Repo,
         Url: project.RepoUrl,
-        User: project.RepoUser,
-        Pass: project.RepoPass,
     }
     var err error
     if repo, err = repoService.RepoNew(repo); err != nil {
         return syncd.RenderAppError(err.Error())
     }
-    task, err := taskService.TaskCreate("reset_project_repo", []string{
+    task := taskService.TaskCreate(taskService.TASK_REPO_RESET, []string{
         "pwd",
         repo.ResetRepo(),
     })
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
+    c.CloseCallback(func() {
+        task.Terminate()
+    }, 60)
+
     task.TaskRun()
+    if task.LastError() != nil {
+        errMsg := task.Stdout() + task.Stderr()
+        return syncd.RenderTaskError(errMsg)
+    }
 
     return syncd.RenderJson(c, nil)
 }

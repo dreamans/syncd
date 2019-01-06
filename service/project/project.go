@@ -19,20 +19,17 @@ type Project struct {
     Name            string   `json:"name"`
     Description     string   `json:"description"`
     SpaceId         int      `json:"space_id"`
-    Repo            string   `json:"repo"`
     RepoUrl         string   `json:"repo_url"`
     DeployServer    []int    `json:"deploy_server"`
     DeployUser      string   `json:"deploy_user"`
     DeployPath      string   `json:"deploy_path"`
-    DeployHistory   int      `json:"deploy_history"`
     PreDeployCmd    string   `json:"pre_deploy_cmd"`
     PostDeployCmd   string   `json:"post_deploy_cmd"`
     NeedAudit       int      `json:"need_audit"`
     Status          int      `json:"status"`
-    RepoUser        string   `json:"repo_user"`
-    RepoPass        string   `json:"repo_pass"`
     RepoMode        int      `json:"repo_mode"`
     RepoBranch      string   `json:"repo_branch"`
+    ExcludeFiles    string   `json:"exclude_files"`
     DeployServers   []map[string]interface{}    `json:"deploy_servers"`
 }
 
@@ -203,20 +200,17 @@ func (p *Project) Detail() error {
     p.Name = detail.Name
     p.Description = detail.Description
     p.SpaceId = detail.SpaceId
-    p.Repo = detail.Repo
     p.RepoUrl = detail.RepoUrl
     p.DeployServer = gostring.StrSplit2IntSlice(detail.DeployServer, ",")
     p.DeployUser = detail.DeployUser
     p.DeployPath = detail.DeployPath
-    p.DeployHistory = detail.DeployHistory
     p.PreDeployCmd = detail.PreDeployCmd
     p.PostDeployCmd = detail.PostDeployCmd
     p.NeedAudit = detail.NeedAudit
     p.Status = detail.Status
-    p.RepoUser = detail.RepoUser
-    p.RepoPass = detail.RepoPass
     p.RepoMode = detail.RepoMode
     p.RepoBranch = detail.RepoBranch
+    p.ExcludeFiles = detail.ExcludeFiles
     return nil
 }
 
@@ -225,19 +219,16 @@ func (p *Project) CreateOrUpdate() error {
         Name: p.Name,
         Description: p.Description,
         SpaceId: p.SpaceId,
-        Repo: p.Repo,
         RepoUrl: p.RepoUrl,
         DeployServer: gostring.JoinIntSlice2String(p.DeployServer, ","),
         DeployUser: p.DeployUser,
         DeployPath: p.DeployPath,
-        DeployHistory: p.DeployHistory,
         PreDeployCmd: p.PreDeployCmd,
         PostDeployCmd: p.PostDeployCmd,
         NeedAudit: p.NeedAudit,
-        RepoUser: p.RepoUser,
-        RepoPass: p.RepoPass,
         RepoMode: p.RepoMode,
         RepoBranch: p.RepoBranch,
+        ExcludeFiles: p.ExcludeFiles,
     }
     if p.ID > 0 {
         if ok := projectModel.Update(p.ID, project); !ok {

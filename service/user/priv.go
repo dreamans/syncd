@@ -38,9 +38,6 @@ var privToApiMap = map[int][]string{
     SERVER_DEL: []string{
         syncd.API_SERVER_DELETE,
     },
-    SERVER_CHECK: []string{
-
-    },
     USER_ROLE_VIEW: []string{
         syncd.API_USER_GROUP_LIST,
     },
@@ -121,6 +118,9 @@ var privToApiMap = map[int][]string{
     PROJECT_REPO: []string{
         syncd.API_PROJECT_REPO_RESET,
     },
+    PROJECT_CHECK: []string{
+        syncd.API_PROJECT_SERVER_CHECK,
+    },
     DEPLOY_APPLY: []string{
         syncd.API_DEPLOY_APPLY_SPACE_LIST,
         syncd.API_DEPLOY_APPLY_PROJECT_LIST,
@@ -133,11 +133,13 @@ var privToApiMap = map[int][]string{
         syncd.API_DEPLOY_APPLY_LIST,
         syncd.API_DEPLOY_APPLY_DETAIL,
         syncd.API_DEPLOY_APPLY_PROJECT_ALL,
+        syncd.API_DEPLOY_APPLY_LOG,
     },
     DEPLOY_VIEW_ALL: []string{
         syncd.API_DEPLOY_APPLY_LIST,
         syncd.API_DEPLOY_APPLY_DETAIL,
         syncd.API_DEPLOY_APPLY_PROJECT_ALL,
+        syncd.API_DEPLOY_APPLY_LOG,
     },
     DEPLOY_AUDIT_MY: []string{
         syncd.API_DEPLOY_APPLY_AUDIT,
@@ -152,6 +154,20 @@ var privToApiMap = map[int][]string{
     },
     DEPLOY_DROP_ALL: []string{
         syncd.API_DEPLOY_APPLY_DISCARD,
+    },
+    DEPLOY_EDIT_MY: []string{
+        syncd.API_DEPLOY_APPLY_PROJECT_DETAIL,
+        syncd.API_DEPLOY_APPLY_TAGLIST,
+        syncd.API_DEPLOY_APPLY_COMMITLIST,
+        syncd.API_DEPLOY_APPLY_UPDATE,
+    },
+    DEPLOY_DEPLOY_MY: []string{
+        syncd.API_DEPLOY_DEPLOY_START,
+        syncd.API_DEPLOY_APPLY_DETAIL,
+    },
+    DEPLOY_DEPLOY_ALL: []string{
+        syncd.API_DEPLOY_DEPLOY_START,
+        syncd.API_DEPLOY_APPLY_DETAIL,
     },
 }
 
@@ -198,6 +214,7 @@ const (
     DEPLOY_DEPLOY_ALL = 1007 // 上线操作(全部)
     DEPLOY_DROP_MY    = 1008 // 废弃上线单(自己)
     DEPLOY_DROP_ALL   = 1009 // 废弃上线单(全部)
+    DEPLOY_EDIT_MY    = 1010 // 编辑上线单(自己)
 
     PROJECT_SPACE_VIEW  = 2001 // 查看空间
     PROJECT_SPACE_NEW   = 2002 // 新增空间
@@ -212,6 +229,7 @@ const (
     PROJECT_DEL   = 2204 // 删除项目
     PROJECT_AUDIT = 2205 // 启用项目
     PROJECT_REPO  = 2206 // 项目仓库重置
+    PROJECT_CHECK = 2207 // 集群检测
 
     USER_ROLE_VIEW = 3001 // 查看角色
     USER_ROLE_NEW  = 3002 // 新增角色
@@ -230,7 +248,6 @@ const (
     SERVER_NEW   = 4102 // 新增服务器
     SERVER_EDIT  = 4103 // 编辑服务器
     SERVER_DEL   = 4104 // 删除服务器
-    SERVER_CHECK = 4105 // 检测服务器
 )
 
 var PrivList = []PrivGroup{
@@ -242,6 +259,7 @@ var privDeploy = PrivGroup{
     Items: []PrivItem{
         PrivItem{ Label: "上线单-申请", Value: DEPLOY_APPLY },
         PrivItem{ Label: "上线单-查看", Value: DEPLOY_VIEW_MY },
+        PrivItem{ Label: "上线单-编辑", Value: DEPLOY_EDIT_MY},
         PrivItem{ Label: "上线单-审核", Value: DEPLOY_AUDIT_MY },
         PrivItem{ Label: "上线单-上线", Value: DEPLOY_DEPLOY_MY },
         PrivItem{ Label: "上线单-废弃", Value: DEPLOY_DROP_MY },
@@ -268,6 +286,7 @@ var privProject = PrivGroup{
         PrivItem{ Label: "项目-删除", Value: PROJECT_DEL },
         PrivItem{ Label: "项目-启用", Value: PROJECT_AUDIT },
         PrivItem{ Label: "项目-仓库重置", Value: PROJECT_REPO },
+        PrivItem{ Label: "项目-集群检测", Value: PROJECT_CHECK},
     },
 }
 
@@ -296,7 +315,6 @@ var privServer = PrivGroup{
         PrivItem{ Label: "服务器-新增", Value: SERVER_NEW },
         PrivItem{ Label: "服务器-编辑", Value: SERVER_EDIT },
         PrivItem{ Label: "服务器-删除", Value: SERVER_DEL },
-        PrivItem{ Label: "服务器-检测", Value: SERVER_CHECK },
     },
 }
 

@@ -22,6 +22,33 @@ type Server struct {
     SshPort int     `json:"ssh_port"`
 }
 
+func ServerGetListByGroupIds(ids []int) ([]Server, error){
+    list, ok := serverModel.List(model.QueryParam{
+        Fields: "id, group_id, name, ip, ssh_port",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "group_id",
+                Tag: "IN",
+                Prepare: ids,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get server list data failed")
+    }
+    var serList []Server
+    for _, l := range list {
+        serList = append(serList, Server{
+            ID: l.ID,
+            GroupId: l.GroupId,
+            Ip: l.Ip,
+            SshPort: l.SshPort,
+            Name: l.Name,
+        })
+    }
+    return serList, nil
+}
+
 func (s *Server) CreateOrUpdate() error {
     server := serverModel.Server{
         GroupId: s.GroupId,

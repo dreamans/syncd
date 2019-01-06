@@ -5,7 +5,6 @@
 package repo
 
 import (
-    "net/url"
     "fmt"
 
     "github.com/tinystack/goutil/gopath"
@@ -21,7 +20,10 @@ func (g *Git) SetRepo(r *Repo) {
 }
 
 func (g *Git) UpdateRepo(branch string) (string, error) {
-    exists, err := gopath.PathExists(g.repo.localPath)
+    if branch == "" {
+        branch = "master"
+    }
+    exists, err := gopath.PathExists(g.repo.localPath + "/.git")
     if err != nil {
         return "", err
     }
@@ -30,16 +32,17 @@ func (g *Git) UpdateRepo(branch string) (string, error) {
         cmd = gostring.JoinSepStrings(
             " && ",
             fmt.Sprintf("cd %s", g.repo.localPath),
-            fmt.Sprintf("git checkout -q %s", branch),
-            "git fetch -p -q --all",
-            fmt.Sprintf("git reset -q --hard origin/%s", branch),
+            fmt.Sprintf("/usr/bin/env git checkout -q %s", branch),
+            "/usr/bin/env git fetch -p -q --all",
+            fmt.Sprintf("/usr/bin/env git reset -q --hard origin/%s", branch),
         )
     } else {
         cmd = gostring.JoinSepStrings(
             " && ",
-            fmt.Sprintf("mkdir %s", g.repo.localPath),
+            fmt.Sprintf("mkdir -p %s", g.repo.localPath),
             fmt.Sprintf("cd %s", g.repo.localPath),
-            fmt.Sprintf("git clone -q %s -b %s .", branch, g.getRemoteUrl()),
+            fmt.Sprintf("/usr/bin/env git clone -q %s .", g.repo.Url),
+            fmt.Sprintf("/usr/bin/env git checkout -q %s", branch),
         )
     }
     return cmd, nil
@@ -49,9 +52,9 @@ func (g *Git) ResetRepo() string {
     cmd := gostring.JoinSepStrings(
         " && ",
         fmt.Sprintf("rm -rf %s", g.repo.localPath),
-        fmt.Sprintf("mkdir %s", g.repo.localPath),
+        fmt.Sprintf("mkdir -p %s", g.repo.localPath),
         fmt.Sprintf("cd %s", g.repo.localPath),
-        fmt.Sprintf("git clone -q %s .", g.getRemoteUrl()),
+        fmt.Sprintf("git clone -q %s .", g.repo.Url),
     )
     return cmd
 }
@@ -66,24 +69,16 @@ func (g *Git) CommitListRepo() string {
     return cmd
 }
 
-func (g *Git) getRemoteUrl() string {
-    u, err := url.Parse(g.repo.Url)
-    if err != nil {
-        return g.repo.Url
+func (g *Git) Update2CommitRepo(branch, commit string) string {
+    cmd := []string{
+        fmt.Sprintf("cd %s", g.repo.localPath),
     }
-    var remoteUrl string
-    if u.Scheme == "http" || u.Scheme == "https" {
-        repoUrl := &url.URL{
-            Scheme: u.Scheme,
-            User: url.UserPassword(g.repo.User, g.repo.Pass),
-            Host: u.Host,
-            Path: u.Path,
-            RawQuery: u.RawQuery,
-        }
-        remoteUrl = repoUrl.String()
-    } else {
-        return g.repo.Url
+    if branch != "" {
+        cmd = append(cmd, fmt.Sprintf("/usr/bin/env git checkout -q %s", branch))
     }
-    return remoteUrl
+    if commit != "" {
+        cmd = append(cmd, fmt.Sprintf("/usr/bin/env git reset -q --hard %s", commit))
+    }
+    return gostring.JoinSepStrings(" && ", cmd...)
 }
 

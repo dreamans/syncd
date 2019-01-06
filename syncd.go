@@ -36,6 +36,7 @@ var (
     DbInstance      *DB
     DataDir         string
     TmpDir          string
+    RemoteTmpDir    string
     CipherKey       []byte
 )
 
@@ -118,4 +119,6 @@ func (s *Syncd) InitEnv() {
         panic(err)
     }
     CipherKey = dec
+
+    RemoteTmpDir = "~/.syncd"
 }

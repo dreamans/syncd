@@ -85,7 +85,7 @@ func apiPrivCheck(c *goweb.Context) error {
     c.Set("priv", group.Priv)
     havePriv := userService.CheckHavePriv(loginReqPath, group.Priv)
     if !havePriv {
-        if loginReqPath != syncd.API_USER_LOGIN_STATUS {
+        if loginReqPath != syncd.API_USER_LOGIN_STATUS && loginReqPath != syncd.API_USER_LOGOUT {
             return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
         }
     }

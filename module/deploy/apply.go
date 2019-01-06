@@ -18,6 +18,7 @@ import (
     repoService "github.com/tinystack/syncd/service/repo"
     taskService "github.com/tinystack/syncd/service/task"
     userService "github.com/tinystack/syncd/service/user"
+    logService "github.com/tinystack/syncd/service/operate_log"
 )
 
 type ApplyParamValid struct {
@@ -113,22 +114,40 @@ func ApplyRepoTagList(c *goweb.Context) error {
     }
     repo := &repoService.Repo{
         ID: project.ID,
-        Repo: project.Repo,
         Url: project.RepoUrl,
-        User: project.RepoUser,
-        Pass: project.RepoPass,
     }
     if repo, err = repoService.RepoNew(repo); err != nil {
         return syncd.RenderAppError(err.Error())
     }
-    task, err := taskService.TaskCreate("repo_tag_list", []string{
+
+    updateRepoCmd, err := repo.UpdateRepo("")
+    if err != nil {
+        return syncd.RenderTaskError(err.Error())
+    }
+    taskUpdateRepo := taskService.TaskCreate(taskService.TASK_REPO_UPDATE, []string{
+        updateRepoCmd,
+    })
+
+    taskTagListRepo := taskService.TaskCreate(taskService.TASK_REPO_TAG_LIST, []string{
         repo.TagListRepo(),
     })
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
+
+    c.CloseCallback(func() {
+        taskUpdateRepo.Terminate()
+        taskTagListRepo.Terminate()
+    }, 60)
+
+    taskUpdateRepo.TaskRun()
+    if taskUpdateRepo.LastError() != nil {
+        return syncd.RenderTaskError(taskUpdateRepo.Stdout() + taskUpdateRepo.Stderr())
     }
-    task.TaskRun()
-    tagList := gostring.StrFilterSliceEmpty(strings.Split(task.Stdout(), "\n"))
+
+    taskTagListRepo.TaskRun()
+    if taskTagListRepo.LastError() != nil {
+        return syncd.RenderTaskError(taskTagListRepo.Stdout() + taskTagListRepo.Stderr())
+    }
+
+    tagList := gostring.StrFilterSliceEmpty(strings.Split(taskTagListRepo.Stdout(), "\n"))
     tagList = gostring.StringSliceRsort(tagList)
     return syncd.RenderJson(c, goweb.JSON{
         "list": tagList,
@@ -142,22 +161,39 @@ func ApplyRepoCommitList(c *goweb.Context) error {
     }
     repo := &repoService.Repo{
         ID: project.ID,
-        Repo: project.Repo,
         Url: project.RepoUrl,
-        User: project.RepoUser,
-        Pass: project.RepoPass,
     }
     if repo, err = repoService.RepoNew(repo); err != nil {
         return syncd.RenderAppError(err.Error())
     }
-    task, err := taskService.TaskCreate("repo_commit_list", []string{
+
+    updateRepoCmd, err := repo.UpdateRepo(project.RepoBranch)
+    if err != nil {
+        return syncd.RenderTaskError(err.Error())
+    }
+    taskUpdateRepo := taskService.TaskCreate(taskService.TASK_REPO_UPDATE, []string{
+        updateRepoCmd,
+    })
+
+    taskCommitListRepo := taskService.TaskCreate(taskService.TASK_REPO_COMMIT_LIST, []string{
         repo.CommitListRepo(),
     })
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
+
+    c.CloseCallback(func() {
+        taskUpdateRepo.Terminate()
+        taskCommitListRepo.Terminate()
+    }, 60)
+
+    taskUpdateRepo.TaskRun()
+    if taskUpdateRepo.LastError() != nil {
+        return syncd.RenderTaskError(taskUpdateRepo.Stdout() + taskUpdateRepo.Stderr())
     }
-    task.TaskRun()
-    commitList := gostring.StrFilterSliceEmpty(strings.Split(task.Stdout(), "\n"))
+
+    taskCommitListRepo.TaskRun()
+    if taskCommitListRepo.LastError() != nil {
+        return syncd.RenderTaskError(taskCommitListRepo.Stdout() + taskCommitListRepo.Stderr())
+    }
+    commitList := gostring.StrFilterSliceEmpty(strings.Split(taskCommitListRepo.Stdout(), "\n"))
     return syncd.RenderJson(c, goweb.JSON{
         "list": commitList,
     })
@@ -179,7 +215,7 @@ func ApplySubmit(c *goweb.Context) error {
         return syncd.RenderAppError(err.Error())
     }
     if project.Status != 1 {
-        return syncd.RenderParamError("roject not enabled")
+        return syncd.RenderParamError("project not enabled")
     }
     if project.RepoMode == 1 && commit == "" {
         return syncd.RenderParamError("commit can not be empty")
@@ -187,10 +223,11 @@ func ApplySubmit(c *goweb.Context) error {
     if project.RepoMode == 2 && tag == "" {
         return syncd.RenderParamError("tag can not be empty")
     }
-    var status int
+    status := 1
     if project.NeedAudit == 0 {
         status = 3
     }
+
     apply := &deployService.Apply{
         ProjectId: project.ID,
         SpaceId: project.SpaceId,
@@ -199,19 +236,82 @@ func ApplySubmit(c *goweb.Context) error {
         Status: status,
         UserId: c.GetInt("user_id"),
         RepoData: deployService.ApplyRepoData{
-            Repo: project.Repo,
             RepoUrl: project.RepoUrl,
-            RepoUser: project.RepoUser,
-            RepoPass: project.RepoPass,
             RepoMode: project.RepoMode,
             RepoBranch: project.RepoBranch,
             Tag: tag,
             Commit: commit,
         },
     }
-    if err := apply.Create(); err != nil {
+    pkId, err := apply.Create()
+    if err != nil {
         return syncd.RenderAppError(err.Error())
     }
+
+    logService.Record(&logService.OperateLog{
+        DataId: pkId,
+        OpType: logService.OP_TYPE_APPLY,
+        OpName: logService.OP_NAME_APPLY_CREATE,
+        UserId: c.GetInt("user_id"),
+        UserName: c.GetString("user_name"),
+    })
+
+    return syncd.RenderJson(c, nil)
+}
+
+func ApplyUpdate(c *goweb.Context) error {
+    id, tag, commit, name, description := c.PostFormInt("id"), c.PostForm("tag"), c.PostForm("commit"), c.PostForm("name"), c.PostForm("description")
+    if id == 0 {
+        return syncd.RenderParamError("id can not be empty")
+    }
+    if name == "" {
+        return syncd.RenderParamError("name can not be empty")
+    }
+    if description == "" {
+        return syncd.RenderParamError("description can not be empty")
+    }
+
+    apply, err := deployService.ApplyGetByPk(id)
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    if apply.UserId != c.GetInt("user_id") {
+        return syncd.RenderAppError("no priv update apply")
+    }
+
+    project, err := applyCheckAndGetProjectDetail(apply.ProjectId, c.GetInt("user_id"))
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    if project.Status != 1 {
+        return syncd.RenderParamError("project not enabled")
+    }
+    if project.RepoMode == 1 && commit == "" {
+        return syncd.RenderParamError("commit can not be empty")
+    }
+    if project.RepoMode == 2 && tag == "" {
+        return syncd.RenderParamError("tag can not be empty")
+    }
+    if apply.Status == 2 {
+        apply.Status = 1
+    }
+    apply.Name = name
+    apply.Description = description
+    apply.RepoData.Tag = tag
+    apply.RepoData.Commit = commit
+
+    if err := apply.Update(); err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+
+    logService.Record(&logService.OperateLog{
+        DataId: id,
+        OpType: logService.OP_TYPE_APPLY,
+        OpName: logService.OP_NAME_APPLY_UPDATE,
+        UserId: c.GetInt("user_id"),
+        UserName: c.GetString("user_name"),
+    })
+
     return syncd.RenderJson(c, nil)
 }
 
@@ -322,9 +422,9 @@ func ApplyDetail(c *goweb.Context) error {
         "description": apply.Description,
         "space_name": spaceName,
         "project_name": projectName,
+        "project_id": apply.ProjectId,
         "user_name": userName,
         "user_email": userEmail,
-        "repo": apply.RepoData.Repo,
         "repo_branch": apply.RepoData.RepoBranch,
         "repo_commit": apply.RepoData.Commit,
         "repo_tag": apply.RepoData.Tag,
@@ -335,23 +435,116 @@ func ApplyDetail(c *goweb.Context) error {
 }
 
 func ApplyAudit(c *goweb.Context) error {
-    return applyChangeStatus(c, userService.DEPLOY_AUDIT_ALL, 3, []int{1})
+    audit, id, status := c.PostFormInt("audit"), c.PostFormInt("id"), 0
+    var opContent string
+
+    if audit == 1 {
+        status = 3
+        opContent = "审核通过"
+    } else {
+        status = 2
+        opContent = "审核拒绝, "
+    }
+    apply, err := deployService.ApplyGetByPk(id)
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    tmpApply := &deployService.Apply{
+        ID: apply.ID,
+        SpaceId: apply.SpaceId,
+        UserId: apply.UserId,
+        Status: apply.Status,
+    }
+
+    logService.Record(&logService.OperateLog{
+        DataId: id,
+        OpType: logService.OP_TYPE_APPLY,
+        OpName: logService.OP_NAME_APPLY_AUDIT,
+        OpContent: gostring.JoinStrings(opContent, c.PostForm("reject_reason")),
+        UserId: c.GetInt("user_id"),
+        UserName: c.GetString("user_name"),
+    })
+
+    return applyUpdateStatus(c, tmpApply, userService.DEPLOY_AUDIT_ALL, status, []int{1})
 }
 
 func ApplyUnAudit(c *goweb.Context) error {
-    return applyChangeStatus(c, userService.DEPLOY_AUDIT_ALL, 1, []int{3})
-}
-
-func ApplyDiscard(c *goweb.Context) error {
-    return applyChangeStatus(c, userService.DEPLOY_DROP_ALL, 7, []int{1, 2, 3, 6})
-}
-
-func applyChangeStatus(c *goweb.Context, privCode int, status int, allowStatus []int) error {
     id := c.PostFormInt("id")
     apply, err := deployService.ApplyGetByPk(id)
     if err != nil {
         return syncd.RenderAppError(err.Error())
     }
+    tmpApply := &deployService.Apply{
+        ID: apply.ID,
+        Status: apply.Status,
+        UserId: apply.UserId,
+        SpaceId: apply.SpaceId,
+    }
+
+    logService.Record(&logService.OperateLog{
+        DataId: id,
+        OpType: logService.OP_TYPE_APPLY,
+        OpName: logService.OP_NAME_APPLY_UNAUDIT,
+        UserId: c.GetInt("user_id"),
+        UserName: c.GetString("user_name"),
+    })
+
+    return applyUpdateStatus(c, tmpApply, userService.DEPLOY_AUDIT_ALL, 1, []int{3})
+}
+
+func ApplyDiscard(c *goweb.Context) error {
+    id := c.PostFormInt("id")
+    apply, err := deployService.ApplyGetByPk(id)
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    tmpApply := &deployService.Apply{
+        ID: apply.ID,
+        SpaceId: apply.SpaceId,
+        UserId: apply.UserId,
+        Status: apply.Status,
+    }
+
+    logService.Record(&logService.OperateLog{
+        DataId: id,
+        OpType: logService.OP_TYPE_APPLY,
+        OpName: logService.OP_NAME_APPLY_DISCARD,
+        UserId: c.GetInt("user_id"),
+        UserName: c.GetString("user_name"),
+    })
+
+    return applyUpdateStatus(c, tmpApply, userService.DEPLOY_DROP_ALL, 7, []int{1, 2, 3, 6})
+}
+
+func ApplyLog(c *goweb.Context) error {
+    id := c.QueryInt("id")
+    apply, err := deployService.ApplyGetByPk(id)
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    if havePriv := userService.PrivIn(userService.DEPLOY_VIEW_ALL, c.GetIntSlice("priv")); !havePriv {
+        if apply.UserId != c.GetInt("user_id") {
+            return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
+        }
+    }
+    if err := applyCheckUserInSpace(apply.SpaceId, c.GetInt("user_id")); err != nil {
+        return err
+    }
+
+    log := &logService.OperateLog{
+        DataId: id,
+        OpType: logService.OP_TYPE_APPLY,
+    }
+    list, err := log.List()
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    return syncd.RenderJson(c, goweb.JSON{
+        "list": list,
+    })
+}
+
+func applyUpdateStatus(c *goweb.Context, apply *deployService.Apply, privCode int, status int, allowStatus []int) error {
     if havePriv := userService.PrivIn(privCode, c.GetIntSlice("priv")); !havePriv {
         if apply.UserId != c.GetInt("user_id") {
             return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
