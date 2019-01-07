@@ -229,6 +229,7 @@ func (p *Project) CreateOrUpdate() error {
         RepoMode: p.RepoMode,
         RepoBranch: p.RepoBranch,
         ExcludeFiles: p.ExcludeFiles,
+        Status: 0,
     }
     if p.ID > 0 {
         if ok := projectModel.Update(p.ID, project); !ok {

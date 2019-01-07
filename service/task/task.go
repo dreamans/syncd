@@ -16,6 +16,7 @@ import (
 type Task struct {
     name        string
     cmd         []string
+    timeout     int
     termChan    chan int
     err         []error
     stdout      []string
@@ -29,12 +30,14 @@ const (
     TASK_REPO_UPDATE = "repo_update"
     TASK_REPO_COMMIT_LIST = "repo_commit_list"
     TASK_SERVER_CHECK = "server_check"
+    TASK_REPO_DEPLOY = "repo_deploy"
 )
 
-func TaskCreate(name string, cmd []string) *Task {
+func TaskCreate(name string, cmd []string, timeout int) *Task {
     task := &Task{
         name: name,
         cmd: cmd,
+        timeout: timeout,
     }
     return task
 }
@@ -51,24 +54,22 @@ func (t *Task) TaskWait() {
     t.wg.Wait()
 }
 
-func (t *Task) TaskRun() error {
+func (t *Task) TaskRun() {
     for _, cmd := range t.cmd {
         if err := t.next(cmd); err != nil {
             t.err = append(t.err, errors.New("task run failed, " + err.Error()))
             break
         }
     }
-    return nil
 }
 
 func (t *Task) next(cmd string) error {
     t.termChan = make(chan int)
     command := gocmd.Command{
         Cmd: cmd,
-        Timeout: time.Second * 600,
+        Timeout: time.Second * time.Duration(t.timeout),
         TerminateChan: t.termChan,
     }
-
     if err := command.Run(); err != nil {
         stderr := string(command.Stderr())
         if stderr != "" {
@@ -76,12 +77,10 @@ func (t *Task) next(cmd string) error {
         }
         return err
     }
-
     stdout := string(command.Stdout())
     if stdout != "" {
         t.stdout = append(t.stdout, stdout)
     }
-
     return nil
 }
 

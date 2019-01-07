@@ -30,10 +30,12 @@ func ServerCheck(c *goweb.Context) error {
         sshCmds = append(sshCmds, fmt.Sprintf("/usr/bin/env ssh -p %d %s@%s 'mkdir -p %s; cd %s; echo \"%s\" $( pwd ) $( whoami ) $( date +\"%%Y-%%m-%%d %%H:%%M:%%S\" ) \"[检测成功]\"'", ser.SshPort, project.DeployUser, ser.Ip, project.DeployPath, project.DeployPath, ser.Ip))
     }
 
-    task := taskService.TaskCreate(taskService.TASK_SERVER_CHECK, sshCmds)
+
+    taskTimeout := len(sshCmds) * 10
+    task := taskService.TaskCreate(taskService.TASK_SERVER_CHECK, sshCmds, taskTimeout)
     c.CloseCallback(func() {
         task.Terminate()
-    }, len(sshCmds) * 10)
+    }, taskTimeout)
 
     task.TaskRun()
     if task.LastError() != nil {

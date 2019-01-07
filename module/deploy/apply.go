@@ -124,18 +124,20 @@ func ApplyRepoTagList(c *goweb.Context) error {
     if err != nil {
         return syncd.RenderTaskError(err.Error())
     }
+
+    taskTimeout := 60
     taskUpdateRepo := taskService.TaskCreate(taskService.TASK_REPO_UPDATE, []string{
         updateRepoCmd,
-    })
+    }, taskTimeout)
 
     taskTagListRepo := taskService.TaskCreate(taskService.TASK_REPO_TAG_LIST, []string{
         repo.TagListRepo(),
-    })
+    }, taskTimeout)
 
     c.CloseCallback(func() {
         taskUpdateRepo.Terminate()
         taskTagListRepo.Terminate()
-    }, 60)
+    }, taskTimeout)
 
     taskUpdateRepo.TaskRun()
     if taskUpdateRepo.LastError() != nil {
@@ -171,18 +173,20 @@ func ApplyRepoCommitList(c *goweb.Context) error {
     if err != nil {
         return syncd.RenderTaskError(err.Error())
     }
+
+    taskTimeout := 60
     taskUpdateRepo := taskService.TaskCreate(taskService.TASK_REPO_UPDATE, []string{
         updateRepoCmd,
-    })
+    }, taskTimeout)
 
     taskCommitListRepo := taskService.TaskCreate(taskService.TASK_REPO_COMMIT_LIST, []string{
         repo.CommitListRepo(),
-    })
+    }, taskTimeout)
 
     c.CloseCallback(func() {
         taskUpdateRepo.Terminate()
         taskCommitListRepo.Terminate()
-    }, 60)
+    }, taskTimeout)
 
     taskUpdateRepo.TaskRun()
     if taskUpdateRepo.LastError() != nil {

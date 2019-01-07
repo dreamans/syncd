@@ -18,6 +18,7 @@ type DeployApply struct {
     SpaceId         int     `gorm:"type:int(11);not null;default:0"`
     RepoData        string  `gorm:"type:varchar(10000);not null;default:''"`
     Status          int     `gorm:"type:int(11);not null;default:1"`
+    ErrorLog        string  `gorm:"type:mediumtext;not null"`
     UserId          int     `gorm:"type:int(11);not null;default:0"`
     Ctime           int     `gorm:"type:int(11);not null;default:0"`
 }

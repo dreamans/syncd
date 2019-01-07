@@ -90,6 +90,8 @@ func handler() {
         syncd.API_DEPLOY_APPLY_UPDATE: deployModule.ApplyUpdate,
         syncd.API_DEPLOY_APPLY_LOG: deployModule.ApplyLog,
         syncd.API_DEPLOY_DEPLOY_START: deployModule.DeployStart,
+        syncd.API_DEPLOY_DEPLOY_STATUS: deployModule.DeployStatus,
+        syncd.API_DEPLOY_DEPLOY_STOP: deployModule.DeployStop,
     }
 
     for k, v := range h {

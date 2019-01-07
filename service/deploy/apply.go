@@ -22,6 +22,7 @@ type Apply struct {
     Description     string          `json:"description"`
     RepoData        ApplyRepoData   `json:"repo_data"`
     Status          int             `json:"status"`
+    ErrorLog        string          `json:"error_log"`
     UserId          int             `json:"user_id"`
     Ctime           int             `json:"ctime"`
 }
@@ -33,6 +34,16 @@ type ApplyRepoData struct {
     Tag         string      `json:"repo_tag"`
     Commit      string      `json:"repo_commit"`
 }
+
+const (
+    APPLY_STATUS_AUDIT_PENDING = 1
+    APPLY_STATUS_AUDIT_FAILED = 2
+    APPLY_STATUS_AUDIT_PASS = 3
+    APPLY_STATUS_DEPLOY_ING = 4
+    APPLY_STATUS_DEPLOY_SUCCESS = 5
+    APPLY_STATUS_DEPLOY_FAILED = 6
+    APPLY_STATUS_DROP = 7
+)
 
 func ApplyGetByPk(id int) (*Apply, error) {
     apply := &Apply{
@@ -148,6 +159,9 @@ func (a *Apply) UpdateStatus() error {
     updateData := map[string]interface{}{
         "status": a.Status,
     }
+    if a.ErrorLog != "" {
+        updateData["error_log"] = a.ErrorLog
+    }
     ok := deployApplyModel.Update(a.ID, updateData)
     if !ok {
         return errors.New("update apply status failed")
@@ -191,6 +205,7 @@ func (a *Apply) Detail() error {
     a.Description = detail.Description
     a.Status = detail.Status
     a.UserId = detail.UserId
+    a.ErrorLog = detail.ErrorLog
     a.Ctime = detail.Ctime
     gostring.JsonDecode(detail.RepoData, &a.RepoData)
 

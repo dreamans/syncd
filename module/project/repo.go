@@ -31,13 +31,15 @@ func RepoReset(c *goweb.Context) error {
     if repo, err = repoService.RepoNew(repo); err != nil {
         return syncd.RenderAppError(err.Error())
     }
+
+    taskTimeout := 60
     task := taskService.TaskCreate(taskService.TASK_REPO_RESET, []string{
         "pwd",
         repo.ResetRepo(),
-    })
+    }, taskTimeout)
     c.CloseCallback(func() {
         task.Terminate()
-    }, 60)
+    }, taskTimeout)
 
     task.TaskRun()
     if task.LastError() != nil {

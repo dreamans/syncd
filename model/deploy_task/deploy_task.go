@@ -15,23 +15,40 @@ type DeployTask struct {
     Cmd             string  `gorm:"type:text;not null"`
     Status          int     `gorm:"type:int(11);not null;default:1"`
     Output          string  `gorm:"type:mediumtext;not null"`
-    Stime           int     `gorm:"type:int(11);not null;default:0"`
-    Ftime           int     `gorm:"type:int(11);not null;default:0"`
+    Name            string  `gorm:"type:varchar(100);not null;default:''"`
 }
 
 const (
     TableName = "deploy_task"
 )
 
-func Create(data *Task) bool {
+func Create(data *DeployTask) bool {
     return model.Create(TableName, data)
 }
 
-func UpdateByKey(id int, data map[string]interface{}) bool {
+func UpdateByPk(id int, data map[string]interface{}) bool {
     ok := model.Update(TableName, data, model.QueryParam{
         Where: []model.WhereParam{
             model.WhereParam{
                 Field: "id",
+                Prepare: id,
+            },
+        },
+    })
+    return ok
+}
+
+func List(query model.QueryParam) ([]DeployTask, bool) {
+    var data []DeployTask
+    ok := model.GetMulti(TableName, &data, query)
+    return data, ok
+}
+
+func DeleteByApplyId(id int) bool {
+    ok := model.Delete(TableName, DeployTask{}, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "apply_id",
                 Prepare: id,
             },
         },

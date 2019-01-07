@@ -77,6 +77,7 @@ func Update(id int, data Project) bool {
         "repo_branch": data.RepoBranch,
         "exclude_files": data.ExcludeFiles,
         "ctime": int(time.Now().Unix()),
+        "status": data.Status,
     }
     ok := model.Update(TableName, updateFields, model.QueryParam{
         Where: []model.WhereParam{

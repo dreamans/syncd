@@ -73,7 +73,7 @@ func (r *Repo) PackRepo(exFiles []string) string {
         " && ",
         fmt.Sprintf("rm -f %s", tarFile),
         fmt.Sprintf("cd %s", r.localPath),
-        fmt.Sprintf("tar %s -zcf %s *", gostring.JoinSepStrings(" ", excludeCmds...), tarFile),
+        fmt.Sprintf("tar %s -zcvf %s *", gostring.JoinSepStrings(" ", excludeCmds...), tarFile),
     )
     return cmd
 }

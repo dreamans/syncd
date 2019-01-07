@@ -164,10 +164,14 @@ var privToApiMap = map[int][]string{
     DEPLOY_DEPLOY_MY: []string{
         syncd.API_DEPLOY_DEPLOY_START,
         syncd.API_DEPLOY_APPLY_DETAIL,
+        syncd.API_DEPLOY_DEPLOY_STATUS,
+        syncd.API_DEPLOY_DEPLOY_STOP,
     },
     DEPLOY_DEPLOY_ALL: []string{
         syncd.API_DEPLOY_DEPLOY_START,
         syncd.API_DEPLOY_APPLY_DETAIL,
+        syncd.API_DEPLOY_DEPLOY_STATUS,
+        syncd.API_DEPLOY_DEPLOY_STOP,
     },
 }
 

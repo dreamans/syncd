@@ -73,5 +73,7 @@ const (
     API_DEPLOY_APPLY_UPDATE = "POST /api/deploy/apply/update"
     API_DEPLOY_APPLY_LOG = "GET /api/deploy/apply/log"
     API_DEPLOY_DEPLOY_START = "POST /api/deploy/deploy/start"
+    API_DEPLOY_DEPLOY_STATUS = "GET /api/deploy/deploy/status"
+    API_DEPLOY_DEPLOY_STOP = "POST /api/deploy/deploy/stop"
 )
 
