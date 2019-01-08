@@ -89,6 +89,17 @@ func UserGetListByIds(ids []int) ([]UserItem, error){
     return userList, nil
 }
 
+func (u *User) UpdatePassword() error {
+    updateData := map[string]interface{}{
+        "password": u.Password,
+        "salt": u.Salt,
+    }
+    if ok := userModel.Update(u.ID, updateData); !ok {
+        return errors.New("user password update failed")
+    }
+    return nil
+}
+
 func (u *User) CreateOrUpdate() error {
     var ok bool
     user := userModel.User{

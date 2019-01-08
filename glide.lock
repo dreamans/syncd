@@ -1,5 +1,5 @@
-hash: dab2a4abf69ecad311b3902111fee632283c4886731b993b90ded04ebd77a9d8
-updated: 2018-12-30T12:38:03.762254+08:00
+hash: 271e01b753cefabfc506ccf2123febb4375e14958eed6a2d8398eb272450ae62
+updated: 2019-01-08T14:15:07.66265+08:00
 imports:
 - name: github.com/go-sql-driver/mysql
   version: 72cd26f257d44c1114970e19afddcd812016007e
@@ -7,16 +7,28 @@ imports:
   version: 472c70caa40267cb89fd8facb07fe6454b578626
 - name: github.com/jinzhu/inflection
   version: 04140366298a54a039076d798123ffa108fff46c
+- name: github.com/tinystack/gocmd
+  version: 58ee6f95df7522eb17ca5fc4b7b3b4f92934ecec
 - name: github.com/tinystack/golog
   version: e27b639158fdc265ff8efbec5bc7a3bc097a546a
 - name: github.com/tinystack/goutil
-  version: 4bada5af97a26ffde3b47c73735a942d125ffc4b
+  version: b22470ba92798f329e979297740357e21b2eabf8
   subpackages:
+  - goaes
+  - gois
   - gopath
+  - goslice
+  - gostring
+- name: github.com/tinystack/govalidate
+  version: 00fad4be752bf4c27dfda35764ff2614fa8b288e
 - name: github.com/tinystack/goweb
-  version: bc93715bdf813c2392a4087df12b5187736e5210
+  version: ed2b5e75e6799c7cd97ff36ffde3a24636632116
 - name: google.golang.org/appengine
   version: e9657d882bb81064595ca3b56cbe2546bbabf7b1
   subpackages:
   - cloudsql
+- name: gopkg.in/alexcesaro/quotedprintable.v3
+  version: 2caba252f4dc53eaf6b553000885530023f54623
+- name: gopkg.in/gomail.v2
+  version: 41f3572897373c5538c50a2402db15db079fa4fd
 testImports: []

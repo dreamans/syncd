@@ -34,9 +34,13 @@ func LoginStatus(c *goweb.Context) error {
     userId := c.GetInt("user_id")
     return syncd.RenderJson(c, goweb.JSON{
         "is_login": userId > 0,
+        "group_id": c.GetInt("group_id"),
+        "group_name": c.GetString("group_name"),
         "user_id": userId,
         "name": c.GetString("user_name"),
         "email": c.GetString("email"),
+        "mobile": c.GetString("mobile"),
+        "true_name": c.GetString("true_name"),
         "priv": c.GetIntSlice("priv"),
     })
 }

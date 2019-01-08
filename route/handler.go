@@ -43,6 +43,8 @@ func handler() {
         syncd.API_USER_LOGIN: userModule.Login,
         syncd.API_USER_LOGOUT: userModule.Logout,
         syncd.API_USER_LOGIN_STATUS: userModule.LoginStatus,
+        syncd.API_USER_MY_UPDATE: userModule.MyUpdate,
+        syncd.API_USER_MY_PASSWORD: userModule.MyPasswordUpdate,
 
         syncd.API_USER_GROUP_NEW: userModule.GroupNew,
         syncd.API_USER_GROUP_UPDATE: userModule.GroupEdit,

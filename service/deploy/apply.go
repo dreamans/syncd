@@ -158,9 +158,7 @@ func (a *Apply) Create() (int, error) {
 func (a *Apply) UpdateStatus() error {
     updateData := map[string]interface{}{
         "status": a.Status,
-    }
-    if a.ErrorLog != "" {
-        updateData["error_log"] = a.ErrorLog
+        "error_log": a.ErrorLog,
     }
     ok := deployApplyModel.Update(a.ID, updateData)
     if !ok {

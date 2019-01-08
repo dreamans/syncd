@@ -31,6 +31,9 @@ type Project struct {
     RepoBranch      string   `json:"repo_branch"`
     ExcludeFiles    string   `json:"exclude_files"`
     DeployServers   []map[string]interface{}    `json:"deploy_servers"`
+    DeployTimeout   int      `json:"deploy_timeout"`
+    AuditNoticeEmail    string  `json:"audit_notice_email"`
+    DeployNoticeEmail   string  `json:"deploy_notice_email"`
 }
 
 type ProjectItem struct {
@@ -211,6 +214,9 @@ func (p *Project) Detail() error {
     p.RepoMode = detail.RepoMode
     p.RepoBranch = detail.RepoBranch
     p.ExcludeFiles = detail.ExcludeFiles
+    p.DeployTimeout = detail.DeployTimeout
+    p.AuditNoticeEmail = detail.AuditNoticeEmail
+    p.DeployNoticeEmail = detail.DeployNoticeEmail
     return nil
 }
 
@@ -230,6 +236,9 @@ func (p *Project) CreateOrUpdate() error {
         RepoBranch: p.RepoBranch,
         ExcludeFiles: p.ExcludeFiles,
         Status: 0,
+        DeployTimeout: p.DeployTimeout,
+        AuditNoticeEmail: p.AuditNoticeEmail,
+        DeployNoticeEmail: p.DeployNoticeEmail,
     }
     if p.ID > 0 {
         if ok := projectModel.Update(p.ID, project); !ok {

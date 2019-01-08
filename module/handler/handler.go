@@ -11,6 +11,7 @@ import (
 
     "github.com/tinystack/goweb"
     "github.com/tinystack/goutil/gostring"
+    "github.com/tinystack/goutil/goslice"
     "github.com/tinystack/syncd"
     "github.com/tinystack/goutil/goaes"
     userService "github.com/tinystack/syncd/service/user"
@@ -30,8 +31,12 @@ func apiPrivCheck(c *goweb.Context) error {
     authToken, _ := c.GetCookie("SYD_AUTH_TOKEN")
 
     c.Set("user_id", 0)
+    c.Set("group_id", 0)
+    c.Set("group_name", "")
     c.Set("user_name", "")
     c.Set("email", "")
+    c.Set("mobile", "")
+    c.Set("true_name", "")
 
     loginReqPath := gostring.JoinSepStrings(" ", c.GetRequestMethod(), c.GetRequestPath())
 
@@ -64,7 +69,7 @@ func apiPrivCheck(c *goweb.Context) error {
         Token: tokenArr[1],
     }
     if status := token.ValidateToken(); !status {
-        return syncd.RenderAppError("token check failed, token incorrect")
+        return syncd.RenderCustomerError(syncd.CODE_ERR_NO_LOGIN, "token check failed, maybe your account is logged in on another device")
     }
     user := &userService.User{
         ID: token.UserId,
@@ -75,6 +80,9 @@ func apiPrivCheck(c *goweb.Context) error {
     c.Set("user_id", user.ID)
     c.Set("user_name", user.Name)
     c.Set("email", user.Email)
+    c.Set("group_id", user.GroupId)
+    c.Set("mobile", user.Mobile)
+    c.Set("true_name", user.TrueName)
 
     group := &userService.Group{
         ID: user.GroupId,
@@ -83,9 +91,17 @@ func apiPrivCheck(c *goweb.Context) error {
         return syncd.RenderAppError("token check failed, " + err.Error())
     }
     c.Set("priv", group.Priv)
+    c.Set("group_name", group.Name)
+
     havePriv := userService.CheckHavePriv(loginReqPath, group.Priv)
     if !havePriv {
-        if loginReqPath != syncd.API_USER_LOGIN_STATUS && loginReqPath != syncd.API_USER_LOGOUT {
+        noNeedPrivCheck := []string{
+            syncd.API_USER_LOGIN_STATUS,
+            syncd.API_USER_LOGOUT,
+            syncd.API_USER_MY_UPDATE,
+            syncd.API_USER_MY_PASSWORD,
+        }
+        if in := goslice.InSliceString(loginReqPath, noNeedPrivCheck); !in {
             return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
         }
     }

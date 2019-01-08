@@ -22,6 +22,9 @@ type Project struct {
     DeployServer    string  `gorm:"type:varchar(2000);not null;default:''"`
     DeployUser      string  `gorm:"type:varchar(20);not null;default:''"`
     DeployPath      string  `gorm:"type:varchar(100);not null;default:''"`
+    DeployTimeout   int     `gorm:"type:int(11);not null;default:0"`
+    AuditNoticeEmail    string  `gorm:"type:varchar(1000);not null;default:''"`
+    DeployNoticeEmail   string  `gorm:"type:varchar(1000);not null;default:''"`
     PreDeployCmd    string  `gorm:"type:varchar(2000);not null;default:''"`
     PostDeployCmd   string  `gorm:"type:varchar(2000);not null;default:''"`
     NeedAudit       int     `gorm:"type:int(11);not null;default:0"`
@@ -70,6 +73,9 @@ func Update(id int, data Project) bool {
         "deploy_server": data.DeployServer,
         "deploy_user": data.DeployUser,
         "deploy_path": data.DeployPath,
+        "deploy_timeout": data.DeployTimeout,
+        "audit_notice_email": data.AuditNoticeEmail,
+        "deploy_notice_email": data.DeployNoticeEmail,
         "pre_deploy_cmd": data.PreDeployCmd,
         "post_deploy_cmd": data.PostDeployCmd,
         "need_audit": data.NeedAudit,

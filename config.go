@@ -10,6 +10,7 @@ type (
         Db      *DbConfig
         Log     *LogConfig
         Syncd   *SyncdConfig
+        Mail    *MailConfig
     }
 
     SyncdConfig struct {
@@ -19,6 +20,13 @@ type (
 
     LogConfig struct {
         Path    string
+    }
+
+    MailConfig struct {
+        Smtp    string
+        Port    int
+        User    string
+        Pass    string
     }
 
     ServeConfig struct {

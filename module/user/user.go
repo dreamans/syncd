@@ -25,7 +25,7 @@ func UserNew(c *goweb.Context) error {
 func UserEdit(c *goweb.Context) error {
     id := c.PostFormInt("id")
     if id == 0 {
-     return syncd.RenderParamError("id can not empty")
+        return syncd.RenderParamError("id can not empty")
     }
     return userUpdate(c, id)
 }

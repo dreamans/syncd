@@ -28,6 +28,8 @@ const (
     API_USER_LOGIN = "POST /api/user/login"
     API_USER_LOGOUT = "POST /api/user/logout"
     API_USER_LOGIN_STATUS = "GET /api/user/login/status"
+    API_USER_MY_UPDATE = "POST /api/user/my/update"
+    API_USER_MY_PASSWORD = "POST /api/user/my/password"
 
     API_USER_GROUP_NEW = "POST /api/user/group/new"
     API_USER_GROUP_UPDATE = "POST /api/user/group/update"

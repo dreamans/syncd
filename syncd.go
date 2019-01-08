@@ -34,6 +34,7 @@ var (
     Logger          *golog.Logger
     Orm             *gorm.DB
     DbInstance      *DB
+    Mail            *SendMail
     DataDir         string
     TmpDir          string
     RemoteTmpDir    string
@@ -75,6 +76,16 @@ func (s *Syncd) RegisterOrm() {
         panic(err)
     }
     Orm = DbInstance.DbHandler
+}
+
+func (s *Syncd) RegisterMail() {
+    sendmail := &SendMail{
+        Smtp: s.config.Mail.Smtp,
+        Port: s.config.Mail.Port,
+        User: s.config.Mail.User,
+        Pass: s.config.Mail.Pass,
+    }
+    Mail = SendMailNew(sendmail)
 }
 
 func (s *Syncd) RegisterLog() {
@@ -122,3 +133,4 @@ func (s *Syncd) InitEnv() {
 
     RemoteTmpDir = "~/.syncd"
 }
+

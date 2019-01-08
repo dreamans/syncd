@@ -18,6 +18,7 @@ import (
     repoService "github.com/tinystack/syncd/service/repo"
     serverService "github.com/tinystack/syncd/service/server"
     taskService "github.com/tinystack/syncd/service/task"
+    mailService "github.com/tinystack/syncd/service/mail"
 )
 
 func DeployStop(c *goweb.Context) error {
@@ -69,6 +70,7 @@ func DeployStatus(c *goweb.Context) error {
 
     return syncd.RenderJson(c, goweb.JSON{
         "apply_status": apply.Status,
+        "error_log": apply.ErrorLog,
         "deploy_list": newTaskList,
     })
 }
@@ -177,6 +179,9 @@ func DeployStart(c *goweb.Context) error {
 
     go func(id int) {
         if err := deployRunTask(id); err != nil {
+            apply.Status = deployService.APPLY_STATUS_DEPLOY_FAILED
+            apply.ErrorLog = err.Error()
+            apply.UpdateStatus()
             deployRecordErrorLog(fmt.Sprintf("deploy_error, apply_id[%d], errmsg[%s]", apply.ID, err.Error()))
         } else {
             deployRecordInfoLog(fmt.Sprintf("deploy_finish, apply_id[%d]", apply.ID))
@@ -213,9 +218,18 @@ func deployRunTask(id int) error {
         return err
     }
 
+    if err := apply.Detail(); err != nil {
+        return err
+    }
+
+    project, err := projectService.ProjectGetByPk(apply.ProjectId)
+    if err != nil {
+        return err
+    }
+
     var taskError error
     for _, tk := range taskList {
-        if err := deployRunTaskItem(&tk); err != nil {
+        if err := deployRunTaskItem(&tk, project); err != nil {
             taskError = err
             tk.Status = deployService.DEPOLY_STATUS_PANIC
             tk.UpdateStatus()
@@ -234,10 +248,21 @@ func deployRunTask(id int) error {
     }
     apply.UpdateStatus()
 
+    emailList := gostring.StrFilterSliceEmpty(strings.Split(project.DeployNoticeEmail, ","))
+    if user, err := userService.UserGetByPk(apply.UserId); err == nil {
+        emailList = append(emailList, user.Email)
+    }
+    if len(emailList) > 0 {
+        deployTask.Status = 0
+        if taskList, err := deployTask.GetTaskItem(); err == nil {
+            mailService.DeploySend(emailList, apply, taskList)
+        }
+    }
+
     return nil
 }
 
-func deployRunTaskItem(dt *deployService.DeployTask) error {
+func deployRunTaskItem(dt *deployService.DeployTask, project *projectService.Project) error {
     // check task whether needs to be terminated
     applyDetail, err := deployService.ApplyGetByPk(dt.ApplyId)
     if err != nil {
@@ -253,7 +278,7 @@ func deployRunTaskItem(dt *deployService.DeployTask) error {
     dt.UpdateStatus()
 
     var task *taskService.Task
-    var taskTimeout = 60
+    var taskTimeout = project.DeployTimeout
     if dt.Level != deployService.DEPLOY_LEVEL_DEPLOY {
         task = taskService.TaskCreate(taskService.TASK_REPO_DEPLOY, []string{
             dt.Cmd,

@@ -18,12 +18,13 @@ import (
 type ProjectParamValid struct {
     Name            string      `valid:"required" errmsg:"required=project name cannot be empty"`
     Description     string      `valid:"require" errmsg:"required=project description cannot be empty"`
-    SpaceId         int         `valid:"int_min=1" errmsg:"required=space_id cannot be empty"`
-    RepoMode        int         `valid:"int_min=1" errmsg:"required=repo_mode cannot be empty"`
+    SpaceId         int         `valid:"int_min=1" errmsg:"int_min=space_id cannot be empty"`
+    RepoMode        int         `valid:"int_min=1" errmsg:"int_min=repo_mode cannot be empty"`
     RepoUrl         string      `valid:"require" errmsg:"required=repo remote addr cannot be empty"`
     DeployServer    []string    `valid:"require" errmsg:"required=deploy server cannot be empty"`
     DeployUser      string      `valid:"require" errmsg:"required=deploy user cannot be epmty"`
     DeployPath      string      `valid:"require" errmsg:"required=deploy path cannot be epmty"`
+    DeployTimeout   int         `valid:"int_min=1" errmsg:"required=int_min cannot be empty"`
 }
 
 func ProjectNew(c *goweb.Context) error {
@@ -48,6 +49,7 @@ func projectUpdate(c *goweb.Context, id int) error {
         DeployServer: c.PostFormArray("deploy_server"),
         DeployUser: c.PostForm("deploy_user"),
         DeployPath: c.PostForm("deploy_path"),
+        DeployTimeout: c.PostFormInt("deploy_timeout"),
     }
     if valid := govalidate.NewValidate(&params); !valid.Pass() {
         return syncd.RenderParamError(valid.LastFailed().Msg)
@@ -87,6 +89,14 @@ func projectUpdate(c *goweb.Context, id int) error {
         }
     }
 
+    preDeployCmd, postDeployCmd := c.PostForm("pre_deploy_cmd"), c.PostForm("post_deploy_cmd")
+    preDeployCmd = gostring.JoinSepStrings("\n", gostring.StrFilterSliceEmpty(strings.Split(preDeployCmd, "\n"))...)
+    postDeployCmd = gostring.JoinSepStrings("\n", gostring.StrFilterSliceEmpty(strings.Split(postDeployCmd, "\n"))...)
+
+    auditEmail, deployEmail := c.PostForm("audit_notice_email"), c.PostForm("deploy_notice_email")
+    auditEmail = gostring.JoinSepStrings(",", gostring.StrFilterSliceEmpty(strings.Split(auditEmail, ","))...)
+    deployEmail = gostring.JoinSepStrings(",", gostring.StrFilterSliceEmpty(strings.Split(deployEmail, ","))...)
+
     project := &projectService.Project{
         ID: id,
         Name: params.Name,
@@ -99,9 +109,12 @@ func projectUpdate(c *goweb.Context, id int) error {
         DeployServer: deployServer,
         DeployUser: params.DeployUser,
         DeployPath: params.DeployPath,
-        PreDeployCmd: c.PostForm("pre_deploy_cmd"),
-        PostDeployCmd: c.PostForm("post_deploy_cmd"),
+        DeployTimeout: params.DeployTimeout,
+        PreDeployCmd: preDeployCmd,
+        PostDeployCmd: postDeployCmd,
         NeedAudit: needAudit,
+        AuditNoticeEmail: auditEmail,
+        DeployNoticeEmail: deployEmail,
     }
     if err = project.CreateOrUpdate(); err != nil {
         return syncd.RenderAppError(err.Error())
