@@ -100,7 +100,7 @@ func DeploySend(emailList []string, apply *deployService.Apply, taskList []deplo
         <div class="syncd-shell">`)
 
     if apply.ErrorLog != "" {
-        bodyBuff.WriteString("<div class=\"syncd-shell-item\"><div class=\"shell-sub-body syncd-faile\">错误信息 >>><pre>")
+        bodyBuff.WriteString("<div class=\"syncd-shell-item\"><div class=\"shell-sub-body syncd-failed\">错误信息 >>><pre>")
         bodyBuff.WriteString(apply.ErrorLog)
         bodyBuff.WriteString("</pre></div></div>")
     }

@@ -19,6 +19,7 @@ import (
     taskService "github.com/tinystack/syncd/service/task"
     userService "github.com/tinystack/syncd/service/user"
     logService "github.com/tinystack/syncd/service/operate_log"
+    mailService "github.com/tinystack/syncd/service/mail"
 )
 
 type ApplyParamValid struct {
@@ -227,9 +228,9 @@ func ApplySubmit(c *goweb.Context) error {
     if project.RepoMode == 2 && tag == "" {
         return syncd.RenderParamError("tag can not be empty")
     }
-    status := 1
+    status := deployService.APPLY_STATUS_AUDIT_PENDING
     if project.NeedAudit == 0 {
-        status = 3
+        status = deployService.APPLY_STATUS_AUDIT_PASS
     }
 
     apply := &deployService.Apply{
@@ -250,6 +251,14 @@ func ApplySubmit(c *goweb.Context) error {
     pkId, err := apply.Create()
     if err != nil {
         return syncd.RenderAppError(err.Error())
+    }
+
+    if apply.Status == deployService.APPLY_STATUS_AUDIT_PENDING {
+        emailList := gostring.StrFilterSliceEmpty(strings.Split(project.AuditNoticeEmail, ","))
+        if len(emailList) > 0 {
+            userId, userName, userEmail := c.GetInt("user_id"), c.GetString("user_name"), c.GetString("email")
+            mailService.AuditSend(emailList, apply, project, userId, userName, userEmail)
+        }
     }
 
     logService.Record(&logService.OperateLog{

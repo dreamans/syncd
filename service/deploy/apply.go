@@ -152,6 +152,8 @@ func (a *Apply) Create() (int, error) {
     if ok := deployApplyModel.Create(&apply); !ok {
         return 0, errors.New("apply submit failed")
     }
+    a.ID = apply.ID
+    a.Ctime = apply.Ctime
     return apply.ID, nil
 }
 

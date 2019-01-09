@@ -19,6 +19,7 @@ import (
     serverService "github.com/tinystack/syncd/service/server"
     taskService "github.com/tinystack/syncd/service/task"
     mailService "github.com/tinystack/syncd/service/mail"
+    logService "github.com/tinystack/syncd/service/operate_log"
 )
 
 func DeployStop(c *goweb.Context) error {
@@ -37,6 +38,15 @@ func DeployStop(c *goweb.Context) error {
     if err := apply.UpdateStatus(); err != nil {
         return syncd.RenderAppError(err.Error())
     }
+
+    logService.Record(&logService.OperateLog{
+        DataId: id,
+        OpType: logService.OP_TYPE_APPLY,
+        OpName: logService.OP_NAME_APPLY_STOP,
+        UserId: c.GetInt("user_id"),
+        UserName: c.GetString("user_name"),
+    })
+
     return syncd.RenderJson(c, nil)
 }
 
@@ -186,7 +196,22 @@ func DeployStart(c *goweb.Context) error {
         } else {
             deployRecordInfoLog(fmt.Sprintf("deploy_finish, apply_id[%d]", apply.ID))
         }
+
+        logService.Record(&logService.OperateLog{
+            DataId: id,
+            OpType: logService.OP_TYPE_APPLY,
+            OpName: logService.OP_NAME_APPLY_END,
+        })
+
     }(apply.ID)
+
+    logService.Record(&logService.OperateLog{
+        DataId: id,
+        OpType: logService.OP_TYPE_APPLY,
+        OpName: logService.OP_NAME_APPLY_START,
+        UserId: c.GetInt("user_id"),
+        UserName: c.GetString("user_name"),
+    })
 
     return syncd.RenderJson(c, nil)
 }

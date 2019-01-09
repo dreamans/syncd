@@ -31,6 +31,9 @@ const (
     OP_NAME_APPLY_AUDIT = "apply_audit"
     OP_NAME_APPLY_UNAUDIT = "apply_unaudit"
     OP_NAME_APPLY_DISCARD = "apply_discard"
+    OP_NAME_APPLY_START = "apply_start"
+    OP_NAME_APPLY_END = "apply_end"
+    OP_NAME_APPLY_STOP = "apply_stop"
 )
 
 func Record(oplog *OperateLog) {
