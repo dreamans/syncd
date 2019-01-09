@@ -100,6 +100,7 @@ func apiPrivCheck(c *goweb.Context) error {
             syncd.API_USER_LOGOUT,
             syncd.API_USER_MY_UPDATE,
             syncd.API_USER_MY_PASSWORD,
+            syncd.API_ROOT,
         }
         if in := goslice.InSliceString(loginReqPath, noNeedPrivCheck); !in {
             return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")

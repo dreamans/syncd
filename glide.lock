@@ -1,5 +1,5 @@
-hash: 271e01b753cefabfc506ccf2123febb4375e14958eed6a2d8398eb272450ae62
-updated: 2019-01-08T14:15:07.66265+08:00
+hash: 6ba6d990096d162a20230855c8d635fa081444f6245189ddc3d0a2aacc470af5
+updated: 2019-01-09T17:20:32.023761+08:00
 imports:
 - name: github.com/go-sql-driver/mysql
   version: 72cd26f257d44c1114970e19afddcd812016007e
@@ -23,6 +23,8 @@ imports:
   version: 00fad4be752bf4c27dfda35764ff2614fa8b288e
 - name: github.com/tinystack/goweb
   version: ed2b5e75e6799c7cd97ff36ffde3a24636632116
+- name: github.com/Unknwon/goconfig
+  version: 56bd8ab186196b5203e3b8e17057a04a65153003
 - name: google.golang.org/appengine
   version: e9657d882bb81064595ca3b56cbe2546bbabf7b1
   subpackages:

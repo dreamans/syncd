@@ -39,6 +39,11 @@ var (
     TmpDir          string
     RemoteTmpDir    string
     CipherKey       []byte
+    Version         string
+)
+
+const (
+    VERSION = "1.0.0"
 )
 
 func NewSyncd(cfg *Config) *Syncd {
@@ -80,6 +85,7 @@ func (s *Syncd) RegisterOrm() {
 
 func (s *Syncd) RegisterMail() {
     sendmail := &SendMail{
+        Enable: s.config.Mail.Enable,
         Smtp: s.config.Mail.Smtp,
         Port: s.config.Mail.Port,
         User: s.config.Mail.User,

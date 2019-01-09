@@ -23,6 +23,7 @@ type (
     }
 
     MailConfig struct {
+        Enable  int
         Smtp    string
         Port    int
         User    string

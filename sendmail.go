@@ -9,6 +9,7 @@ import (
 )
 
 type SendMail struct {
+    Enable  int
     Smtp    string
     Port    int
     User    string
@@ -32,6 +33,9 @@ func SendMailNew(mail *SendMail) *SendMail {
 }
 
 func (mail *SendMail) Send(msg *SendMailMessage) error {
+    if mail.Enable == 0 {
+        return nil
+    }
     msg.mail = mail
     m := msg.NewMessage()
     if err := mail.dialer.DialAndSend(m); err != nil {

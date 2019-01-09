@@ -4,6 +4,8 @@
 
 package route
 import (
+    "net/http"
+
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
     serverModule "github.com/tinystack/syncd/module/server"
@@ -18,6 +20,14 @@ func init() {
 
 func handler() {
     h := map[string]goweb.HandlerFunc{
+        syncd.API_ROOT: func(c *goweb.Context) error {
+            c.Json(http.StatusOK, goweb.JSON{
+                "code": 0,
+                "message": "welcome to visit syncd API service",
+            })
+            return nil
+        },
+
         // server group api
         syncd.API_SERVER_GROUP_NEW: serverModule.GroupNew,
         syncd.API_SERVER_GROUP_UPDATE: serverModule.GroupEdit,

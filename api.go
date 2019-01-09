@@ -6,6 +6,8 @@ package syncd
 
 const (
 
+    API_ROOT = "GET /"
+
     API_SERVER_GROUP_NEW = "POST /api/server/group/new"
     API_SERVER_GROUP_UPDATE = "POST /api/server/group/update"
     API_SERVER_GROUP_LIST = "GET /api/server/group/list"
