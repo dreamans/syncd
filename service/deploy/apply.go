@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -10,8 +10,8 @@ import (
 
     "github.com/tinystack/goutil/gois"
     "github.com/tinystack/goutil/gostring"
-    baseModel "github.com/tinystack/syncd/model"
-    deployApplyModel "github.com/tinystack/syncd/model/deploy_apply"
+    baseModel "github.com/dreamans/syncd/model"
+    deployApplyModel "github.com/dreamans/syncd/model/deploy_apply"
 )
 
 type Apply struct {
@@ -211,4 +211,3 @@ func (a *Apply) Detail() error {
 
     return nil
 }
-

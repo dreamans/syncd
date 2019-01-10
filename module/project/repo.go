@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -6,10 +6,10 @@ package project
 
 import (
     "github.com/tinystack/goweb"
-    "github.com/tinystack/syncd"
-    repoService "github.com/tinystack/syncd/service/repo"
-    projectService "github.com/tinystack/syncd/service/project"
-    taskService "github.com/tinystack/syncd/service/task"
+    "github.com/dreamans/syncd"
+    repoService "github.com/dreamans/syncd/service/repo"
+    projectService "github.com/dreamans/syncd/service/project"
+    taskService "github.com/dreamans/syncd/service/task"
 )
 
 func RepoReset(c *goweb.Context) error {
@@ -49,4 +49,3 @@ func RepoReset(c *goweb.Context) error {
 
     return syncd.RenderJson(c, nil)
 }
-

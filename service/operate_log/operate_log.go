@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,8 +7,8 @@ package operate_log
 import (
     "errors"
 
-    baseModel "github.com/tinystack/syncd/model"
-    operateLogModel "github.com/tinystack/syncd/model/operate_log"
+    baseModel "github.com/dreamans/syncd/model"
+    operateLogModel "github.com/dreamans/syncd/model/operate_log"
 )
 
 type OperateLog struct {
@@ -91,4 +91,3 @@ func (op *OperateLog) List() ([]OperateLog, error) {
     }
     return operList, nil
 }
-

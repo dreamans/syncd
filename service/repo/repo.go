@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,7 +7,7 @@ package repo
 import (
     "fmt"
 
-    "github.com/tinystack/syncd"
+    "github.com/dreamans/syncd"
     "github.com/tinystack/goutil/gostring"
 )
 
@@ -95,4 +95,3 @@ func (r *Repo) packFilePath() string {
 func (r *Repo) packFileName() string {
     return gostring.JoinStrings("syncd_", gostring.Int2Str(r.ID), "_", gostring.Int2Str(r.ApplyId), ".tar.gz")
 }
-

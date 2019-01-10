@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,8 +7,8 @@ package project
 import (
     "errors"
 
-    baseModel "github.com/tinystack/syncd/model"
-    projectUserModel "github.com/tinystack/syncd/model/project_user"
+    baseModel "github.com/dreamans/syncd/model"
+    projectUserModel "github.com/dreamans/syncd/model/project_user"
 )
 
 type User struct {
@@ -84,4 +84,3 @@ func (u *User) Delete() error {
     }
     return nil
 }
-

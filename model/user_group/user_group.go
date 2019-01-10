@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,7 +7,7 @@ package group
 import (
     "time"
 
-    "github.com/tinystack/syncd/model"
+    "github.com/dreamans/syncd/model"
 )
 
 type UserGroup struct {
@@ -60,4 +60,3 @@ func Delete(id int) bool {
     ok := model.DeleteByPk(TableName, UserGroup{ID: id})
     return ok
 }
-

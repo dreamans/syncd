@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -11,8 +11,8 @@ import (
 
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goutil/gois"
-    baseModel "github.com/tinystack/syncd/model"
-    userGroupModel "github.com/tinystack/syncd/model/user_group"
+    baseModel "github.com/dreamans/syncd/model"
+    userGroupModel "github.com/dreamans/syncd/model/user_group"
 )
 
 type Group struct {

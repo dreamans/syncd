@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -10,8 +10,8 @@ import (
     "time"
 
     "github.com/tinystack/goutil/gostring"
-    deployService "github.com/tinystack/syncd/service/deploy"
-    projectService "github.com/tinystack/syncd/service/project"
+    deployService "github.com/dreamans/syncd/service/deploy"
+    projectService "github.com/dreamans/syncd/service/project"
 )
 
 func AuditSend(emailList []string, apply *deployService.Apply, project *projectService.Project, userId int, userName, userEmail string) {

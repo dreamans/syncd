@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -8,9 +8,9 @@ import (
     "errors"
     "fmt"
 
-    baseModel "github.com/tinystack/syncd/model"
-    projectSpaceModel "github.com/tinystack/syncd/model/project_space"
-    projectUserModel "github.com/tinystack/syncd/model/project_user"
+    baseModel "github.com/dreamans/syncd/model"
+    projectSpaceModel "github.com/dreamans/syncd/model/project_space"
+    projectUserModel "github.com/dreamans/syncd/model/project_user"
 )
 
 type Space struct {
@@ -213,4 +213,3 @@ func (s *Space) CheckExists() (bool, error) {
     }
     return detail.ID > 0, nil
 }
-

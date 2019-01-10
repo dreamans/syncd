@@ -11,15 +11,15 @@ import (
 
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goweb"
-    "github.com/tinystack/syncd"
-    projectService "github.com/tinystack/syncd/service/project"
-    deployService "github.com/tinystack/syncd/service/deploy"
-    userService "github.com/tinystack/syncd/service/user"
-    repoService "github.com/tinystack/syncd/service/repo"
-    serverService "github.com/tinystack/syncd/service/server"
-    taskService "github.com/tinystack/syncd/service/task"
-    mailService "github.com/tinystack/syncd/service/mail"
-    logService "github.com/tinystack/syncd/service/operate_log"
+    "github.com/dreamans/syncd"
+    projectService "github.com/dreamans/syncd/service/project"
+    deployService "github.com/dreamans/syncd/service/deploy"
+    userService "github.com/dreamans/syncd/service/user"
+    repoService "github.com/dreamans/syncd/service/repo"
+    serverService "github.com/dreamans/syncd/service/server"
+    taskService "github.com/dreamans/syncd/service/task"
+    mailService "github.com/dreamans/syncd/service/mail"
+    logService "github.com/dreamans/syncd/service/operate_log"
 )
 
 func DeployStop(c *goweb.Context) error {
@@ -148,7 +148,7 @@ func DeployStart(c *goweb.Context) error {
         },
     }
 
-    //tar zcvf 
+    //tar zcvf
     exFiles := gostring.StrFilterSliceEmpty(strings.Split(project.ExcludeFiles, "\n"))
     packRepoCmd := repo.PackRepo(exFiles)
     deployTasks = append(deployTasks, &deployService.DeployTask{
@@ -347,4 +347,3 @@ func deployRecordErrorLog(msg string) {
 func deployRecordInfoLog(msg string) {
     syncd.Logger.Info("DEPLOY_TASK_INFO, %s", msg)
 }
-

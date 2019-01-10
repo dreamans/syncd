@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -9,10 +9,10 @@ import (
     "fmt"
     "time"
 
-    "github.com/tinystack/syncd"
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goutil/goaes"
-    userModel "github.com/tinystack/syncd/model/user"
+    "github.com/dreamans/syncd"
+    userModel "github.com/dreamans/syncd/model/user"
 )
 
 type Login struct {
@@ -74,4 +74,3 @@ func (u *Login) Login() error {
 
     return nil
 }
-

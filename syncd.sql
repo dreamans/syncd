@@ -1,5 +1,5 @@
 # ************************************************************
-# Copyright 2018 tinystack Author. All Rights Reserved.
+# Copyright 2018 syncd Author. All Rights Reserved.
 # Use of this source code is governed by a MIT-style
 # license that can be found in the LICENSE file.
 # ************************************************************
@@ -157,4 +157,3 @@ CREATE TABLE `syd_user_token` (
   PRIMARY KEY (`id`),
   UNIQUE KEY `idx_user_id` (`user_id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-

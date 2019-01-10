@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -8,7 +8,7 @@ import (
     "bytes"
 
     "github.com/tinystack/goutil/gostring"
-    deployService "github.com/tinystack/syncd/service/deploy"
+    deployService "github.com/dreamans/syncd/service/deploy"
 )
 
 func DeploySend(emailList []string, apply *deployService.Apply, taskList []deployService.DeployTask) {
@@ -140,4 +140,3 @@ func DeploySend(emailList []string, apply *deployService.Apply, taskList []deplo
     }
     mail.AsyncSend()
 }
-

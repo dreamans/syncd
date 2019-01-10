@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -10,9 +10,9 @@ import (
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
-    "github.com/tinystack/syncd"
-    projectService "github.com/tinystack/syncd/service/project"
-    serverService "github.com/tinystack/syncd/service/server"
+    "github.com/dreamans/syncd"
+    projectService "github.com/dreamans/syncd/service/project"
+    serverService "github.com/dreamans/syncd/service/server"
 )
 
 type ProjectParamValid struct {

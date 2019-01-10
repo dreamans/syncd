@@ -12,9 +12,9 @@ import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goutil/goslice"
-    "github.com/tinystack/syncd"
     "github.com/tinystack/goutil/goaes"
-    userService "github.com/tinystack/syncd/service/user"
+    "github.com/dreamans/syncd"
+    userService "github.com/dreamans/syncd/service/user"
 )
 
 func BeforeHandler(c *goweb.Context) error {
@@ -113,7 +113,7 @@ func apiPrivCheck(c *goweb.Context) error {
 func resetReqParams(c *goweb.Context) {
     limit := c.QueryInt("limit")
     if limit > 999 {
-        limit = 999 
+        limit = 999
     }
     if limit == 0 {
         limit = 10

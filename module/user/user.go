@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,8 +7,8 @@ package user
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
-    "github.com/tinystack/syncd"
-    userService "github.com/tinystack/syncd/service/user"
+    "github.com/dreamans/syncd"
+    userService "github.com/dreamans/syncd/service/user"
 )
 
 type UserParamValid struct {
@@ -161,4 +161,3 @@ func UserDelete(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, nil)
 }
-

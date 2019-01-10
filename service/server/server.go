@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -10,8 +10,8 @@ import (
 
     "github.com/tinystack/goutil/gois"
     "github.com/tinystack/goutil/gostring"
-    "github.com/tinystack/syncd/model"
-    serverModel "github.com/tinystack/syncd/model/server"
+    "github.com/dreamans/syncd/model"
+    serverModel "github.com/dreamans/syncd/model/server"
 )
 
 type Server struct {
@@ -167,4 +167,3 @@ func (s *Server) Delete() error {
     }
     return nil
 }
-

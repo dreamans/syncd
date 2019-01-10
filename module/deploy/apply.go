@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -12,14 +12,14 @@ import (
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goutil/goslice"
     "github.com/tinystack/goweb"
-    "github.com/tinystack/syncd"
-    projectService "github.com/tinystack/syncd/service/project"
-    deployService "github.com/tinystack/syncd/service/deploy"
-    repoService "github.com/tinystack/syncd/service/repo"
-    taskService "github.com/tinystack/syncd/service/task"
-    userService "github.com/tinystack/syncd/service/user"
-    logService "github.com/tinystack/syncd/service/operate_log"
-    mailService "github.com/tinystack/syncd/service/mail"
+    "github.com/dreamans/syncd"
+    projectService "github.com/dreamans/syncd/service/project"
+    deployService "github.com/dreamans/syncd/service/deploy"
+    repoService "github.com/dreamans/syncd/service/repo"
+    taskService "github.com/dreamans/syncd/service/task"
+    userService "github.com/dreamans/syncd/service/user"
+    logService "github.com/dreamans/syncd/service/operate_log"
+    mailService "github.com/dreamans/syncd/service/mail"
 )
 
 type ApplyParamValid struct {
@@ -604,4 +604,3 @@ func applyCheckUserInSpace(spaceId, userId int) error {
     }
     return nil
 }
-

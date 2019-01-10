@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,8 +7,8 @@ package server
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/govalidate"
-    "github.com/tinystack/syncd"
-    serverService "github.com/tinystack/syncd/service/server"
+    "github.com/dreamans/syncd"
+    serverService "github.com/dreamans/syncd/service/server"
 )
 
 type ServerParamValid struct {
@@ -86,4 +86,3 @@ func ServerDelete(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, nil)
 }
-

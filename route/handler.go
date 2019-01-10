@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,11 +7,11 @@ import (
     "net/http"
 
     "github.com/tinystack/goweb"
-    "github.com/tinystack/syncd"
-    serverModule "github.com/tinystack/syncd/module/server"
-    userModule "github.com/tinystack/syncd/module/user"
-    projectModule "github.com/tinystack/syncd/module/project"
-    deployModule "github.com/tinystack/syncd/module/deploy"
+    "github.com/dreamans/syncd"
+    serverModule "github.com/dreamans/syncd/module/server"
+    userModule "github.com/dreamans/syncd/module/user"
+    projectModule "github.com/dreamans/syncd/module/project"
+    deployModule "github.com/dreamans/syncd/module/deploy"
 )
 
 func init() {
@@ -110,4 +110,3 @@ func handler() {
         register(k, v)
     }
 }
-

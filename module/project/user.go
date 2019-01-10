@@ -1,4 +1,4 @@
-// Copyright 2018 tinystack Author. All Rights Reserved.
+// Copyright 2018 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,9 +7,9 @@ package project
 import (
     "github.com/tinystack/goweb"
     "github.com/tinystack/goutil/gois"
-    "github.com/tinystack/syncd"
-    projectService "github.com/tinystack/syncd/service/project"
-    userService "github.com/tinystack/syncd/service/user"
+    "github.com/dreamans/syncd"
+    projectService "github.com/dreamans/syncd/service/project"
+    userService "github.com/dreamans/syncd/service/user"
 )
 
 func UserSearch(c *goweb.Context) error {
@@ -120,4 +120,3 @@ func UserRemove(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, nil)
 }
-
