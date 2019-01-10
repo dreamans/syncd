@@ -19,6 +19,7 @@ type Login struct {
     Name        string
     Pass        string
     Ip          string
+    Email       string
     Token       string
     UserDetail  *User
 }
@@ -26,8 +27,9 @@ type Login struct {
 func (u *Login) Login() error {
     user := &User{
         Name: u.Name,
+        Email: u.Email,
     }
-    if err := user.GetByName(); err != nil {
+    if err := user.GetByNameOrEmail(); err != nil {
         return err
     }
     if user.ID == 0 {

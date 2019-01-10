@@ -246,6 +246,33 @@ func (u *User) GetByName() error {
     return nil
 }
 
+func (u *User) GetByNameOrEmail() error {
+    if u.Name == "" && u.Email == "" {
+        return errors.New("name or email can not be empty")
+    }
+    var where []model.WhereParam
+    if u.Name != "" {
+        where = append(where, model.WhereParam{
+            Field: "name",
+            Prepare: u.Name,
+        })
+    }
+    if u.Email != "" {
+        where = append(where, model.WhereParam{
+            Field: "email",
+            Prepare: u.Email,
+        })
+    }
+    detail, ok := userModel.GetOne(model.QueryParam{
+        Where: where,
+    })
+    if !ok {
+        return errors.New("get user detail data failed")
+    }
+    u.transmitUserDetail(detail)
+    return nil
+}
+
 func (u *User) CheckUserExists() (bool, error) {
     var where []model.WhereParam
     if u.Name != "" {

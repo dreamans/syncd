@@ -5,6 +5,7 @@
 package user
 
 import (
+    "github.com/tinystack/goutil/gois"
     "github.com/tinystack/goweb"
     "github.com/tinystack/syncd"
     userService "github.com/tinystack/syncd/service/user"
@@ -16,10 +17,15 @@ func Login(c *goweb.Context) error {
         return syncd.RenderParamError("username or password name can not empty")
     }
     login := &userService.Login{
-        Name: name,
         Pass: pass,
         Ip: c.ClientIP(),
     }
+    if gois.IsEmail(name) {
+        login.Email = name
+    } else {
+        login.Name = name
+    }
+
     if err := login.Login(); err != nil {
         return syncd.RenderCustomerError(syncd.CODE_ERR_LOGIN_FAILED, err.Error())
     }
