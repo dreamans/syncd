@@ -1,0 +1,12 @@
+.ant-menu:not(.ant-menu-horizontal) .ant-menu-item-selected {
+    background-color: rgba(0,0,0,0.04);
+}
+.ant-menu-vertical .ant-menu-item:after, .ant-menu-vertical-left .ant-menu-item:after, .ant-menu-vertical-right .ant-menu-item:after, .ant-menu-inline .ant-menu-item:after {
+    border-right: 3px solid #303f9f;
+}
+.ant-menu-item-selected {
+    color: #303f9f;
+}
+.ant-menu-item:hover, .ant-menu-item-active, .ant-menu:not(.ant-menu-inline) .ant-menu-submenu-open, .ant-menu-submenu-active, .ant-menu-submenu-title:hover {
+    color: #303f9f;
+}
