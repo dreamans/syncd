@@ -18,6 +18,7 @@ func Login(c *goweb.Context) error {
     login := &userService.Login{
         Name: name,
         Pass: pass,
+        Ip: c.ClientIP(),
     }
     if err := login.Login(); err != nil {
         return syncd.RenderCustomerError(syncd.CODE_ERR_LOGIN_FAILED, err.Error())

@@ -44,6 +44,7 @@ func initCfg() {
         fmt.Printf("can not load config file '%s', %s\n", syncdIni, err.Error())
         os.Exit(1)
     }
+    outputInfo("Config Loaded", syncdIni)
 }
 
 func configOrDefault(section, key, useDefault string) string {
@@ -62,7 +63,23 @@ func configIntOrDefault(section, key string, useDefault int) int {
     return val
 }
 
-func main() {
+func welcome() {
+    fmt.Println("                                          __")
+    fmt.Println("   _____   __  __   ____     _____   ____/ /")
+    fmt.Println("  / ___/  / / / /  / __ \\   / ___/  / __  / ")
+    fmt.Println(" (__  )  / /_/ /  / / / /  / /__   / /_/ /  ")
+    fmt.Println("/____/   \\__, /  /_/ /_/   \\___/   \\__,_/   ")
+    fmt.Println("        /____/                              ")
+    fmt.Println("")
+    outputInfo("Service", "syncd")
+    outputInfo("Version", syncd.VERSION)
+}
+
+func outputInfo(tag string, value interface{}) {
+    fmt.Printf("%-18s    %v\n", tag + ":", value)
+}
+
+func run() {
     if help {
         flag.Usage()
         os.Exit(0)
@@ -71,6 +88,8 @@ func main() {
         fmt.Printf("syncd/%s\n", syncd.VERSION)
         os.Exit(0)
     }
+
+    welcome()
 
     initCfg()
 
@@ -109,9 +128,15 @@ func main() {
     syd := syncd.NewSyncd(cfg)
 
     syd.InitEnv()
+
     syd.RegisterLog()
+    outputInfo("Log", cfg.Log.Path)
+
     syd.RegisterOrm()
+    outputInfo("Database", cfg.Db.Host)
+
     syd.RegisterMail()
+    outputInfo("Mail Enable", cfg.Mail.Enable)
 
     routes := route.RouteGroup()
     for _, r := range routes {
@@ -125,8 +150,15 @@ func main() {
         MethodNotAllowHandler: handlerModule.NotFoundHandler,
     })
 
+    outputInfo("HTTP Service", cfg.Serve.Addr)
+
+    fmt.Println("Start Running...")
     if err := syd.Start(); err != nil {
         log.Fatalln(err.Error())
     }
+}
+
+func main() {
+    run()
 }
 

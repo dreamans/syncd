@@ -12,11 +12,13 @@ import (
     "github.com/tinystack/syncd"
     "github.com/tinystack/goutil/gostring"
     "github.com/tinystack/goutil/goaes"
+    userModel "github.com/tinystack/syncd/model/user"
 )
 
 type Login struct {
     Name        string
     Pass        string
+    Ip          string
     Token       string
     UserDetail  *User
 }
@@ -60,6 +62,11 @@ func (u *Login) Login() error {
     if err := token.CreateOrUpdate(); err != nil {
         return err
     }
+
+    userModel.Update(user.ID, map[string]interface{}{
+        "last_login_ip": u.Ip,
+        "last_login_time": int(time.Now().Unix()),
+    })
 
     u.UserDetail = user
 
