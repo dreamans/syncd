@@ -12,5 +12,3 @@
 *.out
 
 # dir
-/vendor
-/cmd/syncd.ini
