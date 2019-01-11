@@ -12,7 +12,7 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 
 ## 目录
 - [特性](#特性)
-- [特性](#特性)
+- [安装](#安装)
 
 ## 特性
 
@@ -51,4 +51,16 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 Host *
     StrictHostKeyChecking no
 ```
+
+### 安装
+
+- 运行以下命令
+
+```
+curl https://raw.githubusercontent.com/dreamans/syncd/master/install.sh |bash
+```
+
+当前路径中若生成 `syncd-deploy` 或者 `syncd-deploy-xxx` 目录则表明安装成功
+
+> 生成的 `syncd-deploy` 目录可拷贝或移动到你想要的地方，但不要试图将此目录拷贝到其他服务器上运行，除非你对Go语言的编译比较了解.
 
