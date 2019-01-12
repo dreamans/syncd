@@ -36,19 +36,27 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 
 <img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_principle.png" />
 
-- Syncd服务通过git-ssh(或password)方式从仓库中拉取指定tag(分支)代码
+### Git
 
-- 运行配置好的构建脚本, 编译成可上线的软件包
+Syncd服务通过git-ssh(或password)方式从仓库中拉取指定tag(分支)代码
+
+### 构建
+
+运行配置好的构建脚本, 编译成可上线的软件包
 
 在这一环节中，可运行单元测试 (例如 `go test` `php phpunit`, 下载依赖 (如 `go: glide install` `php: composer install`), 编译软件包 (如 `js: npm build` `go: go build xx.go` `java: javac xx.java` `c: cc xx.c`) 等.
 
-- 通过 `scp` 命令分发软件包到各机房生产服务器的临时目录, 远程执行 pre-deploy 配置的命令, 执行完毕后解压缩软件包到目标目录，然后执行 `post-deploy` 命令
+### 分发
+
+通过 `scp` 命令分发软件包到各机房生产服务器的临时目录, 远程执行 pre-deploy 配置的命令, 执行完毕后解压缩软件包到目标目录，然后执行 `post-deploy` 命令
 
 分发上线过程是串行执行，并且任意步骤执行失败整个上线单会终止上线并将状态置为上线失败，需要点击 **再次上线** 重试.
 
 > 将来会支持同一集群服务器并行执行, 集群之间串行发布的特性
 
-- 生产服务器与部署服务器之间通过ssh-key建立信任
+### SSH信任
+
+生产服务器与部署服务器之间通过ssh-key建立信任
 
 配置方法请参考 `秘钥配置` 章节
 
