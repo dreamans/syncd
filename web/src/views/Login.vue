@@ -43,7 +43,7 @@
                 </a-card>
             </div>
             <div class="login-cpy">
-                © {{ new Date().getFullYear() }} <a href="https://github.com/tinystack/syncd" target="_blank">Syncd</a> 版权所有, MIT License.
+                © {{ new Date().getFullYear() }} <a href="https://github.com/dreamans/syncd" target="_blank">Syncd</a> 版权所有, MIT License.
             </div>
         </div>
     </div>

@@ -50,10 +50,10 @@
                         </span>
                         <a-menu slot="overlay" class="menu-wide">
                             <a-menu-item>
-                                <a href="https://github.com/tinystack/syncd/issues" target="_blank">帮助</a>
+                                <a href="https://github.com/dreamans/syncd/issues" target="_blank">帮助</a>
                             </a-menu-item>
                             <a-menu-item>
-                                <a href="https://github.com/tinystack/syncd" target="_blank">为Syncd做贡献</a>
+                                <a href="https://github.com/dreamans/syncd" target="_blank">为Syncd做贡献</a>
                             </a-menu-item>
                         </a-menu>
                     </a-dropdown>
