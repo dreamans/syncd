@@ -33,7 +33,7 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 
 ## 原理
 
-<img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_principle.png" />
+<img style="border: 1px solid #dedede;" width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_principle.png" />
 
 ### Git
 
@@ -211,7 +211,11 @@ sudo vim /etc/hosts
 
 ## 帮助
 
-https://github.com/dreamans/syncd/issues 
+遇到问题请提 [issue](https://github.com/dreamans/syncd/issues)
+
+或者加微信进讨论群
+
+<img style="color: #fff;" width="300px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/wechat_dreamans.png" alt="wechat">
 
 ## 授权
 
