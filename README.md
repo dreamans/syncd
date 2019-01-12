@@ -17,8 +17,7 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 - [原理](#原理)
 - [安装](#安装)
 - [使用](#使用)
-- [Todo](#Todo)
-- [关于](#关于)
+- [帮助](#帮助)
 - [授权](#授权)
 
 ## 特性
@@ -198,25 +197,21 @@ sudo vim /etc/hosts
 
 ## 使用
 
-### 集群和服务器
+### 系统使用流程图
 
-进入 `服务器` -> `集群管理` , 按照实际需求添加集群
+<img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_operate.png" />
 
-<img width="400px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_group_ui.png" />
+### 使用截图
 
-<img width="400px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_group_edit_ui.png" />
+| | | |
+|:---:|:---:|:---:|
+|![部署](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_deploy_ui.png)|![申请单列表](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_apply_list_ui.png)|![申请上线](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_apply_ui.png)|
+|![服务器列表](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_ui.png)|![用户编辑](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_user_edit_ui.png)|![角色权限编辑](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_user_role_edit_ui.png)|
+|![项目信息编辑](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_project_ui.png)|
 
-进入 `服务器` -> `服务器管理`, 在这里可添加需要上线的服务器IP和SSH端口
+## 帮助
 
-<img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_ui.png" />
-
-<img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_edit_ui.png" />
-
-## Todo
-
-
-## 关于
-
+https://github.com/dreamans/syncd/issues 
 
 ## 授权
 
