@@ -25,7 +25,7 @@ var (
 
 func init() {
     flag.BoolVar(&help, "h", false, "This help")
-    flag.StringVar(&syncdIni, "c", "syncd.ini", "Set configuration file `file`")
+    flag.StringVar(&syncdIni, "c", "./log/syncd.ini", "Set configuration file `file`")
     flag.BoolVar(&version, "v", false, "Version number")
 
     flag.Usage = usage
@@ -128,6 +128,7 @@ func run() {
     syd := syncd.NewSyncd(cfg)
 
     syd.InitEnv()
+    outputInfo("Workspace", syncd.DataDir)
 
     syd.RegisterLog()
     outputInfo("Log", cfg.Log.Path)
