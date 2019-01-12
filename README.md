@@ -194,8 +194,23 @@ sudo vim /etc/hosts
 密码: syncd.cc
 ```
 
+**!!!登录后请尽快修改密码**
+
 ## 使用
 
+### 集群和服务器
+
+进入 `服务器` -> `集群管理` , 按照实际需求添加集群
+
+<img width="400px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_group_ui.png" />
+
+<img width="400px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_group_edit_ui.png" />
+
+进入 `服务器` -> `服务器管理`, 在这里可添加需要上线的服务器IP和SSH端口
+
+<img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_ui.png" />
+
+<img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_edit_ui.png" />
 
 ## Todo
 
