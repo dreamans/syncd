@@ -17,8 +17,7 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 - [原理](#原理)
 - [安装](#安装)
 - [使用](#使用)
-- [Todo](#Todo)
-- [关于](#关于)
+- [帮助](#帮助)
 - [授权](#授权)
 
 ## 特性
@@ -34,7 +33,7 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 
 ## 原理
 
-<img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_principle.png" />
+<img style="border: 1px solid #dedede;" width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_principle.png" />
 
 ### Git
 
@@ -194,14 +193,29 @@ sudo vim /etc/hosts
 密码: syncd.cc
 ```
 
+**!!!登录后请尽快修改密码**
+
 ## 使用
 
+### 系统使用流程图
 
-## Todo
+<img width="600px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_operate.png" />
 
+### 使用截图
 
-## 关于
+| | | |
+|:---:|:---:|:---:|
+|![部署](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_deploy_ui.png)|![申请单列表](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_apply_list_ui.png)|![申请上线](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_apply_ui.png)|
+|![服务器列表](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_server_ui.png)|![用户编辑](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_user_edit_ui.png)|![角色权限编辑](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_user_role_edit_ui.png)|
+|![项目信息编辑](https://raw.githubusercontent.com/dreamans/syncd/master/resource/syncd_project_ui.png)|
 
+## 帮助
+
+遇到问题请提 [issue](https://github.com/dreamans/syncd/issues)
+
+或者加微信进讨论群
+
+<img style="color: #fff;" width="300px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/wechat_dreamans.png" alt="wechat">
 
 ## 授权
 
