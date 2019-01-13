@@ -5,7 +5,7 @@ import Vue from 'vue'
 import Code from './code.js'
 import Router from '@/router'
 
-let API_URL = 'http://localhost:8868/api'
+let API_URL = '/api'
 let CancelToken = axios.CancelToken
 let source = CancelToken.source()
 
