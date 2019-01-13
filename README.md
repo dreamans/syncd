@@ -3,9 +3,11 @@
 </p>
 <h3 align="center">Syncd - 自动化部署工具</h3>
 <p align="center">
-  <a href="https://travis-ci.org/dreamans/syncd"><img src="https://travis-ci.org/dreamans/syncd.svg?branch=master" /></a>
-  <a href="https://github.com/dreamans/syncd/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-000000.svg" /></a>
-  <a href="https://github.com/dreamans/syncd"><img src="https://img.shields.io/badge/language-go-orange.svg" /></a>
+    <a href="https://travis-ci.org/dreamans/syncd"><img src="https://travis-ci.org/dreamans/syncd.svg?branch=master" /></a>
+    <a href="https://godoc.org/github.com/dreamans/syncd"><img src="https://godoc.org/github.com/dreamans/syncd?status.svg" /></a>
+    <a href="https://github.com/dreamans/syncd/blob/master/LICENSE"><img src="https://img.shields.io/badge/license-MIT-000000.svg" /></a>
+    <a href="https://github.com/dreamans/syncd/issues"><img src="http://isitmaintained.com/badge/open/dreamans/syncd.svg" /></a>
+    
 </p>
 
 syncd是一款开源的代码部署工具，它具有简单、高效、易用等特点，可以提高团队的工作效率.
