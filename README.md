@@ -102,7 +102,11 @@ Host *
 
 ### 安装
 
-- 运行以下命令
+- 二进制包安装
+
+二进制包下载地址：https://github.com/dreamans/syncd/releases 
+
+- 源码编译安装
 
 ```
 curl https://raw.githubusercontent.com/dreamans/syncd/master/install.sh |bash
