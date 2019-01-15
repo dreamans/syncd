@@ -446,7 +446,11 @@ const UpdateProject = {
         },
         getDataGroupList() {
             getGroupListApi({offset: 0, limit: 9999}).then(res => {
-                this.serverGroupList = res.list
+                if (res.list) {
+                    this.serverGroupList = res.list
+                } else {
+                    this.serverGroupList = []
+                }
             })
         },
     },
