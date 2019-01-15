@@ -50,34 +50,14 @@ const GroupUpdate = {
                 </a-form-item>
                 <a-form-item
                 {...{ props: formItemLayout }}
-                label='IP'>
+                label='IP/域名'>
                     {getFieldDecorator('ip', {
                         rules: [
-                            { required: true, message: '服务器IP不能为空' },
-                            { validator: function(rule, value, callback) {
-                                if (!value) {
-                                    callback('请输入ip地址')
-                                    return
-                                }
-                                let arrIp = value.split('.')
-                                if (arrIp.length != 4) {
-                                    callback('请输入有效ip地址')
-                                }
-                                arrIp.forEach(i => {
-                                    let num = parseInt(i)
-                                    if (isNaN(num)) {
-                                        callback('请输入有效ip地址')
-                                    }
-                                    if (num < 0 || num > 255) {
-                                        callback('请输入有效ip地址')
-                                    }
-                                })
-                                callback()
-                            }},
+                            { required: true, message: '服务器IP或域名不能为空' },
                         ],
                         initialValue: this.detail.ip,
                     })(
-                        <a-input autocomplete="off" placeholder='请输入服务器IP' />
+                        <a-input autocomplete="off" placeholder='请输入服务器IP或域名' />
                     )}
                 </a-form-item>
                 <a-form-item
@@ -87,7 +67,7 @@ const GroupUpdate = {
                         rules: [
                             { required: true, type: 'integer', min: 1, max: 65535, message: '请输入正确ssh端口号，1-65535之间的数字' },
                         ],
-                        initialValue: this.detail.ssh_port,
+                        initialValue: this.detail.ssh_port ? this.detail.ssh_port : 22,
                         normalize: (arg) => {
                             let num = parseInt(arg)
                             if (isNaN(num)) {

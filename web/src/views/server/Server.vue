@@ -72,7 +72,7 @@ export default {
                 {dataIndex: "id", title: 'ID', width: '6%'},
                 {dataIndex: "name", title: '名称'},
                 {dataIndex: "group_id", title: '集群', width: '20%', scopedSlots: { customRender: 'group_id' }},
-                {dataIndex: "ip", title: 'IP', width: '15%'},
+                {dataIndex: "ip", title: 'IP/域名', width: '18%'},
                 {dataIndex: "ssh_port", title: 'SSH Port', width: '10%'},
                 {dataIndex: "op", title: '操作', width: '20%', align: 'right', scopedSlots: { customRender: 'op' }},
             ],
