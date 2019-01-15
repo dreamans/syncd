@@ -49,7 +49,7 @@ func (db *DB) parseConnConfig() string {
     } else {
         connHost = fmt.Sprintf("tcp(%s:%s)", db.cfg.Host, db.cfg.Port)
     }
-    s := fmt.Sprintf("%s:%s@%s/%s?charset=%s&parseTime=True&loc=Local", db.cfg.User, db.cfg.Pass, connHost, db.cfg.DbName, db.cfg.Charset)
+    s := fmt.Sprintf("%s:%s@%s/%s?charset=%s&parseTime=True&loc=Local", db.cfg.User, db.cfg.Pass, connHost, db.cfg.DbName, "utf8mb4")
 
     return s
 }
