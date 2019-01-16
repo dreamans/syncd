@@ -6,6 +6,7 @@ package user
 
 import (
     "errors"
+    "time"
 
     baseModel "github.com/dreamans/syncd/model"
     userTokenModel "github.com/dreamans/syncd/model/user_token"
@@ -74,6 +75,10 @@ func (t *Token) ValidateToken() bool {
     if detail.ID == 0 {
         return false
     }
+    if detail.ExpireTime < int(time.Now().Unix()) {
+        return false
+    }
+    t.ID = detail.ID
     return true
 }
 
@@ -85,5 +90,15 @@ func (t *Token) DeleteByUserId() error {
         return errors.New("token delete failed")
     }
 
+    return nil
+}
+
+func (t *Token) UpdateExpirationTime() error {
+    ok := userTokenModel.Update(t.ID, map[string]interface{}{
+        "expire_time": int(time.Now().Unix()) + 3600 * 30,
+    })
+    if !ok {
+        return errors.New("extended token expiration time failed")
+    }
     return nil
 }
