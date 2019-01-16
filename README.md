@@ -227,6 +227,10 @@ sudo vim /etc/hosts
 
 <img style="color: #fff;" width="300px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/wechat_dreamans.png" alt="wechat">
 
-## 授权
+## LICENSE
 
 本项目采用 MIT 开源授权许可证，完整的授权说明已放置在 LICENSE 文件中
+
+## Acknowledgement
+
+<a href="https://gitee.com/dreamans/syncd"><img width="150px" src="https://gitee.com/logo-black.svg"></a>
