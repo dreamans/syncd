@@ -173,3 +173,27 @@ func (g *Group) GetNameByIds(ids []int) (map[int]string, error){
     }
     return groupNameList, nil
 }
+
+func (g *Group) CheckGroupExists() (bool, error){
+    var where []baseModel.WhereParam
+	if g.Name != "" {
+		where = append(where, baseModel.WhereParam{
+			Field: "name",
+			Prepare: g.Name,
+		})
+	}
+	if g.ID > 0 {
+		where = append(where, baseModel.WhereParam{
+			Field: "id",
+			Tag: "!=",
+			Prepare: g.ID,
+		})
+	}
+    detail, ok := userGroupModel.GetOne(baseModel.QueryParam{
+    	Where: where,
+	})
+	if !ok {
+		return false, errors.New("get group one data failed")
+	}
+    return detail.ID > 0, nil
+}
