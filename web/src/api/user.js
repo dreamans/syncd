@@ -1,5 +1,9 @@
 import {get, post} from './fetch.js'
 
+export function checkGroupExistsApi(data) {
+    return get('/user/group/checkexists', data)
+}
+
 export function newGroupApi(data) {
     return post('/user/group/new', data)
 }

@@ -84,3 +84,18 @@ func GroupDelete(c *goweb.Context) error {
     }
     return syncd.RenderJson(c, nil)
 }
+
+func GroupExists(c *goweb.Context) error {
+    keyword, id := c.Query("keyword"), c.QueryInt("id")
+    group := userService.Group{
+        ID: id,
+        Name: keyword,
+    }
+    exists, err := group.CheckGroupExists()
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    return syncd.RenderJson(c, goweb.JSON{
+        "exists": exists,
+    })
+}
