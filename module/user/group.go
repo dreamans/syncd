@@ -33,6 +33,13 @@ func groupUpdate(c *goweb.Context, id int) error {
         Name: name,
         Priv: gostring.StrSlice2IntSlice(gostring.StrFilterSliceEmpty(priv)),
     }
+    exists, err := userGroup.CheckGroupExists()
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    if exists {
+        return syncd.RenderCustomerError(syncd.CODE_ERR_DATA_REPEAT, "group exists")
+    }
     if err := userGroup.CreateOrUpdate(); err != nil {
         return syncd.RenderAppError(err.Error())
     }
@@ -76,4 +83,19 @@ func GroupDelete(c *goweb.Context) error {
         return syncd.RenderAppError(err.Error())
     }
     return syncd.RenderJson(c, nil)
+}
+
+func GroupExists(c *goweb.Context) error {
+    keyword, id := c.Query("keyword"), c.QueryInt("id")
+    group := userService.Group{
+        ID: id,
+        Name: keyword,
+    }
+    exists, err := group.CheckGroupExists()
+    if err != nil {
+        return syncd.RenderAppError(err.Error())
+    }
+    return syncd.RenderJson(c, goweb.JSON{
+        "exists": exists,
+    })
 }

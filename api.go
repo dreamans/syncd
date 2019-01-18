@@ -33,6 +33,7 @@ const (
     API_USER_MY_UPDATE = "POST /api/user/my/update"
     API_USER_MY_PASSWORD = "POST /api/user/my/password"
 
+    API_USER_GROUP_EXISTS = "GET /api/user/group/checkexists"
     API_USER_GROUP_NEW = "POST /api/user/group/new"
     API_USER_GROUP_UPDATE = "POST /api/user/group/update"
     API_USER_GROUP_PRIV = "GET /api/user/group/priv"

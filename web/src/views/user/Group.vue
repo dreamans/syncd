@@ -94,7 +94,7 @@ export default {
             this.dialogDetail = {}
         },
         handleOpenEditDialog(id) {
-            this.dialogTitle = '编辑服务器信息'
+            this.dialogTitle = '编辑角色信息'
             this.dialogVisible = true
             this.dialogDetail = {}
             this.getDataDetail(id)

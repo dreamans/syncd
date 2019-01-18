@@ -56,6 +56,7 @@ func handler() {
         syncd.API_USER_MY_UPDATE: userModule.MyUpdate,
         syncd.API_USER_MY_PASSWORD: userModule.MyPasswordUpdate,
 
+        syncd.API_USER_GROUP_EXISTS: userModule.GroupExists,
         syncd.API_USER_GROUP_NEW: userModule.GroupNew,
         syncd.API_USER_GROUP_UPDATE: userModule.GroupEdit,
         syncd.API_USER_GROUP_PRIV: userModule.GroupPlainPriv,

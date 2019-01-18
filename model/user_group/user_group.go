@@ -60,3 +60,9 @@ func Delete(id int) bool {
     ok := model.DeleteByPk(TableName, UserGroup{ID: id})
     return ok
 }
+
+func GetOne(query model.QueryParam) (UserGroup, bool) {
+    var data UserGroup
+    ok := model.GetOne(TableName, &data, query)
+    return data, ok
+}

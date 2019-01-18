@@ -49,16 +49,26 @@ func (u *User) CheckUserInSpace() (bool, error) {
     return detail.ID > 0, nil
 }
 
-func (u *User) List(offset, limit int) ([]User, int, error) {
+func (u *User) List(spaceId, offset, limit int) ([]User, int, error) {
+    var where []baseModel.WhereParam
+    if spaceId > 0 {
+        where = append(where, baseModel.WhereParam{
+            Field: "space_id",
+            Prepare: spaceId,
+        })
+    }
     list, ok := projectUserModel.List(baseModel.QueryParam{
         Offset: offset,
         Limit: limit,
         Order: "id DESC",
+        Where: where,
     })
     if !ok {
         return nil, 0, errors.New("get project user list failed")
     }
-    total, ok := projectUserModel.Total(baseModel.QueryParam{})
+    total, ok := projectUserModel.Total(baseModel.QueryParam{
+        Where: where,
+    })
     if !ok {
         return nil, 0, errors.New("get project user total count failed")
     }

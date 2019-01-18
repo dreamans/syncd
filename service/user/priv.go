@@ -44,11 +44,13 @@ var privToApiMap = map[int][]string{
     USER_ROLE_NEW: []string{
         syncd.API_USER_GROUP_NEW,
         syncd.API_USER_GROUP_PRIV,
+        syncd.API_USER_GROUP_EXISTS,
     },
     USER_ROLE_EDIT: []string{
         syncd.API_USER_GROUP_PRIV,
         syncd.API_USER_GROUP_DETAIL,
         syncd.API_USER_GROUP_UPDATE,
+        syncd.API_USER_GROUP_EXISTS,
     },
     USER_ROLE_DEL: []string{
         syncd.API_USER_GROUP_DELETE,

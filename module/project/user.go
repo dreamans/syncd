@@ -63,9 +63,9 @@ func UserList(c *goweb.Context) error {
         err error
         userList []userService.UserItem
     )
-    offset, limit := c.QueryInt("offset"), c.GetInt("limit")
+    offset, limit, spaceId := c.QueryInt("offset"), c.GetInt("limit"), c.QueryInt("spaceId")
     projectUser := &projectService.User{}
-    list, total, err := projectUser.List(offset, limit)
+    list, total, err := projectUser.List(spaceId, offset, limit)
     if err != nil {
         return syncd.RenderAppError(err.Error())
     }

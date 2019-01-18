@@ -5,16 +5,16 @@
 package handler
 
 import (
-    "strings"
     "net/http"
     "net/url"
+    "strings"
 
-    "github.com/tinystack/goweb"
-    "github.com/tinystack/goutil/gostring"
-    "github.com/tinystack/goutil/goslice"
-    "github.com/tinystack/goutil/goaes"
     "github.com/dreamans/syncd"
     userService "github.com/dreamans/syncd/service/user"
+    "github.com/tinystack/goutil/goaes"
+    "github.com/tinystack/goutil/goslice"
+    "github.com/tinystack/goutil/gostring"
+    "github.com/tinystack/goweb"
 )
 
 func BeforeHandler(c *goweb.Context) error {
@@ -69,7 +69,7 @@ func apiPrivCheck(c *goweb.Context) error {
         Token: tokenArr[1],
     }
     if status := token.ValidateToken(); !status {
-        return syncd.RenderCustomerError(syncd.CODE_ERR_NO_LOGIN, "token check failed, maybe your account is logged in on another device")
+        return syncd.RenderCustomerError(syncd.CODE_ERR_NO_LOGIN, "token check failed, maybe your account is logged in on another device or token expired")
     }
     user := &userService.User{
         ID: token.UserId,
@@ -106,7 +106,7 @@ func apiPrivCheck(c *goweb.Context) error {
             return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
         }
     }
-
+    go token.UpdateExpirationTime()
     return nil
 }
 

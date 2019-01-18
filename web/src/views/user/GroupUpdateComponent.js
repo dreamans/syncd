@@ -1,5 +1,5 @@
 import { Form } from 'ant-design-vue'
-import { getPrivListApi } from '@/api/user.js'
+import { getPrivListApi, checkGroupExistsApi } from '@/api/user.js'
 const GroupUpdate = {
     render() {
         const { getFieldDecorator, getFieldValue } = this.form
@@ -30,16 +30,43 @@ const GroupUpdate = {
             )
         })
 
+        let vm = this
+        let groupExistsCb = function(type, errmsg) {
+            return function(rule, value, callback) {
+                if (!value) {
+                    callback()
+                    return
+                }
+                let title = '角色名称'
+                vm.$set(vm.helps, type, `正在验证 ${value} 是否被占用...`)
+                checkGroupExistsApi({id: vm.detail.id, keyword: value}).then(res => {
+                    if (!res.exists) {
+                        vm.$set(vm.helps, type, undefined)
+                        callback()
+                    } else {
+                        vm.$set(vm.helps, type, `抱歉！${title}已被占用，请重新输入`)
+                        callback(errmsg)
+                    }
+                }).catch(err => {
+                    vm.$set(vm.helps, type, '网络错误, 校验失败')
+                    callback('网络错误, 校验失败')
+                })
+            }
+        }
+
         return (
             <a-form>
                 <a-form-item
                 {...{ props: formItemLayout }}
+                help={this.helps.name}
                 label='角色名称'>
                     {getFieldDecorator('name', {
                         rules: [
                             { required: true, message: '角色名称不能为空' },
+                            { validator: groupExistsCb('name', '角色名称已经存在')},
                         ],
                         initialValue: this.detail.name,
+                        validateTrigger: 'blur',
                     })(
                         <a-input autocomplete="off" placeholder='请输入角色名称' />
                     )}
@@ -84,6 +111,7 @@ const GroupUpdate = {
             indeterminate: false,
             checkedPrivList: [],
             plainPrivCheckList: [],
+            helps: {},
         }
     },
     methods: {

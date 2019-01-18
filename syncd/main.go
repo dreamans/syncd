@@ -103,7 +103,7 @@ func run() {
         Db: &syncd.DbConfig{
             Host: configOrDefault("database", "host", "127.0.0.1"),
             Port: configOrDefault("database", "port", "3306"),
-            Charset: "utf8",
+            Charset: "utf8mb4",
             User: configOrDefault("database", "user", ""),
             Pass: configOrDefault("database", "password", ""),
             DbName: configOrDefault("database", "dbname", ""),

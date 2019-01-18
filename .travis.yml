@@ -1,7 +1,6 @@
 language: go
 sudo: false
 go:
-  - 1.10.x
   - 1.11.x
 
 script: go get github.com/dreamans/syncd/syncd

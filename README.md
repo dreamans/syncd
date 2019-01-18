@@ -39,7 +39,7 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 
 ### Git
 
-Syncd服务通过git-ssh(或password)方式从仓库中拉取指定tag(分支)代码
+Syncd服务通过git-ssh(或password)方式从仓库中拉取指定tag(分支)代码.
 
 ### 构建
 
@@ -68,6 +68,10 @@ Syncd服务通过git-ssh(或password)方式从仓库中拉取指定tag(分支)�
 - Go 
 
 推荐Go1.10以上版本, 用来编译源代码
+
+- Git
+
+**请保持部署Syncd服务器的git版本为最新(>=2.20)**
 
 - Nginx
 
@@ -223,6 +227,10 @@ sudo vim /etc/hosts
 
 <img style="color: #fff;" width="300px" src="https://raw.githubusercontent.com/dreamans/syncd/master/resource/wechat_dreamans.png" alt="wechat">
 
-## 授权
+## LICENSE
 
 本项目采用 MIT 开源授权许可证，完整的授权说明已放置在 LICENSE 文件中
+
+## Acknowledgement
+
+<a href="https://gitee.com/dreamans/syncd"><img width="150px" src="https://gitee.com/logo-black.svg"></a>

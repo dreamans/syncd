@@ -9,6 +9,10 @@ if [ -d ${install_path} ];then
     install_path=${install_path}-$( date +%Y%m%d%H%M%S )
 fi
 
+if [ -z ${GOPATH} ];then
+    GOPATH=`go env GOPATH`
+fi
+
 build_syncd() {
     go get ${build_repo}
     cd $GOPATH/src/${build_repo}
