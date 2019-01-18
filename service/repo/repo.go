@@ -82,9 +82,13 @@ func (r *Repo) DeployRepo(sshPort, sshIp, sshUser, deployPath, preCmd, postCmd s
     var cmd []string
     cmd = append(cmd, fmt.Sprintf("/usr/bin/env ssh -p %s %s@%s 'mkdir -p %s; mkdir -p %s'", sshPort, sshUser, sshIp, syncd.RemoteTmpDir, deployPath))
     cmd = append(cmd, fmt.Sprintf("/usr/bin/env scp -P %s %s %s@%s:%s/", sshPort, r.packFilePath(), sshUser, sshIp, syncd.RemoteTmpDir))
-    cmd = append(cmd, fmt.Sprintf("/usr/bin/env ssh -p %s %s@%s '%s'", sshPort, sshUser, sshIp, preCmd))
+    if preCmd != "" {
+        cmd = append(cmd, fmt.Sprintf("/usr/bin/env ssh -p %s %s@%s '%s'", sshPort, sshUser, sshIp, preCmd))
+    }
     cmd = append(cmd, fmt.Sprintf("/usr/bin/env ssh -p %s %s@%s 'cd %s; tar -zxf %s -C %s; rm -f %s'", sshPort, sshUser, sshIp, syncd.RemoteTmpDir, r.packFileName(), deployPath, r.packFileName()))
-    cmd = append(cmd, fmt.Sprintf("/usr/bin/env ssh -p %s %s@%s '%s'", sshPort, sshUser, sshIp, postCmd))
+    if postCmd != "" {
+        cmd = append(cmd, fmt.Sprintf("/usr/bin/env ssh -p %s %s@%s '%s'", sshPort, sshUser, sshIp, postCmd))
+    }
     return cmd
 }
 
