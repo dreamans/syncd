@@ -142,7 +142,7 @@ export default {
         getDataList(params) {
             this.tableLoading = true
             let offset = (params.page - 1) * params.pageSize
-            getSpaceUserListApi({offset: offset, limit: params.pageSize}).then(res => {
+            getSpaceUserListApi({spaceId:this.spaceId, offset: offset, limit: params.pageSize}).then(res => {
                 this.tableLoading = false
                 this.pagination.total = res.total
                 this.tableSource = res.list
