@@ -1,0 +1,59 @@
+blockquote, body, dd, dl, dt, fieldset, figure, h1, h2, h3, h4, h5, h6, hr, html, iframe, legend, li, ol, p, pre, textarea, ul {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+body {
+    font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+}
+html, body {
+    width: 100%;
+    height: 100%;
+}
+.iconfont {
+    &.small {
+        font-size: 14px;
+    }
+    &.left {
+        margin-right: 3px;
+    }
+}
+.app-link {
+    cursor: pointer;
+    color: #1890ff;
+    &:hover {
+        color: #40a9ff;
+    }
+}
+.app-cursor {
+    cursor: pointer;
+}
+.app-header-dropdown {
+    padding: 0;
+    .popper__arrow {
+        display: none;
+    }
+    .app-dropdown-link {
+        text-decoration: none;
+    }
+    .el-dropdown-menu__item {
+        min-width: 160px;
+        padding: 0 15px;
+        &.text {
+            &:hover {
+                color: #606266;
+                background: #fff;
+            }
+        }
+    }
+    .el-dropdown-menu__item--divided {
+        &:before {
+            margin: 0 -15px;
+        }
+    }
+}
+.el-submenu {
+    .el-menu-item {
+        min-width: 180px;
+    }
+}
