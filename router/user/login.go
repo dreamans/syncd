@@ -2,22 +2,17 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package syncd
+package user
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/dreamans/syncd/render"
 )
 
-type Syncd struct {
-	Gin		*gin.Engine
+func Login(c *gin.Context) {
+	render.JSON(c, gin.H{"id": 1,})
 }
 
-func NewApp() *Syncd {
-	return &Syncd{
-		Gin: gin.Default(),
-	}
-}
-
-func (s *Syncd) Start() error {
-	return s.Gin.Run(":8868")
+func LoginStatus(c *gin.Context) {
+	render.JSON(c, gin.H{"id": 1,})
 }

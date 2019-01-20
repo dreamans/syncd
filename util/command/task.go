@@ -72,6 +72,7 @@ func (t *Task) next(cmd string) (*TaskResult, error) {
         return result, err
     }
     result.Stdout = command.Stdout()
+    result.Success = true
     return result, nil
 }
 

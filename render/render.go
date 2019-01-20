@@ -2,22 +2,18 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package syncd
+package render
 
 import (
+	"net/http"
+
 	"github.com/gin-gonic/gin"
 )
 
-type Syncd struct {
-	Gin		*gin.Engine
-}
-
-func NewApp() *Syncd {
-	return &Syncd{
-		Gin: gin.Default(),
-	}
-}
-
-func (s *Syncd) Start() error {
-	return s.Gin.Run(":8868")
+func JSON(c *gin.Context, data interface{}) {
+	c.JSON(http.StatusOK, gin.H{
+		"code": 0,
+		"message": "success", 
+		"data": data,
+	})
 }

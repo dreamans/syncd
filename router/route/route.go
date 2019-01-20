@@ -2,22 +2,17 @@
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
-package syncd
+package route
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/dreamans/syncd/router/user"
 )
 
-type Syncd struct {
-	Gin		*gin.Engine
-}
-
-func NewApp() *Syncd {
-	return &Syncd{
-		Gin: gin.Default(),
+func RegisterRoute(g *gin.Engine) {
+	api := g.Group("/api")
+	{
+		api.POST("/login", user.Login)
+		api.GET("/login/status", user.LoginStatus)
 	}
-}
-
-func (s *Syncd) Start() error {
-	return s.Gin.Run(":8868")
 }
