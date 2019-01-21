@@ -21,6 +21,7 @@ func MyUpdate(c *goweb.Context) error {
 
     user.TrueName = trueName
     user.Mobile = mobile
+    user.DoNotUpdatePassword()
     if err := user.CreateOrUpdate(); err != nil {
         return syncd.RenderAppError(err.Error())
     }
