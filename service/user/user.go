@@ -365,3 +365,7 @@ func (u *User) transmitUserDetail(detail userModel.User) {
     u.LockStatus = detail.LockStatus
     u.Salt = detail.Salt
 }
+
+func (u *User) DoNotUpdatePassword() {
+    u.Password = ""
+}
