@@ -389,11 +389,11 @@ export default {
                 }
                 this.dialogEditConfirmLoading = true
                 updateApplyApi(values).then(res => {
-                    this.dialogAuditConfirmLoading = false
+                    this.dialogEditConfirmLoading = false
                     this.handleTableChange(this.pagination)
                     this.dialogEditCancel()
                 }).catch(err => {
-                    this.dialogAuditConfirmLoading = false
+                    this.dialogEditConfirmLoading = false
                 })
             })
         },

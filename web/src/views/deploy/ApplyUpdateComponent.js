@@ -73,6 +73,7 @@ const UpdateApply = {
                                 { required: true, message: '选择上线版本' },
                             ],
                             validateTrigger: 'blur',
+                            initialValue: this.detail.repo_commit,
                         })(<div></div>)}
                         <div>
                             <a-select
@@ -132,7 +133,7 @@ const UpdateApply = {
                         </a-row>
                         { this.detail.repo_tag != "" ?  (<div>{this.detail.repo_tag}</div>): '' }
                     </a-form-item>
-                ) : ''}
+                ) : <div></div>}
                 <a-form-item
                 {...{ props: formItemLayout }}
                 help={this.nameHelp}
