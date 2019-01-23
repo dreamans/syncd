@@ -14,6 +14,9 @@ html, body {
     &.small {
         font-size: 14px;
     }
+    &.mini {
+        font-size: 12px;
+    }
     &.left {
         margin-right: 3px;
     }
@@ -37,7 +40,6 @@ html, body {
         text-decoration: none;
     }
     .el-dropdown-menu__item {
-        min-width: 160px;
         padding: 0 15px;
         &.text {
             &:hover {
@@ -55,5 +57,60 @@ html, body {
 .el-submenu {
     .el-menu-item {
         min-width: 180px;
+    }
+}
+.app-pagination {
+    padding: 20px 0;
+}
+.app-danger {
+    color: #f56c6c;
+    &:hover {
+        color: #f78989;
+    }
+    &:active {
+        color: #dd6161;
+    }
+    &:focus {
+        color: #f56c6c;
+    }
+}
+.app-btn-group {
+    margin-bottom: 20px;
+}
+.app-table {
+    thead {
+        color: #4e4f52;
+        th {
+            background: #fafafa;
+        }
+        tr {
+            &:first-child {
+                th {
+                    &:first-child {
+                        border-top-left-radius: 4px;
+                    }
+                    &.is-right {
+                        border-top-right-radius: 4px;
+                    }
+                }
+            }
+        }
+    }
+}
+.app-dialog {
+    padding: 0 10px;
+    .dialog-footer {
+        text-align: right;
+    }
+}
+.app-form {
+    .app-input-normal {
+        width: 80%;
+    }
+    .app-input-small {
+        width: 50%;
+    }
+    .app-input-mini {
+        width: 30%;
     }
 }

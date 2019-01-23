@@ -13,10 +13,10 @@
                         </span>
                         <el-dropdown-menu slot="dropdown" class="app-header-dropdown">
                             <a class="app-dropdown-link" href="https://github.com/dreamans/syncd/issues" target="_blank">
-                                <el-dropdown-item><i class="iconfont small left icon-help"></i>帮助</el-dropdown-item>
+                                <el-dropdown-item><i class="iconfont small left icon-help"></i>{{ $t('help') }}</el-dropdown-item>
                             </a>
                             <a class="app-dropdown-link" href="https://github.com/dreamans/syncd" target="_blank">
-                                <el-dropdown-item><i class="iconfont small left icon-pull-request"></i>为 Syncd 做贡献</el-dropdown-item>
+                                <el-dropdown-item><i class="iconfont small left icon-pull-request"></i>{{ $t('contribute_to_syncd') }}</el-dropdown-item>
                             </a>
                         </el-dropdown-menu>
                     </el-dropdown>
@@ -29,9 +29,9 @@
                         </span>
                         <el-dropdown-menu slot="dropdown" class="app-header-dropdown">
                             <el-dropdown-item class="text"><i class="iconfont small left icon-user"></i>admin</el-dropdown-item>
-                            <el-dropdown-item divided><i class="iconfont small left icon-setting"></i>个人设置</el-dropdown-item>
-                            <el-dropdown-item><i class="iconfont small left icon-key"></i>修改密码</el-dropdown-item>
-                            <el-dropdown-item divided><i class="iconfont small left icon-logout"></i>退出登录</el-dropdown-item>
+                            <el-dropdown-item divided><i class="iconfont small left icon-setting"></i>{{ $t('personal_setting') }}</el-dropdown-item>
+                            <el-dropdown-item><i class="iconfont small left icon-key"></i>{{ $t('change_password') }}</el-dropdown-item>
+                            <el-dropdown-item divided><i class="iconfont small left icon-logout"></i>{{ $t('sign_out') }}</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </span>
@@ -40,30 +40,35 @@
         <section class="layer-container">
             <aside class="layer-aside">
                 <ScrollBar>
-                    <el-menu >
-                        <el-submenu index="1">
-                            <template slot="title">
-                                <i class="el-icon-location"></i><span>导航一</span>
-                            </template>
-                            <el-menu-item index="1-1">选项1</el-menu-item>
-                        </el-submenu>
-                        <el-menu-item index="2">
-                            <i class="el-icon-menu"></i>
-                            <span slot="title">导航二</span>
-                        </el-menu-item>
-                        <el-menu-item index="3" disabled>
-                            <i class="el-icon-document"></i>
-                            <span slot="title">导航三</span>
-                        </el-menu-item>
-                        <el-menu-item index="4">
-                            <i class="el-icon-setting"></i>
-                            <span slot="title">导航四</span>
-                        </el-menu-item>
+                    <el-menu class="aside-menu" :router="true" :unique-opened="true">
+                        <template v-for="menu in AppMenu">
+                            <el-submenu v-if="menu.children && menu.children.length > 1" :index="menu.name" :key="menu.name">
+                                <template slot="title">
+                                    <span v-if="menu.meta.icon" class="iconfont left" :class="menu.meta.icon"></span><span>{{ menu.meta.title }}</span>
+                                </template>
+                                <el-menu-item :route="{name: childMenu.name}" v-for="childMenu in menu.children" :index="childMenu.name" :key="childMenu.name">
+                                    <i class="iconfont small left">
+                                        <svg viewBox="0 0 1024 1024" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M384.023552 384.083968l256.016384 0 0 256.016384-256.016384 0 0-256.016384Z"></path></svg>
+                                    </i>
+                                    <span>{{ childMenu.meta.title }}</span>
+                                </el-menu-item>
+                            </el-submenu>
+                            <el-menu-item :route="{name: menu.children[0].name}" v-else-if="menu.children && menu.children.length == 1" :index="menu.children[0].name" :key="menu.children[0].name">
+                                <i v-if="menu.children[0].meta.icon" class="iconfont left" :class="menu.children[0].meta.icon"></i>
+                                <span>{{ menu.children[0].meta.title }}</span>
+                            </el-menu-item>
+                        </template>
                     </el-menu>
                 </ScrollBar>
             </aside>
             <main class="layer-main">
-               
+                <el-breadcrumb separator="/" class="bread-crumb">
+                    <el-breadcrumb-item><i class="iconfont icon-breadcrumbs"></i></el-breadcrumb-item>
+                    <el-breadcrumb-item v-for="b in breadcrumb" :key="b">{{ b }}</el-breadcrumb-item>
+                </el-breadcrumb>
+                <div class="container">
+                    <router-view/>
+                </div>
             </main>
         </section>
     </div>
@@ -71,17 +76,54 @@
 
 <script>
 import ScrollBar from '@/component/ScrollBar';
+import { routerMap } from '@/router'
 export default {
+    data() {
+        return {
+            breadcrumb: [],
+        }
+    },
+    computed: {
+        AppMenu() {
+            return routerMap
+        }
+    },
+    watch: {
+        '$route.name'() {
+            this.breadcrumbItems()
+        }
+    },
     components: {
         ScrollBar,
+    },
+    methods: {
+        breadcrumbItems() {
+            let breadcrumb = []
+            this.AppMenu.forEach(menu => {
+                menu.children.forEach(sub => {
+                    if (sub.name != this.$route.name) {
+                        return
+                    }
+                    if (menu.meta.title) {
+                        breadcrumb.push(menu.meta.title)
+                    }
+                    breadcrumb.push(sub.meta.title)
+                })
+            })
+            this.breadcrumb = breadcrumb
+        }
+    },
+    mounted() {
+        this.breadcrumbItems()
     },
 }
 </script>
 
-
 <style lang="scss" scoped>
 .layer-global {
+    height: 100%;
     .layer-header {
+        z-index: 1024;
         position: fixed;
         width: 100%;
         height: 50px;
@@ -122,19 +164,38 @@ export default {
         }
     }
     .layer-container {
-        margin-left: 180px;
+        margin-left: 200px;
         overflow: hidden;
         overflow-y: auto;
+        height: 100%;
         .layer-aside {
-            background: #0000cc;
+            border-right: solid 1px #e6e6e6;
             position: fixed;
             left: 0;
             top: 50px;
             bottom: 0;
-            width: 180px;
+            width: 200px;
+            .aside-menu {
+                border-right: none;
+                .iconfont {
+                    &.left {
+                        margin-right: 6px;
+                    }
+                }
+            }
         }
         .layer-main {
-            margin-top: 50px;
+            padding-top: 50px;
+            height: 100%;
+            background: #f0f2f5;
+            box-sizing: border-box;
+            .bread-crumb {
+                background: #fff;
+                padding: 16px;
+            }
+            .container {
+                padding: 15px 20px;
+            }
         }
     }
 }

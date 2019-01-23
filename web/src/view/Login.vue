@@ -3,22 +3,22 @@
         <div class="app-login-inner" :style="{backgroundColor: bgColor}">
             <div class="login-container">
                 <el-card class="login-box">
-                    <div class="login-title">欢迎登录 Syncd</div>
+                    <div class="login-title">{{ $t('welcome_to_login_syncd') }}</div>
                     <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" size="medium" class="login-form">
                         <el-form-item  prop="username">
-                            <el-input placeholder="用户名或邮箱" prefix-icon="iconfont icon-user" v-model="loginForm.username" autocomplete="off"></el-input>
+                            <el-input :placeholder="$t('username_or_email')" prefix-icon="iconfont icon-user" v-model="loginForm.username" autocomplete="off"></el-input>
                         </el-form-item>
                         <el-form-item prop="password">
-                            <el-input placeholder="密码" prefix-icon="iconfont icon-lock" type="password" v-model="loginForm.password" autocomplete="off"></el-input>
+                            <el-input :placeholder="$t('password')" prefix-icon="iconfont icon-lock" type="password" v-model="loginForm.password" autocomplete="off"></el-input>
                         </el-form-item>
                         <el-form-item>
-                            <el-button @click="loginHandler" type="primary" style="width: 100%;">登录</el-button>
+                            <el-button @click="loginHandler" type="primary" style="width: 100%;">{{ $t('login') }}</el-button>
                         </el-form-item>
                     </el-form>
                 </el-card>
             </div>
             <div class="login-cpy">
-                © {{ new Date().getFullYear() }} <a href="https://github.com/dreamans/syncd" target="_blank">Syncd</a> 版权所有, MIT License.
+                © {{ new Date().getFullYear() }} <a href="https://github.com/dreamans/syncd" target="_blank">Syncd</a>. All Rights Reserved. MIT License.
             </div>
         </div>
     </div>
@@ -34,10 +34,10 @@ export default {
                 password: "",
             },
             loginRules: {
-                username: [{ required: true, message: '请输入登录名(用户名或邮箱)', trigger: 'blur' }],
+                username: [{ required: true, message: this.$t('please_input_loginname'), trigger: 'blur' }],
                 password: [
-                    { required: true, message: '请输入密码', trigger: 'blur' },
-                    { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur' },
+                    { required: true, message: this.$t('please_input_password'), trigger: 'blur' },
+                    { min: 6, max: 20, message: this.$t('strlen_between', {min: 6, max: 20}), trigger: 'blur' },
                 ],
             },
         }
@@ -92,7 +92,7 @@ export default {
         color: #fff;
         a {
             margin: 0 5px;
-            color: #1890ff;
+            color: #fff;
         }
     }
 }

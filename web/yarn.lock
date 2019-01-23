@@ -5990,6 +5990,11 @@ qs@6.5.2, qs@~6.5.2:
   resolved "http://registry.npm.taobao.org/qs/download/qs-6.5.2.tgz#cb3ae806e8740444584ef154ce8ee98d403f3e36"
   integrity sha1-yzroBuh0BERYTvFUzo7pjUA/PjY=
 
+qs@^6.6.0:
+  version "6.6.0"
+  resolved "http://registry.npm.taobao.org/qs/download/qs-6.6.0.tgz#a99c0f69a8d26bf7ef012f871cdabb0aee4424c2"
+  integrity sha1-qZwPaajSa/fvAS+HHNq7Cu5EJMI=
+
 querystring-es3@^0.2.0:
   version "0.2.1"
   resolved "http://registry.npm.taobao.org/querystring-es3/download/querystring-es3-0.2.1.tgz#9ec61f79049875707d69414596fd907a4d711e73"
@@ -7453,6 +7458,11 @@ vue-hot-reload-api@^2.3.0:
   version "2.3.1"
   resolved "http://registry.npm.taobao.org/vue-hot-reload-api/download/vue-hot-reload-api-2.3.1.tgz#b2d3d95402a811602380783ea4f566eb875569a2"
   integrity sha1-stPZVAKoEWAjgHg+pPVm64dVaaI=
+
+vue-i18n@^8.7.0:
+  version "8.7.0"
+  resolved "http://registry.npm.taobao.org/vue-i18n/download/vue-i18n-8.7.0.tgz#846269ad9d9c40c77479a540398d4024356fa4e1"
+  integrity sha1-hGJprZ2cQMd0eaVAOY1AJDVvpOE=
 
 vue-loader@^15.4.2:
   version "15.5.1"

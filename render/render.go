@@ -5,15 +5,42 @@
 package render
 
 import (
-	"net/http"
+    "net/http"
 
-	"github.com/gin-gonic/gin"
+    "github.com/gin-gonic/gin"
+)
+
+const (
+    CODE_SUCCESS = 0
+    CODE_PARAM_ERROR = 10001
+    CODE_APP_ERROR = 10002
 )
 
 func JSON(c *gin.Context, data interface{}) {
-	c.JSON(http.StatusOK, gin.H{
-		"code": 0,
-		"message": "success", 
-		"data": data,
-	})
+    c.JSON(http.StatusOK, gin.H{
+        "code": CODE_SUCCESS,
+        "message": "success",
+        "data": data,
+    })
+}
+
+func ParamError(c *gin.Context, message string) {
+    c.JSON(http.StatusOK, gin.H{
+        "code": CODE_PARAM_ERROR,
+        "message": message,
+    })
+}
+
+func AppError(c *gin.Context, message string) {
+    c.JSON(http.StatusOK, gin.H{
+        "code": CODE_APP_ERROR,
+        "message": message,
+    })
+}
+
+func Success(c *gin.Context) {
+    c.JSON(http.StatusOK, gin.H{
+        "code": CODE_SUCCESS,
+        "message": "success",
+    })
 }
