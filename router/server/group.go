@@ -77,7 +77,7 @@ func GroupDetail(c *gin.Context) {
         render.ParamError(c, "id cannot be empty")
         return
     }
-    group := server.Group{
+    group := &server.Group{
         ID: id,
     }
     if err := group.Detail(); err != nil {

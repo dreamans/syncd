@@ -121,7 +121,7 @@ const routerMap = [
                 meta: {
                     title: i18n.t('role_manage'),
                 },
-                component: _import('Dashboard'),
+                component: _import('user/Group'),
             },
             {
                 path: 'list',
@@ -129,7 +129,7 @@ const routerMap = [
                 meta: {
                     title: i18n.t('user_manage'),
                 },
-                component: _import('Dashboard'),
+                component: _import('user/User'),
             },
         ],
     },

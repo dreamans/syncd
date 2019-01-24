@@ -35,3 +35,7 @@ export function listServerApi(params) {
 export function deleteServerApi(data) {
     return post('/server/delete', data)
 }
+
+export function detailServerApi(params) {
+    return get('/server/detail', params)
+}

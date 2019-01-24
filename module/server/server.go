@@ -13,12 +13,13 @@ import (
 )
 
 type Server struct {
-    ID		int	`json:"id"`
-    GroupId	int	`json:"group_id"`
-    Name	string	`json:"name"`
-    Ip		string	`json:"ip"`
-    SSHPort	int	`json:"ssh_port"`
-    Ctime	int	`json:"ctime"`
+    ID              int     `json:"id"`
+    GroupId         int	    `json:"group_id"`
+    GroupName       string  `json:"group_name"`
+    Name	    string  `json:"name"`
+    Ip		    string  `json:"ip"`
+    SSHPort	    int	    `json:"ssh_port"`
+    Ctime	    int	    `json:"ctime"`
 }
 
 func (s *Server) CreateOrUpdate() error {
@@ -54,7 +55,10 @@ func (s *Server) List(keyword string, offset, limit int) ([]Server, error) {
         return nil, errors.New("get server list failed")
     }
 
-    var serverList []Server
+    var (
+        serverList []Server
+        groupIds []int
+    )
     for _, l := range list {
         serverList = append(serverList, Server{
             ID: l.ID,
@@ -64,7 +68,19 @@ func (s *Server) List(keyword string, offset, limit int) ([]Server, error) {
             SSHPort: l.SSHPort,
             Ctime: l.Ctime,
         })
+        groupIds = append(groupIds, l.GroupId)
     }
+
+    groupMap, err := GroupGetMapByIds(groupIds)
+    if err != nil {
+        return nil, errors.New("get server group map failed")
+    }
+    for k, l := range serverList {
+        if g, exists := groupMap[l.GroupId]; exists {
+            serverList[k].GroupName = g.Name
+        }
+    }
+
     return serverList, nil
 }
 
@@ -86,6 +102,25 @@ func (s *Server) Delete() error {
     if ok := server.Delete(); !ok {
         return errors.New("delete server failed")
     }
+    return nil
+}
+
+func (s *Server) Detail() error {
+    server := &model.Server{}
+    if ok := server.Get(s.ID); !ok {
+        return errors.New("get server detail failed")
+    }
+    if server.ID == 0 {
+        return errors.New("server not exists")
+    }
+
+    s.ID = server.ID
+    s.GroupId = server.GroupId
+    s.Name = server.Name
+    s.Ip = server.Ip
+    s.SSHPort = server.SSHPort
+    s.Ctime = server.Ctime
+
     return nil
 }
 

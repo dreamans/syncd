@@ -25,5 +25,16 @@ func RegisterRoute() {
         api.POST("/server/update", server.ServerUpdate)
         api.GET("/server/list", server.ServerList)
         api.POST("/server/delete", server.ServerDelete)
+        api.GET("/server/detail", server.ServerDetail)
+
+        api.POST("/user/role/add", user.RoleAdd)
+        api.POST("/user/role/update", user.RoleUpdate)
+        api.GET("/user/role/list", user.RoleList)
+        api.GET("/user/role/detail", user.RoleDetail)
+        api.POST("/user/role/delete", user.RoleDelete)
+        api.POST("/user/add", user.UserAdd)
+        api.POST("/user/update", user.UserUpdate)
+        api.GET("/user/list", user.UserList)
+        api.GET("/user/exists", user.UserExists)
     }
 }

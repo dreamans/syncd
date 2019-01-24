@@ -11,36 +11,50 @@ import (
 )
 
 const (
-    CODE_SUCCESS = 0
-    CODE_PARAM_ERROR = 10001
-    CODE_APP_ERROR = 10002
+    CODE_OK = 0
+    CODE_ERR_SYSTEM = 1000
+    CODE_ERR_APP = 1001
+    CODE_ERR_PARAM = 1002
+    CODE_ERR_DATA_REPEAT = 1003
+    CODE_ERR_LOGIN_FAILED = 1004
+    CODE_ERR_NO_LOGIN = 1005
+    CODE_ERR_NO_PRIV = 1006
+    CODE_ERR_TASK_ERROR = 1007
+    CODE_ERR_USER_OR_PASS_WRONG = 1008
 )
 
 func JSON(c *gin.Context, data interface{}) {
     c.JSON(http.StatusOK, gin.H{
-        "code": CODE_SUCCESS,
+        "code": CODE_OK,
         "message": "success",
         "data": data,
     })
 }
 
+func RepeatError(c *gin.Context, message string) {
+    c.JSON(http.StatusOK, gin.H{
+        "code": CODE_ERR_DATA_REPEAT,
+        "message": message,
+    })
+}
+
 func ParamError(c *gin.Context, message string) {
     c.JSON(http.StatusOK, gin.H{
-        "code": CODE_PARAM_ERROR,
+        "code": CODE_ERR_PARAM,
         "message": message,
     })
 }
 
 func AppError(c *gin.Context, message string) {
     c.JSON(http.StatusOK, gin.H{
-        "code": CODE_APP_ERROR,
+        "code": CODE_ERR_APP,
         "message": message,
     })
 }
 
 func Success(c *gin.Context) {
     c.JSON(http.StatusOK, gin.H{
-        "code": CODE_SUCCESS,
+        "code": CODE_OK,
         "message": "success",
     })
 }

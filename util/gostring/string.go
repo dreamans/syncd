@@ -5,12 +5,54 @@
 package gostring
 
 import (
+    "strings"
     "strconv"
     "math/rand"
     "time"
     "crypto/md5"
     "encoding/hex"
 )
+
+func JoinStrings(multiString ...string) string {
+    return strings.Join(multiString, "")
+}
+
+func JoinIntSlice2String(intSlice []int, sep string) string {
+    return strings.Join(IntSlice2StrSlice(intSlice), sep)
+}
+
+func StrSplit2IntSlice(str, sep string) []int {
+    return StrSlice2IntSlice(StrFilterSliceEmpty(strings.Split(str, sep)))
+}
+
+func StrSlice2IntSlice(strSlice []string) []int {
+    var intSlice []int
+    for _, s := range strSlice {
+        i, _ := strconv.Atoi(s)
+        intSlice = append(intSlice, i)
+    }
+    return intSlice
+}
+
+func StrFilterSliceEmpty(strSlice []string) []string {
+    var filterSlice []string
+    for _, s := range strSlice {
+        ss := strings.TrimSpace(s)
+        if ss != "" {
+            filterSlice = append(filterSlice, ss)
+        }
+    }
+    return filterSlice
+}
+
+func IntSlice2StrSlice(intSlice []int) []string {
+    var strSlice []string
+    for _, i := range intSlice {
+        s := strconv.Itoa(i)
+        strSlice = append(strSlice, s)
+    }
+    return strSlice
+}
 
 func Str2Int(s string) int {
     i, _ := strconv.Atoi(s)

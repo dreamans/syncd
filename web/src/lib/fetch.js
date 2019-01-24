@@ -2,6 +2,7 @@ import axios from 'axios'
 import qs from 'qs'
 import Vue from 'vue'
 import i18n from '@/lang'
+import Code from './code.js'
 
 let API_URL = '/api'
 let CancelToken = axios.CancelToken
@@ -30,6 +31,21 @@ service.interceptors.response.use(response => {
         }
     }
     if (res.code != 0) {
+        switch (res.code) {
+            case Code.CODE_ERR_NETWORK:
+            case Code.CODE_ERR_SYSTEM:
+            case Code.CODE_ERR_APP:
+            case Code.CODE_ERR_PARAM:
+                Vue.prototype.$message.error(res.message)
+                break
+            case Code.CODE_ERR_NO_PRIV:
+                Vue.prototype.$message.error('无操作权限')
+                //Router.push({name: 'dashboard'})
+                break
+            case Code.CODE_ERR_NO_LOGIN:
+                Router.push({name: 'login'})
+                break
+        }
         return Promise.reject(res)
     }
     return res.data
@@ -39,6 +55,7 @@ service.interceptors.response.use(response => {
             code: -1,
             message: error.message ? error.message : i18n.t("unknown_error"),
         }
+        Vue.prototype.$message.error(res.message)
         return Promise.reject(res)
     }
     return Promise.reject(error)

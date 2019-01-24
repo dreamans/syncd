@@ -13,9 +13,37 @@ import (
 )
 
 type Group struct {
-    ID		int			`json:"id"`
-    Name	string		`json:"name"`
-    Ctime	int			`json:"ctime"`
+    ID		int	    `json:"id"`
+    Name	string	    `json:"name"`
+    Ctime	int	    `json:"ctime"`
+}
+
+func GroupGetMapByIds(ids []int) (map[int]Group, error) {
+    if len(ids) == 0 {
+        return nil, nil
+    }
+    group := &model.ServerGroup{}
+    groupList, ok := group.List(model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: ids,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get server group list failed")
+    }
+    groupMap := make(map[int]Group)
+    for _, l := range groupList{
+        groupMap[l.ID] = Group{
+            ID: l.ID,
+            Name: l.Name,
+            Ctime: l.Ctime,
+        }
+    }
+    return groupMap, nil
 }
 
 func (g *Group) Create() error {

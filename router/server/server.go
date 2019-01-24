@@ -63,13 +63,14 @@ func ServerList(c *gin.Context) {
         render.ParamError(c, err.Error())
         return
     }
-    server := &server.Server{}
-    list, err := server.List(query.Keyword, query.Offset, query.Limit)
+    ser := &server.Server{}
+    list, err := ser.List(query.Keyword, query.Offset, query.Limit)
     if err != nil {
         render.AppError(c, err.Error())
         return
     }
-    total, err := server.Total(query.Keyword)
+
+    total, err := ser.Total(query.Keyword)
     if err != nil {
         render.AppError(c, err.Error())
         return
@@ -94,4 +95,28 @@ func ServerDelete(c *gin.Context) {
         return
     }
     render.JSON(c, nil)
+}
+
+func ServerDetail(c *gin.Context) {
+    id := gostring.Str2Int(c.Query("id"))
+    if id == 0 {
+        render.ParamError(c, "id cannot be empty")
+        return
+    }
+    ser := &server.Server{
+        ID: id,
+    }
+    if err := ser.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    group := &server.Group{
+        ID: ser.GroupId,
+    }
+    if err := group.Detail(); err == nil {
+        ser.GroupName = group.Name
+    }
+
+    render.JSON(c, ser)
 }

@@ -17,22 +17,27 @@
                 v-loading="tableLoading"
                 :data="tableData">
                 <el-table-column prop="id" label="ID" width="80"></el-table-column>
-                <el-table-column prop="name" label="名称"></el-table-column>
-                <el-table-column prop="group_name" width="180" label="集群"></el-table-column>
-                <el-table-column prop="ip" width="180" label="IP/HOST"></el-table-column>
-                <el-table-column prop="ssh_port" width="180" label="SSH Port"></el-table-column>
-                <el-table-column label="操作" width="180" align="right">
+                <el-table-column prop="name" :label="$t('name')"></el-table-column>
+                <el-table-column prop="group_name" width="200" :label="$t('cluster')">
+                    <template slot-scope="scope">
+                        <span class="app-line-through" v-if="!scope.row.group_name">{{ $t('deleted') }}</span>
+                        <span v-else>{{ scope.row.group_name }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="ip" width="200" label="IP/HOST"></el-table-column>
+                <el-table-column prop="ssh_port" width="100" label="SSH Port"></el-table-column>
+                <el-table-column :label="$t('operate')" width="180" align="right">
                     <template slot-scope="scope">
                         <el-button
                             icon="el-icon-edit"
                             type="text"
-                            @click="openEditDialogHandler(scope.row)">编辑</el-button>
+                            @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
                         
                         <el-button
                             type="text"
                             icon="el-icon-delete"
                             class="app-danger"
-                            @click="deleteHandler(scope.row)">删除</el-button>
+                            @click="deleteHandler(scope.row)">{{ $t('delete') }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -47,16 +52,16 @@
             </el-pagination>
         </el-card>
 
-        <el-dialog width="500px" :title="dialogTitle" :visible.sync="dialogVisible">
+        <el-dialog width="500px" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form class="app-form" ref="dialogRef" :model="dialogForm" size="medium" label-width="120px">
                     <el-form-item 
-                        label="所属集群"
+                        :label="$t('belong_cluster')"
                         prop="group_id"
                         :rules="[
-                            { required: true, message: '所属集群不能为空'},
+                            { required: true, message: this.$t('belong_cluster_cannot_empty'), trigger: 'blur'},
                         ]">
-                        <el-select filterable placeholder="关键字搜索" style="width: 100%" v-model="dialogForm.group_id">
+                        <el-select filterable :placeholder="$t('keyword_search')" style="width: 100%" v-model="dialogForm.group_id">
                             <el-option
                                 v-for="g in serverGroupList"
                                 :key="g.id"
@@ -66,33 +71,33 @@
                         </el-select>
                     </el-form-item>
                     <el-form-item 
-                        label="服务器名称"
+                        :label="$t('server_name')"
                         prop="name"
                         :rules="[
-                            { required: true, message: '名称不能为空'},
+                            { required: true, message: this.$t('name_cannot_empty'), trigger: 'blur'},
                         ]">
-                        <el-input placeholder="请输入服务器名称" v-model="dialogForm.name" autocomplete="off"></el-input>
+                        <el-input :placeholder="$t('please_input_server_name')" v-model="dialogForm.name" autocomplete="off"></el-input>
                     </el-form-item>
                     <el-form-item 
                         label="IP/HOST"
                         prop="ip"
                         :rules="[
-                            { required: true, message: 'IP/HOST不能为空'},
+                            { required: true, message: this.$t('IP_HOST_cannot_empty'), trigger: 'blur'},
                         ]">
-                        <el-input placeholder="请输入服务器IP/HOST" v-model="dialogForm.ip" autocomplete="off"></el-input>
+                        <el-input :placeholder="$t('please_input_server_IP_HOST')" v-model="dialogForm.ip" autocomplete="off"></el-input>
                     </el-form-item>
                     <el-form-item 
-                        label="SSH端口"
+                        :label="$t('SSH_port')"
                         prop="ssh_port"
                         :rules="[
-                            { required: true, message: 'SSH端口不能为空'},
+                            { required: true, message: this.$t('SSH_port_cannot_empty'), trigger: 'blur'},
                         ]">
                         <el-input maxlength=5 class="app-input-mini" v-model="dialogForm.ssh_port" autocomplete="off"></el-input>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
-                    <el-button size="small" @click="dialogCloseHandler">取 消</el-button>
-                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitHandler">确 定</el-button>
+                    <el-button size="small" @click="dialogCloseHandler">{{ $t('cancel')}}</el-button>
+                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitHandler">{{ $t('enter')}}</el-button>
                 </div>
             </div>
         </el-dialog>
@@ -101,7 +106,7 @@
 </template>
 
 <script>
-import { listGroupApi, newServerApi, updateServerApi, listServerApi, deleteServerApi } from '@/api/server'
+import { listGroupApi, newServerApi, updateServerApi, listServerApi, deleteServerApi, detailServerApi } from '@/api/server'
 export default {
     data() {
         return {
@@ -120,7 +125,6 @@ export default {
 
             tableData: [],
             tableLoading: false,
-            deletePopover: false,
 
             serverGroupList: [],
         }
@@ -132,13 +136,13 @@ export default {
         },
         openAddDialogHandler() {
             this.dialogVisible = true
-            this.dialogTitle = '新增服务器'
+            this.dialogTitle = this.$t('add_server')
         },
         openEditDialogHandler(row) {
             this.dialogVisible = true
-            this.dialogTitle = '编辑服务器信息'
+            this.dialogTitle = this.$t('edit_server_info')
             this.dialogLoading = true
-            detailGroupApi({id: row.id}).then(res => {
+            detailServerApi({id: row.id}).then(res => {
                 this.dialogLoading = false
 
                 this.dialogForm = res

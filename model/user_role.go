@@ -8,44 +8,42 @@ import(
     "time"
 )
 
-type Server struct {
+type UserRole struct {
     ID          int         `gorm:"primary_key"`
-    GroupId	int	    `gorm:"type:int(11);not null;default:0"`
     Name        string      `gorm:"type:varchar(100);not null;default:''"`
-    Ip		string	    `gorm:"type:varchar(100);not null;default:''"`
-    SSHPort	int	    `gorm:"type:int(11);not null;default:0"`
+    Privilege   string	    `gorm:"type:varchar(2000);not null;default:''"`
     Ctime       int         `gorm:"type:int(11);not null;default:0"`
 }
 
-func (m *Server) TableName() string {
-    return "syd_server"
+func (m *UserRole) TableName() string {
+    return "syd_user_role"
 }
 
-func (m *Server) Create() bool {
+func (m *UserRole) Create() bool {
     m.Ctime = int(time.Now().Unix())
     return Create(m)
 }
 
-func (m *Server) Update() bool {
+func (m *UserRole) Update() bool {
     return UpdateByPk(m)
 }
 
-func (m *Server) List(query QueryParam) ([]Server, bool) {
-    var data []Server
+func (m *UserRole) List(query QueryParam) ([]UserRole, bool) {
+    var data []UserRole
     ok := GetMulti(&data, query)
     return data, ok
 }
 
-func (m *Server) Count(query QueryParam) (int, bool) {
+func (m *UserRole) Count(query QueryParam) (int, bool) {
     var count int
     ok := Count(m, &count, query)
     return count, ok
 }
 
-func (m *Server) Delete() bool {
+func (m *UserRole) Delete() bool {
     return DeleteByPk(m)
 }
 
-func (m *Server) Get(id int) bool {
+func (m *UserRole) Get(id int) bool {
     return GetByPk(m, id)
 }
