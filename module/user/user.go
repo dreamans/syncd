@@ -16,16 +16,50 @@ import (
 type User struct {
     ID              int         `json:"id"`
     RoleId          int         `json:"role_id"`
-    RoleName	    string	`json:"role_name"`
+    RoleName	    string		`json:"role_name"`
     Username	    string      `json:"username"`
     Password        string      `json:"password"`
-    Email	    string      `json:"email"`
+    Email	    	string      `json:"email"`
     Truename        string      `json:"truename"`
     Mobile          string      `json:"mobile"`
     Status          int         `json:"status"`
     LastLoginTime   int         `json:"last_login_time"`
     LastLoginIp     string      `json:"last_login_ip"`
     Ctime           int         `json:"ctime"`
+}
+
+func (u *User) Delete() error {
+	user := &model.User{
+		ID: u.ID,
+	}
+	if ok := user.Delete(); !ok {
+		return errors.New("user delete failed")
+	}
+	return nil
+}
+
+func (u *User) Detail() error {
+	user := &model.User{}
+    if ok := user.Get(u.ID); !ok {
+        return errors.New("get user detail failed")
+    }
+    if user.ID == 0 {
+        return errors.New("user not exists")
+    }
+
+	u.ID = user.ID
+	u.RoleId = user.RoleId
+	u.Username = user.Username
+	u.Password = user.Password
+	u.Email = user.Email
+	u.Truename = user.Truename
+	u.Mobile = user.Mobile
+	u.Status = user.Status
+	u.LastLoginTime = user.LastLoginTime
+	u.LastLoginIp = user.LastLoginIp
+	u.Ctime = user.Ctime
+
+    return nil
 }
 
 func (u *User) Total(keyword string) (int, error) {
@@ -148,7 +182,7 @@ func (u *User) CreateOrUpdate() error {
             },
         })
         if !ok {
-            return errors.New("user create failed")
+            return errors.New("user update failed")
         }
     } else {
         user.Password = password

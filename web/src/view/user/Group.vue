@@ -24,7 +24,6 @@
                             icon="el-icon-edit"
                             type="text"
                             @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
-                        
                         <el-button
                             type="text"
                             icon="el-icon-delete"
@@ -44,7 +43,7 @@
             </el-pagination>
         </el-card>
 
-        <el-dialog width="750px" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
+        <el-dialog :width="$root.DialogNormalWidth" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form ref="dialogRef" :model="dialogForm" size="medium" label-width="80px">
                     <el-form-item 
@@ -95,9 +94,6 @@ export default {
                 id: 0,
                 name: '',
                 privilege: [],
-            },
-            dialogRules: {
-                name: '',
             },
             dialogLoading: false,
             btnLoading: false,
@@ -217,7 +213,11 @@ export default {
             this.dialogLoading = true
             detailRoleApi({id: row.id}).then(res => {
                 this.dialogLoading = false
-                this.dialogForm = res
+                this.dialogForm = {
+                    id: res.id,
+                    name: res.name,
+                    privilege: res.privilege ? res.privilege : [],
+                }
             }).catch(err => {
                 this.dialogCloseHandler()
             })
@@ -227,6 +227,11 @@ export default {
             this.dialogLoading = false
             this.btnLoading = false
             this.$refs.dialogRef.resetFields();
+            this.dialogForm = {
+                id: 0,
+                name: '',
+                privilege: [],
+            }
         },
         deleteHandler(row) {
             this.$root.ConfirmDelete(() => {

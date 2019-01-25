@@ -33,7 +33,7 @@ func (m *User) Create() bool {
 }
 
 func (m *User) UpdateByFields(data map[string]interface{}, query QueryParam) bool {
-    return Update(data, query)
+    return Update(m, data, query)
 }
 
 func (m *User) List(query QueryParam) ([]User, bool) {

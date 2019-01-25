@@ -8,29 +8,71 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/render"
     "github.com/dreamans/syncd/module/user"
+    "github.com/dreamans/syncd/util/gostring"
 )
 
 type QueryBind struct {
-    Keyword	string  `form:"keyword"`
+    Keyword     string  `form:"keyword"`
     Offset      int     `form:"offset"`
     Limit       int     `form:"limit" binding:"required,gte=1,lte=999"`
 }
 
 type UserForm struct {
     ID          int     `form:"id"`
-    RoleId      int	`form:"role_id" binding:"required"`
+    RoleId      int     `form:"role_id" binding:"required"`
     Username    string  `form:"username" binding:"required"`
-    Password    string	`form:"password"`
+    Password    string  `form:"password"`
     Email       string  `form:"email" binding:"required"`
-    Truename    string	`form:"truename"`
-    Mobile      string	`form:"mobile"`
-    Status      int	`form:"status"`
+    Truename    string  `form:"truename"`
+    Mobile      string  `form:"mobile"`
+    Status      int     `form:"status"`
 }
 
 type UserExistsQuery struct {
     ID          int     `form:"id"`
     Username    string  `form:"username"`
     Email       string  `form:"email"`
+}
+
+func UserDelete(c *gin.Context) {
+	id := gostring.Str2Int(c.PostForm("id"))
+    if id == 0 {
+        render.ParamError(c, "id cannot be empty")
+        return
+	}
+	u := &user.User{
+		ID: id,
+	}
+	if err := u.Delete(); err != nil {
+		render.AppError(c, err.Error())
+        return
+	}
+	render.Success(c)
+}
+
+func UserDetail(c *gin.Context) {
+    id := gostring.Str2Int(c.Query("id"))
+    if id == 0 {
+        render.ParamError(c, "id cannot be empty")
+        return
+    }
+    u := &user.User{
+        ID: id,
+    }
+    if err := u.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    detail := map[string]interface{}{
+        "id": u.ID,
+        "role_id": u.RoleId,
+        "username": u.Username,
+        "email": u.Email,
+        "truename": u.Truename,
+        "mobile": u.Mobile,
+        "status": u.Status,
+    }
+    render.JSON(c, detail)
 }
 
 func UserExists(c *gin.Context) {
@@ -98,18 +140,41 @@ func UserAdd(c *gin.Context) {
         render.ParamError(c, err.Error())
         return
     }
+
     if len(userForm.Password) != 32 {
         render.ParamError(c, "password param incorrect")
         return
     }
 
+    userCreateOrUpdate(c, userForm)
+}
+
+func UserUpdate(c *gin.Context) {
+    var userForm UserForm
+    if err := c.ShouldBind(&userForm); err != nil {
+        render.ParamError(c, err.Error())
+        return
+    }
+    if userForm.ID == 0 {
+        render.ParamError(c, "id cannot empty")
+        return
+    }
+    if userForm.Password != "" && len(userForm.Password) != 32 {
+        render.ParamError(c, "password param incorrect")
+        return
+    }
+
+    userCreateOrUpdate(c, userForm)
+}
+
+func userCreateOrUpdate(c *gin.Context, userForm UserForm) {
     var (
         checkUsername, checkEmail *user.User
         exists bool
         err error
     )
-
     checkUsername = &user.User{
+        ID: userForm.ID,
         Username: userForm.Username,
     }
     exists, err = checkUsername.UserExists()
@@ -123,6 +188,7 @@ func UserAdd(c *gin.Context) {
     }
 
     checkEmail = &user.User{
+        ID: userForm.ID,
         Email: userForm.Email,
     }
     exists, err = checkEmail.UserExists()
@@ -150,8 +216,4 @@ func UserAdd(c *gin.Context) {
         return
     }
     render.Success(c)
-}
-
-func UserUpdate(c *gin.Context) {
-
 }

@@ -125,10 +125,10 @@ func UpdateByPk(model interface{}) bool {
     return true
 }
 
-func Update(model interface{}, query QueryParam) bool {
+func Update(model interface{}, data interface{}, query QueryParam) bool {
     db := syncd.App.DB.DbHandler.Model(model)
     db = parseWhereParam(db, query.Where)
-    db = db.Updates(model)
+    db = db.Updates(data)
     if err := db.Error; err != nil {
         syncd.App.Logger.Warning("mysql query error: %s, sql[%v]", err.Error(), db.QueryExpr())
         return false

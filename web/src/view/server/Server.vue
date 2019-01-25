@@ -52,7 +52,7 @@
             </el-pagination>
         </el-card>
 
-        <el-dialog width="500px" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
+        <el-dialog :width="$root.DialogSmallWidth" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form class="app-form" ref="dialogRef" :model="dialogForm" size="medium" label-width="120px">
                     <el-form-item 
@@ -113,13 +113,7 @@ export default {
             searchInput: '',
             dialogVisible: false,
             dialogTitle: '',
-            dialogForm: {
-                id: 0,
-                group_id: undefined,
-                name: '',
-                ip: '',
-                ssh_port: 22,
-            },
+            dialogForm: {},
             dialogLoading: false,
             btnLoading: false,
 
@@ -155,7 +149,9 @@ export default {
             this.dialogLoading = false
             this.btnLoading = false
             this.$refs.dialogRef.resetFields();
-            this.dialogForm.ssh_port = 22
+            this.dialogForm = {
+                ssh_port: 22,
+            }
         },
         deleteHandler(row) {
             this.$root.ConfirmDelete(() => {

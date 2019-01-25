@@ -13,13 +13,13 @@ import (
 )
 
 type Server struct {
-    ID              int     `json:"id"`
-    GroupId         int	    `json:"group_id"`
-    GroupName       string  `json:"group_name"`
-    Name	    string  `json:"name"`
-    Ip		    string  `json:"ip"`
-    SSHPort	    int	    `json:"ssh_port"`
-    Ctime	    int	    `json:"ctime"`
+    ID          int     `json:"id"`
+    GroupId     int     `json:"group_id"`
+    GroupName   string  `json:"group_name"`
+    Name        string  `json:"name"`
+    Ip          string  `json:"ip"`
+    SSHPort     int     `json:"ssh_port"`
+    Ctime       int     `json:"ctime"`
 }
 
 func (s *Server) CreateOrUpdate() error {

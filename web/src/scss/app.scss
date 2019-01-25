@@ -81,9 +81,6 @@ html, body {
         color: #f56c6c;
     }
 }
-.app-btn-group {
-    margin-bottom: 20px;
-}
 .app-table {
     thead {
         color: #4e4f52;
@@ -156,4 +153,29 @@ html, body {
 .app-form-explain {
     color: rgba(0,0,0,.45);
     line-height: 1.524;
+}
+.app-table-explain {
+    padding: 10px 0;
+    .app-description {
+        margin-top: 5px;
+        color: #8c8c8c;
+    }
+}
+.app-btn-title {
+    font-size: 14px;
+    margin-bottom: 15px;
+}
+.app-btn-group {
+    margin-bottom: 20px;
+    .app-description {
+        font-size: 14px;
+        margin-top: 5px;
+        color: #8c8c8c;
+    }
+}
+.app-divider {
+    height: 1px;
+    width: 100%;
+    margin: 24px 0;
+    background: #e8e8e8;
 }

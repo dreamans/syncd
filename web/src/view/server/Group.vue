@@ -24,7 +24,6 @@
                             icon="el-icon-edit"
                             type="text"
                             @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
-                        
                         <el-button
                             type="text"
                             icon="el-icon-delete"
@@ -44,7 +43,7 @@
             </el-pagination>
         </el-card>
 
-        <el-dialog width="500px" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
+        <el-dialog :width="$root.DialogSmallWidth" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form ref="dialogRef" :model="dialogForm" size="medium" label-width="80px">
                     <el-form-item 
@@ -74,13 +73,7 @@ export default {
             searchInput: '',
             dialogVisible: false,
             dialogTitle: '',
-            dialogForm: {
-                id: 0,
-                name: '',
-            },
-            dialogRules: {
-                name: '',
-            },
+            dialogForm: {},
             dialogLoading: false,
             btnLoading: false,
 
@@ -103,7 +96,6 @@ export default {
             this.dialogLoading = true
             detailGroupApi({id: row.id}).then(res => {
                 this.dialogLoading = false
-
                 this.dialogForm = res
             }).catch(err => {
                 this.dialogCloseHandler()
@@ -114,6 +106,7 @@ export default {
             this.dialogLoading = false
             this.btnLoading = false
             this.$refs.dialogRef.resetFields();
+            this.dialogForm = {}
         },
         deleteHandler(row) {
             this.$root.ConfirmDelete(() => {

@@ -84,7 +84,7 @@ const routerMap = [
                 meta: {
                     title: i18n.t('space_manage'),
                 },
-                component: _import('Dashboard'),
+                component: _import('project/Space'),
             },
             {
                 path: 'project',
@@ -93,7 +93,7 @@ const routerMap = [
                     title: i18n.t('project_manage'),
                     hide: true,
                 },
-                component: _import('Dashboard'),
+                component: _import('project/Project'),
             },
             {
                 path: 'user',
@@ -102,7 +102,7 @@ const routerMap = [
                     title: i18n.t('member_manage'),
                     hide: true,
                 },
-                component: _import('Dashboard'),
+                component: _import('project/Member'),
             },
         ],
     },

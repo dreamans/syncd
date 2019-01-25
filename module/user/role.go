@@ -48,7 +48,7 @@ func RoleGetMapByIds(ids []int) (map[int]Role, error) {
 }
 
 func (r *Role) Detail() error {
-    role := model.UserRole{}
+    role := &model.UserRole{}
     if ok := role.Get(r.ID); !ok {
         return errors.New("get user role detail failed")
     }

@@ -63,7 +63,7 @@
             </aside>
             <main class="layer-main">
                 <el-breadcrumb separator="/" class="bread-crumb">
-                    <el-breadcrumb-item><i class="iconfont icon-breadcrumbs"></i></el-breadcrumb-item>
+                    <el-breadcrumb-item><i class="iconfont small icon-breadcrumbs"></i></el-breadcrumb-item>
                     <el-breadcrumb-item v-for="b in breadcrumb" :key="b">{{ b }}</el-breadcrumb-item>
                 </el-breadcrumb>
                 <div class="container">

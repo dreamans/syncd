@@ -23,10 +23,10 @@
                 <el-table-column prop="status" width="100" :label="$t('status')">
                     <template slot-scope="scope">
                         <span class="app-color-success" v-if="scope.row.status == '1'">
-                            <i class="iconfont icon-unlock"></i> 正常
+                            <i class="iconfont icon-unlock"></i> {{ $t('normal') }}
                         </span>
                         <span class="app-color-error" v-else>
-                            <i class="iconfont icon-lock"></i> 锁定
+                            <i class="iconfont icon-lock"></i> {{ $t('locking') }}
                         </span>
                     </template>
                 </el-table-column>
@@ -34,9 +34,9 @@
                     <template slot-scope="scope">
                         <el-tooltip placement="top">
                             <div slot="content">
-                                上次登录时间: {{ $root.FormatDateTime(scope.row.last_login_time) }}
+                                {{ $t('last_login_time') }}: {{ $root.FormatDateTime(scope.row.last_login_time) }}
                                 <br/><br/>
-                                上次登录IP: {{ scope.row.last_login_ip }}
+                                {{ $t('last_login_ip') }}: {{ scope.row.last_login_ip }}
                             </div>
                             <span>{{ $root.FormatDateFromNow(scope.row.last_login_time) }}</span>
                         </el-tooltip>
@@ -68,7 +68,7 @@
             </el-pagination>
         </el-card>
 
-        <el-dialog width="500px" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
+        <el-dialog :width="$root.DialogSmallWidth" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form class="app-form" ref="dialogRef" :model="dialogForm" size="medium" label-width="80px">
                     <el-form-item 
@@ -95,12 +95,22 @@
                     ]">
                         <el-input :placeholder="$t('please_input_username')" v-model="dialogForm.username" autocomplete="off"></el-input>
                     </el-form-item>
-                    <el-form-item 
+                    <el-form-item
+                    v-if="!dialogForm.id"
                     :label="$t('password')"
                     prop="password"
                     :rules="[
-                        { required: true, message: this.$t('password_cannot_empty'), trigger: 'blur'},
-                        { min: 6, max: 20, message: '长度在 6 到 20 个字符', trigger: 'blur'}
+                        { min: 6, max: 20, message: this.$t('strlen_between', {min: 6, max: 20}), trigger: 'blur'},
+                        { required: true, message: this.$t('password_cannot_empty'), trigger: 'blur'}
+                    ]">
+                        <el-input type="password" :placeholder="$t('please_input_password_length_limit')" v-model="dialogForm.password" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item
+                    v-if="dialogForm.id"
+                    :label="$t('password')"
+                    prop="password"
+                    :rules="[
+                        { min: 6, max: 20, message: this.$t('strlen_between', {min: 6, max: 20}), trigger: 'blur'},
                     ]">
                         <el-input type="password" :placeholder="$t('please_input_password_length_limit')" v-model="dialogForm.password" autocomplete="off"></el-input>
                     </el-form-item>
@@ -109,7 +119,7 @@
                     prop="email"
                     :rules="[
                         { required: true, message: this.$t('email_cannot_empty'), trigger: 'blur'},
-                        { type:'email', message: '邮箱格式错误', trigger: 'blur'},
+                        { type:'email', message: this.$t('email_format_wrong'), trigger: 'blur'},
                         { validator: this.userExistsValid('email'), trigger: 'blur' },
                     ]">
                         <el-input :placeholder="$t('please_input_email')" v-model="dialogForm.email" autocomplete="off"></el-input>
@@ -133,8 +143,8 @@
                         <div>
                             <el-switch
                             v-model="dialogForm.status"
-                            active-value="1"
-                            inactive-value="0"
+                            :active-value="1"
+                            :inactive-value="0"
                             active-color="#13ce66">
                             </el-switch>
                             <span style="line-height: 20px; display: inline-flex; align-items: center; vertical-align: middle; margin-left: 5px;">
@@ -142,7 +152,7 @@
                                 <i v-else class="iconfont icon-lock"></i>
                             </span>
                         </div>
-                        <div class="app-form-explain">禁止后用户将无法登录</div>
+                        <div class="app-form-explain">{{ $t('users_cannot_login_after_being_banned') }}</div>
                     </el-form-item>
                 </el-form>
                 <div slot="footer" class="dialog-footer">
@@ -151,12 +161,11 @@
                 </div>
             </div>
         </el-dialog>
-
     </div>
 </template>
 
 <script>
-import { listRoleApi, newUserApi, updateUserApi, listUserApi, existsUserApi } from '@/api/user'
+import { listRoleApi, newUserApi, updateUserApi, listUserApi, existsUserApi, detailUserApi, deleteUserApi } from '@/api/user'
 export default {
     data() {
         return {
@@ -171,7 +180,7 @@ export default {
                 email: '',
                 truename: '',
                 mobile: '',
-                status: '1',
+                status: 0,
             },
             dialogLoading: false,
             btnLoading: false,
@@ -190,18 +199,18 @@ export default {
                     callback()
                     return
                 }
-                let errmsg = '数据重复，请重新输入'
-                let loadingmsg = '验证中，请稍后'
+                let errmsg = vm.$t('data_repeat_reenter_please')
+                let loadingmsg = vm.$t('in_verification_please_wait')
                 let query = {id: vm.dialogForm.id}
                 switch (field) {
                     case 'username':
-                        errmsg = '用户名已经存在，请重新输入'
-                        loadingmsg = '正在验证用户名是否被占用，请稍等'
+                        errmsg = vm.$t('username_exists_please_reenter')
+                        loadingmsg = vm.$t('verifying_username_is_being_used_please_wait')
                         query.username = value
                         break
                     case 'email':
-                        errmsg = '邮箱已经存在，请重新输入'
-                        loadingmsg = '正在验证邮箱是否被占用，请稍等'
+                        errmsg = vm.$t('email_is_exists_please_reenter')
+                        loadingmsg = vm.$t('verifying_email_is_being_used_please_wait')
                         query.email = value
                         break
                 }
@@ -219,7 +228,7 @@ export default {
                     }
                 }).catch(err => {
                     modal.close()
-                    callback('网络错误, 校验失败')
+                    callback(vm.$t('network_error_verify_failed'))
                 })
             }
         },
@@ -235,10 +244,18 @@ export default {
             this.dialogVisible = true
             this.dialogTitle = this.$t('edit_server_info')
             this.dialogLoading = true
-            detailServerApi({id: row.id}).then(res => {
+            detailUserApi({id: row.id}).then(res => {
                 this.dialogLoading = false
-
-                this.dialogForm = res
+                this.dialogForm = {
+                    id: res.id,
+                    role_id: res.role_id,
+                    username: res.username,
+                    password: '',
+                    email: res.email,
+                    truename: res.truename,
+                    mobile: res.mobile,
+                    status: res.status,
+                }
             }).catch(err => {
                 this.dialogCloseHandler()
             })
@@ -248,11 +265,20 @@ export default {
             this.dialogLoading = false
             this.btnLoading = false
             this.$refs.dialogRef.resetFields();
-            this.dialogForm.ssh_port = 22
+            this.dialogForm = {
+                id: 0,
+                role_id: undefined,
+                username: '',
+                password: '',
+                email: '',
+                truename: '',
+                mobile: '',
+                status: 0,
+            }
         },
         deleteHandler(row) {
             this.$root.ConfirmDelete(() => {
-                deleteServerApi({id: row.id}).then(res => {
+                deleteUserApi({id: row.id}).then(res => {
                     this.$root.MessageSuccess()
                     this.$root.PageReset()
                     this.loadTableData()

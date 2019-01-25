@@ -5,14 +5,14 @@
 package user
 
 import (
-	"github.com/gin-gonic/gin"
-	"github.com/dreamans/syncd/render"
+    "github.com/gin-gonic/gin"
+    "github.com/dreamans/syncd/render"
 )
 
 func Login(c *gin.Context) {
-	render.JSON(c, gin.H{"id": 1,})
+    render.JSON(c, gin.H{"id": 1,})
 }
 
 func LoginStatus(c *gin.Context) {
-	render.JSON(c, gin.H{"id": 1,})
+    render.JSON(c, gin.H{"id": 1,})
 }

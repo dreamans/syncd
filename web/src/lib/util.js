@@ -66,4 +66,15 @@ export default {
         }
         return moment.unix(unixtime).fromNow()
     },
+
+    Substr(str, len) {
+        if (Object.prototype.toString.call(str) != '[object String]') {
+            return ''
+        }
+        let postfix = ''
+        if (str.length > len) {
+            postfix = "..."
+        }
+        return str.substr(0, len) + postfix
+    },
 }

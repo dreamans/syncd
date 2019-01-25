@@ -8,13 +8,14 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/render"
     "github.com/dreamans/syncd/module/user"
-    "github.com/dreamans/syncd/util/gostring"
+	"github.com/dreamans/syncd/util/gostring"
+	"github.com/dreamans/syncd/util/goslice"
 )
 
 type RoleForm struct {
-    ID	        int     `form:"id"`
-    Name	string  `form:"name" binding:"required"`
-    Privilege	[]int   `form:"privilege"`
+    ID          int     `form:"id"`
+    Name        string  `form:"name" binding:"required"`
+    Privilege   []int   `form:"privilege"`
 }
 
 func RoleDelete(c *gin.Context) {
@@ -104,7 +105,7 @@ func roleCreateOrUpdate(c *gin.Context, id int) {
     role := user.Role{
         ID: roleForm.ID,
         Name: roleForm.Name,
-        Privilege: roleForm.Privilege,
+        Privilege: goslice.FilterSliceInt(roleForm.Privilege),
     }
     if err := role.CreateOrUpdate(); err != nil {
         render.AppError(c, err.Error())

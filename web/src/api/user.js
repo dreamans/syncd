@@ -35,3 +35,11 @@ export function listUserApi(params) {
 export function existsUserApi(params) {
     return get('/user/exists', params)
 }
+
+export function detailUserApi(params) {
+    return get('/user/detail', params)
+}
+
+export function deleteUserApi(data) {
+    return post('/user/delete', data)
+}

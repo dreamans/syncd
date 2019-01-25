@@ -7,7 +7,8 @@ package route
 import (
     "github.com/dreamans/syncd"
     "github.com/dreamans/syncd/router/user"
-    "github.com/dreamans/syncd/router/server"
+	"github.com/dreamans/syncd/router/server"
+	"github.com/dreamans/syncd/router/project"
 )
 
 func RegisterRoute() {
@@ -36,5 +37,13 @@ func RegisterRoute() {
         api.POST("/user/update", user.UserUpdate)
         api.GET("/user/list", user.UserList)
         api.GET("/user/exists", user.UserExists)
+		api.GET("/user/detail", user.UserDetail)
+		api.POST("/user/delete", user.UserDelete)
+
+		api.POST("/project/space/add", project.SpaceAdd)
+		api.POST("/project/space/update", project.SpaceUpdate)
+		api.GET("/project/space/list", project.SpaceList)
+		api.GET("/project/space/detail", project.SpaceDetail)
+		api.POST("/project/space/delete", project.SpaceDelete)
     }
 }
