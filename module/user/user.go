@@ -113,7 +113,38 @@ func (u *User) List(keyword string, offset, limit int) ([]User, error) {
     return userList, nil
 }
 
-func (u *User) UserExists() (bool, error) {
+func (u *User) Exists() (bool, error) {
+	var where []model.WhereParam
+	if u.Username != "" {
+        where = append(where, model.WhereParam{
+            Field: "username",
+            Prepare: u.Username,
+        })
+	}
+	if u.ID != 0 {
+        where = append(where, model.WhereParam{
+            Field: "id",
+            Prepare: u.ID,
+        })
+	}
+	if u.Email != "" {
+        where = append(where, model.WhereParam{
+            Field: "email",
+            Prepare: u.Email,
+        })
+	}
+	user := &model.User{}
+    count, ok := user.Count(model.QueryParam{
+        Where: where,
+    })
+    if !ok {
+        return false, errors.New("check user exists failed")
+    }
+
+    return count > 0, nil
+}
+
+func (u *User) UserCheckExists() (bool, error) {
     var where []model.WhereParam
     if u.Username != "" {
         where = append(where, model.WhereParam{

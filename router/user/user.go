@@ -86,7 +86,7 @@ func UserExists(c *gin.Context) {
         Username: query.Username,
         Email: query.Email,
     }
-    exists, err := u.UserExists()
+    exists, err := u.UserCheckExists()
     if err != nil {
         render.AppError(c, err.Error())
         return
@@ -177,7 +177,7 @@ func userCreateOrUpdate(c *gin.Context, userForm UserForm) {
         ID: userForm.ID,
         Username: userForm.Username,
     }
-    exists, err = checkUsername.UserExists()
+    exists, err = checkUsername.UserCheckExists()
     if err != nil {
         render.AppError(c, err.Error())
         return
@@ -191,7 +191,7 @@ func userCreateOrUpdate(c *gin.Context, userForm UserForm) {
         ID: userForm.ID,
         Email: userForm.Email,
     }
-    exists, err = checkEmail.UserExists()
+    exists, err = checkEmail.UserCheckExists()
     if err != nil {
         render.AppError(c, err.Error())
         return
