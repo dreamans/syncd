@@ -48,5 +48,8 @@ func RegisterRoute() {
 		api.GET("/project/member/search", project.MemberSearch)
 		api.POST("/project/member/add", project.MemberAdd)
 		api.GET("/project/member/list", project.MemberList)
+		api.POST("/project/member/remove", project.MemberRemove)
+		api.POST("/project/add", project.ProjectAdd)
+		api.POST("/project/update", project.ProjectUpdate)
     }
 }

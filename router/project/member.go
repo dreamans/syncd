@@ -9,7 +9,7 @@ import (
     "github.com/dreamans/syncd/module/user"
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/render"
-    //"github.com/dreamans/syncd/util/gostring"
+    "github.com/dreamans/syncd/util/gostring"
 )
 
 type MemberAddQueryBind struct {
@@ -23,13 +23,44 @@ type MemberListQueryBind struct {
     Limit	    int     `form:"limit" binding:"required,gte=1,lte=999"`
 }
 
+func MemberRemove(c *gin.Context) {
+    id := gostring.Str2Int(c.PostForm("id"))
+    if id == 0 {
+        render.ParamError(c, "id cannot be empty")
+        return
+    }
+    member := &project.Member{
+        ID: id,
+    }
+    if err := member.Delete(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    render.JSON(c, nil)
+}
+
 func MemberList(c *gin.Context) {
     var query MemberListQueryBind
     if err := c.ShouldBind(&query); err != nil {
         render.ParamError(c, err.Error())
         return
     }
-    
+    m := &project.Member{}
+    memberList, err := m.List(query.SpaceId, query.Offset, query.Limit)
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    total, err := m.Total(query.SpaceId)
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    render.JSON(c, gin.H{
+        "list": memberList,
+        "total": total,
+    })
 }
 
 func MemberSearch(c *gin.Context) {

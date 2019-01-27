@@ -6,7 +6,6 @@ package project
 
 import (
     "errors"
-    //"fmt"
 
     "github.com/dreamans/syncd/model"
 )
@@ -22,6 +21,32 @@ type Member struct {
     Ctime       int     `json:"ctime"`
 }
 
+func (m *Member) Delete() error {
+    member := &model.ProjectMember{
+        ID: m.ID,
+    }
+    if ok := member.Delete(); !ok {
+        return errors.New("remove project member failed")
+    }
+    return nil
+}
+
+func (m *Member) Total(spaceId int) (int, error) {
+    member := &model.ProjectMember{}
+    total, ok := member.Count(model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "space_id",
+                Prepare: spaceId,
+            },
+        },
+    })
+    if !ok {
+        return 0, errors.New("get project member count failed")
+    }
+    return total, nil
+}
+
 func (m *Member) List(spaceId, offset, limit int) ([]Member, error) {
     member := &model.ProjectMember{}
     list, ok := member.List(model.QueryParam{
@@ -29,6 +54,12 @@ func (m *Member) List(spaceId, offset, limit int) ([]Member, error) {
         Offset: offset,
         Limit: limit,
         Order: "id DESC",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "space_id",
+                Prepare: spaceId,
+            },
+        },
     })
     if !ok {
         return nil, errors.New("get project member list failed")
@@ -36,7 +67,7 @@ func (m *Member) List(spaceId, offset, limit int) ([]Member, error) {
 
     var (
         memberList []Member
-        userIdList []int
+        userIdList, roleIdList []int
     )
     for _, l := range list {
         userIdList = append(userIdList, l.UserId)
@@ -62,24 +93,39 @@ func (m *Member) List(spaceId, offset, limit int) ([]Member, error) {
         return nil, errors.New("get project user detail list failed")
     }
     userMap := make(map[int]model.User)
-    var roleIdList []int
     for _, l := range userList {
         userMap[l.ID] = l
         roleIdList = append(roleIdList, l.RoleId)
     }
     role := &model.UserRole{}
     roleList, ok := role.List(model.QueryParam{
-        Fields: "id, role_id, username, email, status",
+        Fields: "id, name",
         Where: []model.WhereParam{
             model.WhereParam{
                 Field: "id",
                 Tag: "IN",
-                Prepare: userIdList,
+                Prepare: roleIdList,
             },
         },
     })
     if !ok {
         return nil, errors.New("get project user role list failed")
+    }
+    roleMap := make(map[int]model.UserRole)
+    for _, l := range roleList {
+        roleMap[l.ID] = l
+    }
+
+    for k, m := range memberList {
+        if u, ok := userMap[m.UserId]; ok {
+            memberList[k].Username = u.Username
+            memberList[k].Email = u.Email
+            memberList[k].Status = u.Status
+            if r, ok := roleMap[u.RoleId]; ok {
+                memberList[k].RoleName = r.Name
+            }
+        }
+       
     }
 
     return memberList, nil

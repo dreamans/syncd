@@ -31,3 +31,19 @@ export function addMemberApi(data) {
 export function listMemberApi(params) {
     return get('/project/member/list', params)
 }
+
+export function removeMemberApi(data) {
+    return post('/project/member/remove', data)
+}
+
+export function newProjectApi(data) {
+    return post('/project/add', data)
+}
+
+export function updateProjectApi(data) {
+    return post('/project/update', data)
+}
+
+export function listProjectApi(params) {
+    return get('/project/list', params)
+}
