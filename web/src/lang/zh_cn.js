@@ -137,4 +137,9 @@ export default {
     'deploy_timeout': '部署超时时间(秒)',
     'deploy_timeout_tips': '部署命令最大运行时间',
     'project_enable': '项目启用',
+    'edit_project': '编辑项目',
+    'view': '查看',
+    'project_id': '项目ID',
+    'build_setting': '构建设置',
+    'build_script': '构建脚本',
 }

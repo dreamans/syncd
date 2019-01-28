@@ -47,3 +47,15 @@ export function updateProjectApi(data) {
 export function listProjectApi(params) {
     return get('/project/list', params)
 }
+
+export function switchStatusProjectApi(data) {
+    return post('/project/switchstatus', data)
+}
+
+export function detailProjectApi(params) {
+    return get('/project/detail', params)
+}
+
+export function deleteProjectApi(data) {
+    return post('/project/delete', data)
+}

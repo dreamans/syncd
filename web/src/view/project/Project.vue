@@ -41,24 +41,44 @@
                 v-loading="tableLoading"
                 :data="tableData">
                 <el-table-column prop="name" :label="$t('project_name')"></el-table-column>
-                <el-table-column prop="need_audit" width="180" :label="$t('open_audit')"></el-table-column>
-                <el-table-column prop="status" width="180" :label="$t('project_enable')">
+                <el-table-column align="center" prop="need_audit" width="150" :label="$t('open_audit')">
                     <template slot-scope="scope">
-                        <span class="app-color-success" v-if="scope.row.status == '1'">
-                            <i class="iconfont icon-unlock"></i> {{ $t('normal') }}
-                        </span>
-                        <span class="app-color-error" v-else>
-                            <i class="iconfont icon-lock"></i> {{ $t('locking') }}
-                        </span>
+                        <span v-if="scope.row.need_audit == 1">是</span>
+                        <span v-else>否</span>
                     </template>
                 </el-table-column>
-                <el-table-column :label="$t('operate')" width="260" align="right">
+                <el-table-column prop="status" width="180" :label="$t('project_enable')">
                     <template slot-scope="scope">
+                        <el-switch
+                        @change="enableSwitchHandler($event, scope.row)"
+                        v-model="scope.row.status"
+                        :active-value="1"
+                        :inactive-value="0"
+                        active-color="#13ce66">
+                        </el-switch>
+                        <span style="margin-left: 5px;" v-if="scope.row.status">已启用</span>
+                        <span style="margin-left: 5px;" v-else>未启用</span>
+                    </template>
+                </el-table-column>
+                <el-table-column :label="$t('operate')" width="300" align="right">
+                    <template slot-scope="scope">
+                        <el-button
+                        icon="iconfont small left icon-build"
+                        type="text"
+                        @click="openBuildDialogHandler(scope.row)">{{ $t('build_setting') }}</el-button>
+                        <el-button
+                        icon="el-icon-view"
+                        type="text"
+                        @click="openViewDialogHandler(scope.row)">{{ $t('view') }}</el-button>
+                        <el-button
+                        icon="el-icon-edit"
+                        type="text"
+                        @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
                         <el-button
                         type="text"
                         icon="el-icon-delete"
                         class="app-danger"
-                        @click="deleteHandler(scope.row)">{{ $t('remove') }}</el-button>
+                        @click="deleteHandler(scope.row)">{{ $t('delete') }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>
@@ -230,6 +250,105 @@
             </div>
         </el-dialog>
 
+        <el-dialog :width="$root.DialogNormalWidth" title="查看项目信息" :visible.sync="dialogViewVisible" @close="dialogViewVisible = false">
+            <div class="app-dialog" v-loading="dialogViewLoading">
+                <el-form size="medium" label-width="130px">
+                    <h4 class="app-form-subtitle">基本设置</h4>
+                    <el-form-item 
+                    :label="$t('project_id')">
+                        {{ dialogViewForm.id }}
+                    </el-form-item>
+
+                    <el-form-item  :label="$t('project_name')">
+                        {{ dialogViewForm.name }}
+                    </el-form-item>
+
+                    <el-form-item :label="$t('description')">
+                        {{ dialogViewForm.description }}
+                    </el-form-item>
+
+                    <el-form-item :label="$t('open_audit')">
+                        <span v-if="dialogViewForm.need_audit">需要审核</span>
+                        <span v-else>不需审核</span>
+                    </el-form-item>
+
+                    <div class="app-divider"></div>
+                    <h4 class="app-form-subtitle">仓库设置</h4>
+
+                    <el-form-item :label="$t('repo_url')">
+                        {{ dialogViewForm.repo_url }}
+                    </el-form-item>
+
+                    <el-form-item :label="$t('repo_branch')">
+                        {{ dialogViewForm.repo_branch }}
+                    </el-form-item>
+                    <div class="app-divider"></div>
+                    <h4 class="app-form-subtitle">部署设置</h4>
+
+                    <el-form-item :label="$t('pre_release_cluster')">
+                        <span v-if="dialogViewForm.pre_release_cluster">
+                            <i class="iconfont small left icon-cluster"></i>{{ formatClusterName(dialogViewForm.pre_release_cluster) }}
+                        </span>
+                        <span v-else>--</span>
+                    </el-form-item>
+
+                    <el-form-item :label="$t('online_cluster')">
+                        <div v-if="dialogViewForm.online_cluster && dialogViewForm.online_cluster.length">
+                            <ul class="app-form-box">
+                                <li class="item" v-for="id in dialogViewForm.online_cluster" :key="id">
+                                    <span><i class="iconfont small left icon-cluster"></i>{{ formatClusterName(id) }}</span>
+                                </li>
+                            </ul>
+                        </div>
+                    </el-form-item>
+
+                    <el-form-item :label="$t('user')">
+                        {{ dialogViewForm.deploy_user }}
+                    </el-form-item>
+
+                    <el-form-item :label="$t('path')">
+                        {{ dialogViewForm.deploy_path }}
+                    </el-form-item>
+
+                    <el-form-item :label="$t('pre_deploy_cmd')">
+                        <el-input type="textarea" :rows="3" :value="dialogViewForm.pre_deploy_cmd" readonly="readonly"></el-input>
+                    </el-form-item>
+
+                    <el-form-item :label="$t('after_deploy_cmd')">
+                        <el-input type="textarea" :rows="3" :value="dialogViewForm.after_deploy_cmd" readonly="readonly"></el-input>
+                    </el-form-item>
+
+                    <el-form-item :label="$t('deploy_timeout')">
+                        {{ dialogViewForm.deploy_timeout }}
+                    </el-form-item>
+
+                </el-form>
+            </div>
+        </el-dialog>
+
+        <el-dialog :width="$root.DialogNormalWidth" title="编辑构建脚本" :visible.sync="dialogBuildVisible" @close="dialogBuildVisible = false">
+            <div class="app-dialog" v-loading="dialogBuildLoading">
+                <div class="app-shell-editor">
+                    <textarea id="editor-textarea"></textarea>
+                </div>
+                <h4 class="app-form-subtitle">说明</h4>
+                <div class="app-form-notice">
+                    <p>脚本会在代码下载完成后执行，构建脚本支持的变量:</p>
+                    <p>
+                        <i class="iconfont icon-dot"></i><span class="code">${env_workspace}</span> - 代码仓库本地副本目录
+                    </p>
+                    <p>
+                        <i class="iconfont icon-dot"></i><span class="code">${env_pack_file}</span> - 打包文件绝对地址，构建完成后将需要部署到线上的代码打包到此文件中，必须使用 tar -zcf 命令进行打包。部署模块会将此压缩包分发到目标主机并解压缩到指定目录，请按照要求打包，否则会部署失败。
+                    </p>
+                    <p><a href="https://github.com/dreamans/syncd">构建脚本示例</a> (新手可参考示例)</p>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button class="app-input-small" size="small" @click="dialogBuildVisible = false">{{ $t('cancel') }}</el-button>
+                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitBuildHandler">{{ $t('enter') }}</el-button>
+                </div>
+            </div>
+        </el-dialog>
+
         <el-dialog 
         :width="$root.DialogSmallWidth"
         :visible.sync="dialogSpaceVisible"
@@ -245,14 +364,34 @@
 </template>
 
 <script>
-import { listSpaceApi, detailSpaceApi, newProjectApi, updateProjectApi, listProjectApi } from '@/api/project'
+import { listSpaceApi, detailSpaceApi, newProjectApi, updateProjectApi, listProjectApi, switchStatusProjectApi, detailProjectApi, deleteProjectApi } from '@/api/project'
 import { listGroupApi } from '@/api/server' 
+import codeMirror from 'codemirror/lib/codemirror.js'
+import 'codemirror/lib/codemirror.css'
+import 'codemirror/mode/shell/shell.js'
+import 'codemirror/theme/dracula.css'
+import 'codemirror/addon/scroll/simplescrollbars.css'
+import 'codemirror/addon/scroll/simplescrollbars.js'
+
 export default {
     data() {
         return {
+            editorInstance: null,
+            dialogBuildVisible: false,
+            dialogBuildLoading: false,
+            dialogBuildForm: {
+                id: 0,
+                space_id: 0,
+                build_script: '',
+            },
+
             searchInput: '',
             tableLoading: false,
             tableData: [],
+
+            dialogViewVisible: false,
+            dialogViewLoading: false,
+            dialogViewForm: {},
 
             dialogVisible: false,
             dialogTitle: '',
@@ -271,7 +410,7 @@ export default {
                 pre_deploy_cmd: '',
                 after_deploy_cmd: '',
                 deploy_timeout: 120,
-
+                status: 0,
             },
             btnLoading: false,
 
@@ -301,6 +440,74 @@ export default {
         }
     },
     methods: {
+        dialogSubmitBuildHandler() {
+
+        },
+        openBuildDialogHandler(row) {
+            this.dialogBuildVisible = true
+            this.dialogBuildLoading = true
+            detailProjectApi({id: row.id}).then(res => {
+                this.dialogBuildForm = {
+                    id: res.id,
+                    space_id: res.space_id,
+                    build_script: res.build_script,
+                }
+                this.dialogBuildLoading = false
+                this.$nextTick(() => {
+                    this.createBuildEditor(this.dialogBuildForm.build_script)
+                })
+            })
+        },
+        createBuildEditor(content) {
+            if (!this.editorInstance) {
+                this.editorInstance = codeMirror.fromTextArea(
+                    document.getElementById('editor-textarea'),
+                    {
+                        theme: "dracula",
+                        mode: 'shell',
+                        tabSize: 4,
+                        indentUnit: 4,
+                        lineWrapping: 'wrap',
+                        lineNumbers: true,
+                        matchBrackets: true,
+                        scrollbarStyle: 'simple',
+                    }
+                )
+            }
+            if (!content) {
+                content = ''
+            }
+            this.editorInstance.setValue(content)
+        },
+        getBuildEditorValue() {
+            if (!this.editorInstance) {        
+                return ''
+            }
+            return this.editorInstance.getValue()
+        },
+        openViewDialogHandler(row) {
+            this.dialogViewVisible = true
+            this.dialogViewLoading = true
+            detailProjectApi({id: row.id}).then(res => {
+                this.dialogViewForm = res
+                this.dialogViewLoading = false
+            })
+        },
+        deleteHandler(row) {
+            this.$root.ConfirmDelete(() => {
+                deleteProjectApi({id: row.id}).then(res => {
+                    this.$root.MessageSuccess()
+                    this.$root.PageReset()
+                    this.loadTableData()
+                })
+            })
+        },
+        enableSwitchHandler(val, row) {
+            switchStatusProjectApi({status: val, id: row.id}).then(res => {
+            }).catch(err => {
+                row.status = Number(!val)
+            })
+        },
         searchHandler() {
             this.$root.PageInit()
             this.loadTableData()
@@ -308,6 +515,21 @@ export default {
         openAddDialogHandler() {
             this.dialogVisible = true
             this.dialogTitle = this.$t('add_project')
+        },
+        openEditDialogHandler(row) {
+            this.dialogVisible = true
+            this.dialogTitle = this.$t('edit_project')
+            this.dialogLoading = true
+            detailProjectApi({id: row.id}).then(res => {
+                this.dialogLoading = false
+                this.dialogForm = res
+                // type adaptation
+                if (!this.dialogForm.pre_release_cluster) {
+                    this.dialogForm.pre_release_cluster = undefined
+                }
+            }).catch(err => {
+                this.dialogCloseHandler()
+            })
         },
         dialogSubmitHandler() {
             let vm = this
@@ -322,6 +544,7 @@ export default {
                 } else {
                     opFn = newProjectApi
                 }
+                this.dialogForm.space_id = this.spaceId
                 opFn(this.dialogForm).then(res => {
                     this.$root.MessageSuccess(() => {
                         this.dialogCloseHandler()
@@ -381,7 +604,7 @@ export default {
         },
         loadTableData() {
             this.tableLoading = true
-            listProjectApi({keyword: this.searchInput, offset: this.$root.PageOffset(), limit: this.$root.PageSize}).then(res => {
+            listProjectApi({space_id: this.spaceId, keyword: this.searchInput, offset: this.$root.PageOffset(), limit: this.$root.PageSize}).then(res => {
                 this.tableData = res.list
                 this.$root.Total = res.total
                 this.tableLoading = false

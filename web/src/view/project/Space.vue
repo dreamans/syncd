@@ -25,14 +25,14 @@
                 <el-table-column :label="$t('operate')" width="180" align="right">
                     <template slot-scope="scope">
                         <el-button
-                            icon="el-icon-edit"
-                            type="text"
-                            @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
+                        icon="el-icon-edit"
+                        type="text"
+                        @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
                         <el-button
-                            type="text"
-                            icon="el-icon-delete"
-                            class="app-danger"
-                            @click="deleteHandler(scope.row)">{{ $t('delete') }}</el-button>
+                        type="text"
+                        icon="el-icon-delete"
+                        class="app-danger"
+                        @click="deleteHandler(scope.row)">{{ $t('delete') }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>

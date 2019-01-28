@@ -168,6 +168,7 @@ export default {
         overflow: hidden;
         overflow-y: auto;
         height: 100%;
+        background: #f0f2f5;
         .layer-aside {
             border-right: solid 1px #e6e6e6;
             position: fixed;
@@ -186,9 +187,8 @@ export default {
         }
         .layer-main {
             padding-top: 50px;
-            height: 100%;
-            background: #f0f2f5;
             box-sizing: border-box;
+            height: 100%;
             .bread-crumb {
                 background: #fff;
                 padding: 16px;

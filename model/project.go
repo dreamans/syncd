@@ -9,10 +9,12 @@ import(
 )
 
 type Project struct {
-    ID                  int     `gorm:"primary_key"`
+	ID                  int     `gorm:"primary_key"`
+	SpaceId				int		`gorm:"type:int(11);not null;default:0"`
     Name                string  `gorm:"type:varchar(100);not null;default:''"`
     Description         string  `gorm:"type:varchar(500);not null;default:''"`
-    NeedAudit           int     `gorm:"type:int(11);not null;default:0"`
+	NeedAudit           int     `gorm:"type:int(11);not null;default:0"`
+	Status				int		`gorm:"type:int(11);not null;default:0"`
     RepoUrl             string  `gorm:"type:varchar(500);not null;default:''"`
     RepoBranch          string  `gorm:"type:varchar(100);not null;default:''"`
     PreReleaseCluster   int     `gorm:"type:int(11);not null;default:0"`
@@ -36,6 +38,10 @@ func (m *Project) Create() bool {
 
 func (m *Project) Update() bool {
     return UpdateByPk(m)
+}
+
+func (m *Project) UpdateByFields(data map[string]interface{}, query QueryParam) bool {
+    return Update(m, data, query)
 }
 
 func (m *Project) List(query QueryParam) ([]Project, bool) {

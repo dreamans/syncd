@@ -16,12 +16,6 @@ type SpaceFormBind struct {
     Description string  `form:"description"`
 }
 
-type QueryBind struct {
-    Keyword	string  `form:"keyword"`
-    Offset	int     `form:"offset"`
-    Limit	int     `form:"limit" binding:"required,gte=1,lte=999"`
-}
-
 func SpaceDelete(c *gin.Context) {
     id := gostring.Str2Int(c.PostForm("id"))
     if id == 0 {
