@@ -7,8 +7,9 @@ package route
 import (
     "github.com/dreamans/syncd"
     "github.com/dreamans/syncd/router/user"
-	"github.com/dreamans/syncd/router/server"
-	"github.com/dreamans/syncd/router/project"
+    "github.com/dreamans/syncd/router/server"
+    "github.com/dreamans/syncd/router/project"
+    "github.com/dreamans/syncd/router/deploy"
 )
 
 func RegisterRoute() {
@@ -37,24 +38,27 @@ func RegisterRoute() {
         api.POST("/user/update", user.UserUpdate)
         api.GET("/user/list", user.UserList)
         api.GET("/user/exists", user.UserExists)
-		api.GET("/user/detail", user.UserDetail)
-		api.POST("/user/delete", user.UserDelete)
+        api.GET("/user/detail", user.UserDetail)
+        api.POST("/user/delete", user.UserDelete)
 
-		api.POST("/project/space/add", project.SpaceAdd)
-		api.POST("/project/space/update", project.SpaceUpdate)
-		api.GET("/project/space/list", project.SpaceList)
-		api.GET("/project/space/detail", project.SpaceDetail)
-		api.POST("/project/space/delete", project.SpaceDelete)
-		api.GET("/project/member/search", project.MemberSearch)
-		api.POST("/project/member/add", project.MemberAdd)
-		api.GET("/project/member/list", project.MemberList)
-		api.POST("/project/member/remove", project.MemberRemove)
-		api.POST("/project/add", project.ProjectAdd)
-		api.POST("/project/update", project.ProjectUpdate)
-		api.GET("/project/list", project.ProjectList)
-		api.POST("/project/switchstatus", project.ProjectSwitchStatus)
-		api.GET("/project/detail", project.ProjectDetail)
-		api.POST("/project/delete", project.ProjectDelete)
-		api.POST("/project/buildscript", project.ProjectBuildScript)
+        api.POST("/project/space/add", project.SpaceAdd)
+        api.POST("/project/space/update", project.SpaceUpdate)
+        api.GET("/project/space/list", project.SpaceList)
+        api.GET("/project/space/detail", project.SpaceDetail)
+        api.POST("/project/space/delete", project.SpaceDelete)
+        api.GET("/project/member/search", project.MemberSearch)
+        api.POST("/project/member/add", project.MemberAdd)
+        api.GET("/project/member/list", project.MemberList)
+        api.POST("/project/member/remove", project.MemberRemove)
+        api.POST("/project/add", project.ProjectAdd)
+        api.POST("/project/update", project.ProjectUpdate)
+        api.GET("/project/list", project.ProjectList)
+        api.POST("/project/switchstatus", project.ProjectSwitchStatus)
+        api.GET("/project/detail", project.ProjectDetail)
+        api.POST("/project/delete", project.ProjectDelete)
+        api.POST("/project/buildscript", project.ProjectBuildScript)
+
+        api.GET("/deploy/apply/project/detail", deploy.ApplyProjectDetail)
+        api.POST("/deploy/apply/submit", deploy.ApplySubmit)
     }
 }

@@ -48,7 +48,7 @@ const routerMap = [
                 meta: {
                     title: i18n.t('submit_deploy_apply'),
                 },
-                component: _import('Dashboard'),
+                component: _import('deploy/Apply'),
             },
             {
                 path: 'deploy',
@@ -56,7 +56,7 @@ const routerMap = [
                 meta: {
                     title: i18n.t('deploy_manage'),
                 },
-                component: _import('Dashboard'),
+                component: _import('deploy/Deploy'),
             },
             {
                 path: 'release',
@@ -65,7 +65,7 @@ const routerMap = [
                     title: i18n.t('deploying_deploy'),
                     hide: true,
                 },
-                component: _import('Dashboard'),
+                component: _import('deploy/Release'),
             },
         ],
     },

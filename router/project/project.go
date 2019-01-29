@@ -20,6 +20,7 @@ type ProjectFormBind struct {
     NeedAudit           int     `form:"need_audit"`
     RepoUrl             string  `form:"repo_url" binding:"required"`
     RepoBranch          string  `form:"repo_branch"`
+    DeployMode			int		`form:"deploy_mode" binding:"required"`
     PreReleaseCluster   int     `form:"pre_release_cluster"`
     OnlineCluster       []int   `form:"online_cluster" binding:"required"`
     DeployUser          string  `form:"deploy_user" binding:"required"`
@@ -173,6 +174,10 @@ func projectCreateOrUpdate(c *gin.Context) {
         render.ParamError(c, "online_cluster cannot be empty")
         return
     }
+    repoBranch := projectForm.RepoBranch
+    if projectForm.DeployMode == 2 {
+        repoBranch = ""
+    }
     proj := &project.Project{
         ID: projectForm.ID,
         SpaceId: projectForm.SpaceId,
@@ -180,7 +185,8 @@ func projectCreateOrUpdate(c *gin.Context) {
         Description: projectForm.Description,
         NeedAudit: projectForm.NeedAudit,
         RepoUrl: projectForm.RepoUrl,
-        RepoBranch: projectForm.RepoBranch,
+        DeployMode: projectForm.DeployMode,
+        RepoBranch: repoBranch,
         PreReleaseCluster: projectForm.PreReleaseCluster,
         OnlineCluster: onlineCluster,
         DeployUser: projectForm.DeployUser,

@@ -143,7 +143,21 @@
                         <el-input :placeholder="$t('please_input_repo_url')" v-model="dialogForm.repo_url" autocomplete="off"></el-input>
                     </el-form-item>
 
+                    <el-form-item
+                    :label="$t('deploy_mode')"
+                    prop="deploy_mode"
+                    :rules="[
+                        { required: true, message: $t('deploy_mode_cannot_empty'), trigger: 'blur'},
+                    ]">
+                        <el-radio-group v-model="dialogForm.deploy_mode">
+                            <el-radio :label="1">{{ $t('branch_deploy') }}</el-radio>
+                            <el-radio :label="2">{{ $t('tag_deploy') }}</el-radio>
+                        </el-radio-group>
+                        <div>{{ $t('deploy_mode_tips') }}</div>
+                    </el-form-item>
+
                     <el-form-item 
+                    v-if="dialogForm.deploy_mode == 1"
                     :label="$t('repo_branch')"
                     prop="repo_branch">
                         <el-input class="app-input-mini" v-model="dialogForm.repo_branch" autocomplete="off"></el-input>
@@ -279,9 +293,19 @@
                         {{ dialogViewForm.repo_url }}
                     </el-form-item>
 
+                    <el-form-item :label="$t('deploy_mode')">
+                        <span v-if="dialogViewForm.deploy_mode == 1">
+                            <i class="iconfont icon-branch"></i> - 分支上线 - <strong>{{ dialogViewForm.repo_branch }}</strong> 分支
+                        </span>
+                        <span v-if="dialogViewForm.deploy_mode == 2">
+                            <i class="iconfont icon-branch"></i> TAG上线
+                        </span>
+                    </el-form-item>
+
                     <el-form-item :label="$t('repo_branch')">
                         {{ dialogViewForm.repo_branch }}
                     </el-form-item>
+                
                     <div class="app-divider"></div>
                     <h4 class="app-form-subtitle">{{ $t('deploy_setting') }}</h4>
 
@@ -404,6 +428,7 @@ export default {
                 need_audit: 0,
                 repo_url: '',
                 repo_branch: '',
+                deploy_mode: 0,
                 pre_release_cluster: undefined,
                 online_cluster: [],
                 deploy_user: '',
