@@ -59,3 +59,7 @@ export function detailProjectApi(params) {
 export function deleteProjectApi(data) {
     return post('/project/delete', data)
 }
+
+export function updateBuildScriptApi(data) {
+    return post('/project/buildscript', data)
+}

@@ -55,5 +55,6 @@ func RegisterRoute() {
 		api.POST("/project/switchstatus", project.ProjectSwitchStatus)
 		api.GET("/project/detail", project.ProjectDetail)
 		api.POST("/project/delete", project.ProjectDelete)
+		api.POST("/project/buildscript", project.ProjectBuildScript)
     }
 }

@@ -29,11 +29,33 @@ type ProjectFormBind struct {
     DeployTimeout       int     `form:"deploy_timeout" binding:"required"`
 }
 
+type ProjectBuildScriptBind struct {
+    ID                  int     `form:"id" binding:"required"`
+    BuildScript         string  `form:"build_script" binding:"required"`
+}
+
 type QueryBind struct {
     SpaceId     int     `form:"space_id"`
     Keyword	    string  `form:"keyword"`
     Offset	    int     `form:"offset"`
     Limit	    int     `form:"limit" binding:"required,gte=1,lte=999"`
+}
+
+func ProjectBuildScript(c *gin.Context) {
+    var form ProjectBuildScriptBind
+    if err := c.ShouldBind(&form); err != nil {
+        render.ParamError(c, err.Error())
+        return
+    }
+    proj := &project.Project{
+        ID: form.ID,
+        BuildScript: form.BuildScript,
+    }
+    if err := proj.UpdateBuildScript(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    render.Success(c)
 }
 
 func ProjectDelete(c *gin.Context) {

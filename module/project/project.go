@@ -25,10 +25,29 @@ type Project struct {
     OnlineCluster       []int   `json:"online_cluster"`
     DeployUser          string  `json:"deploy_user"`
     DeployPath          string  `json:"deploy_path"`
+    BuildScript         string  `json:"build_script"`
     PreDeployCmd        string  `json:"pre_deploy_cmd"`
     AfterDeployCmd      string  `json:"after_deploy_cmd"`
     DeployTimeout       int     `json:"deploy_timeout"`
     Ctime               int     `json:"ctime"`
+}
+
+func (p *Project) UpdateBuildScript() error {
+    project := &model.Project{}
+    updateData := map[string]interface{}{
+        "build_script": p.BuildScript,
+    }
+    if ok := project.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: p.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("project build_script update failed")
+    }
+    return nil
 }
 
 func (p *Project) Detail() error {
@@ -56,6 +75,7 @@ func (p *Project) Detail() error {
     p.AfterDeployCmd = project.AfterDeployCmd
     p.DeployTimeout = project.DeployTimeout
     p.Ctime = project.Ctime
+    p.BuildScript = project.BuildScript
 
     return nil
 }

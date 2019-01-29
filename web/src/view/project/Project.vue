@@ -124,15 +124,15 @@
                             active-color="#13ce66">
                             </el-switch>
                             <span style="margin-left: 8px;">
-                                <span v-if="dialogForm.need_audit">开启</span>
-                                <span v-else>关闭</span>
+                                <span v-if="dialogForm.need_audit">{{ $t('open') }}</span>
+                                <span v-else>{{ $t('close') }}</span>
                             </span>
                         </div>
                         <div class="app-form-explain">{{ $t('if_open_apply_need_audit') }}</div>
                     </el-form-item>
 
                     <div class="app-divider"></div>
-                    <h4 class="app-form-subtitle">仓库设置</h4>
+                    <h4 class="app-form-subtitle">{{ $t('repo_setting') }}</h4>
 
                     <el-form-item
                     :label="$t('repo_url')"
@@ -147,10 +147,10 @@
                     :label="$t('repo_branch')"
                     prop="repo_branch">
                         <el-input class="app-input-mini" v-model="dialogForm.repo_branch" autocomplete="off"></el-input>
-                        <div class="app-form-explain">若不指定，需要在发起上线时手动填写分支(或Tag)名称</div>
+                        <div class="app-form-explain">{{ $t('if_not_need_to_assign_branch_name') }}</div>
                     </el-form-item>
                     <div class="app-divider"></div>
-                    <h4 class="app-form-subtitle">部署设置</h4>
+                    <h4 class="app-form-subtitle">{{ $t('deploy_setting') }}</h4>
 
                     <el-form-item 
                     :label="$t('pre_release_cluster')"
@@ -160,7 +160,7 @@
                         v-model="dialogForm.pre_release_cluster" 
                         filterable 
                         clearable 
-                        placeholder="关键词搜索">
+                        :placeholder="$t('please_input_keyword')">
                             <el-option
                             v-for="cluster in clusterList"
                             :key="cluster.id"
@@ -182,7 +182,7 @@
                         filterable
                         clearable
                         @change="selectClusterHandler"
-                        placeholder="关键词搜索">
+                        :placeholder="$t('please_input_keyword')">
                             <el-option
                             v-for="cluster in clusterList"
                             :key="cluster.id"
@@ -191,12 +191,12 @@
                             </el-option>
                         </el-select>
                         <div v-if="dialogForm.online_cluster && dialogForm.online_cluster.length">
-                            <span>已选集群列表</span>
+                            <span>{{ $t('selected_cluster_list') }}</span>
                             <ul class="app-form-box">
                                 <li class="item" v-for="id in dialogForm.online_cluster" :key="id">
                                     <span><i class="iconfont small left icon-cluster"></i>{{ formatClusterName(id) }}</span>
                                     <span>
-                                        <el-button @click="removeClusterHandler(id)" icon="el-icon-delete" type="text">移除</el-button>
+                                        <el-button @click="removeClusterHandler(id)" icon="el-icon-delete" type="text">{{ $t('remove') }}</el-button>
                                     </span>
                                 </li>
                             </ul>
@@ -244,16 +244,16 @@
 
                 </el-form>
                 <div slot="footer" class="dialog-footer">
-                    <el-button class="app-input-small" size="small" @click="dialogCloseHandler">{{ $t('cancel') }}</el-button>
+                    <el-button size="small" @click="dialogCloseHandler">{{ $t('cancel') }}</el-button>
                     <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitHandler">{{ $t('enter') }}</el-button>
                 </div>
             </div>
         </el-dialog>
 
-        <el-dialog :width="$root.DialogNormalWidth" title="查看项目信息" :visible.sync="dialogViewVisible" @close="dialogViewVisible = false">
+        <el-dialog :width="$root.DialogNormalWidth" :title="$t('view_project_info')" :visible.sync="dialogViewVisible" @close="dialogViewVisible = false">
             <div class="app-dialog" v-loading="dialogViewLoading">
                 <el-form size="medium" label-width="130px">
-                    <h4 class="app-form-subtitle">基本设置</h4>
+                    <h4 class="app-form-subtitle">{{ $t('base_setting') }}</h4>
                     <el-form-item 
                     :label="$t('project_id')">
                         {{ dialogViewForm.id }}
@@ -268,12 +268,12 @@
                     </el-form-item>
 
                     <el-form-item :label="$t('open_audit')">
-                        <span v-if="dialogViewForm.need_audit">需要审核</span>
-                        <span v-else>不需审核</span>
+                        <span v-if="dialogViewForm.need_audit">{{ $t('need_audit') }}</span>
+                        <span v-else>{{ $t('not_audit') }}</span>
                     </el-form-item>
 
                     <div class="app-divider"></div>
-                    <h4 class="app-form-subtitle">仓库设置</h4>
+                    <h4 class="app-form-subtitle">{{ $t('repo_setting') }}</h4>
 
                     <el-form-item :label="$t('repo_url')">
                         {{ dialogViewForm.repo_url }}
@@ -283,7 +283,7 @@
                         {{ dialogViewForm.repo_branch }}
                     </el-form-item>
                     <div class="app-divider"></div>
-                    <h4 class="app-form-subtitle">部署设置</h4>
+                    <h4 class="app-form-subtitle">{{ $t('deploy_setting') }}</h4>
 
                     <el-form-item :label="$t('pre_release_cluster')">
                         <span v-if="dialogViewForm.pre_release_cluster">
@@ -326,24 +326,26 @@
             </div>
         </el-dialog>
 
-        <el-dialog :width="$root.DialogNormalWidth" title="编辑构建脚本" :visible.sync="dialogBuildVisible" @close="dialogBuildVisible = false">
+        <el-dialog :width="$root.DialogNormalWidth" :title="$t('edit_build_script')" :visible.sync="dialogBuildVisible" @close="dialogBuildVisible = false">
             <div class="app-dialog" v-loading="dialogBuildLoading">
                 <div class="app-shell-editor">
                     <textarea id="editor-textarea"></textarea>
                 </div>
-                <h4 class="app-form-subtitle">说明</h4>
+                <h4 class="app-form-subtitle">{{ $t('illustrate') }}</h4>
                 <div class="app-form-notice">
-                    <p>脚本会在代码下载完成后执行，构建脚本支持的变量:</p>
+                    <p>{{ $t('build_script_tips') }}:</p>
                     <p>
-                        <i class="iconfont icon-dot"></i><span class="code">${env_workspace}</span> - 代码仓库本地副本目录
+                        <i class="iconfont icon-dot"></i><span class="code">${env_workspace}</span> - {{ $t('build_script_env_workspace') }}
                     </p>
                     <p>
-                        <i class="iconfont icon-dot"></i><span class="code">${env_pack_file}</span> - 打包文件绝对地址，构建完成后将需要部署到线上的代码打包到此文件中，必须使用 tar -zcf 命令进行打包。部署模块会将此压缩包分发到目标主机并解压缩到指定目录，请按照要求打包，否则会部署失败。
+                        <i class="iconfont icon-dot"></i><span class="code">${env_pack_file}</span> - <span v-html="$t('build_script_env_pack_file')"></span>
                     </p>
-                    <p><a href="https://github.com/dreamans/syncd">构建脚本示例</a> (新手可参考示例)</p>
+                    <p>
+                        <a href="https://github.com/dreamans/syncd" class="app-link" target="_blank">{{ $t('view_build_script_eg') }}</a>
+                    </p>
                 </div>
                 <div slot="footer" class="dialog-footer">
-                    <el-button class="app-input-small" size="small" @click="dialogBuildVisible = false">{{ $t('cancel') }}</el-button>
+                    <el-button size="small" @click="dialogBuildVisible = false">{{ $t('cancel') }}</el-button>
                     <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitBuildHandler">{{ $t('enter') }}</el-button>
                 </div>
             </div>
@@ -364,7 +366,7 @@
 </template>
 
 <script>
-import { listSpaceApi, detailSpaceApi, newProjectApi, updateProjectApi, listProjectApi, switchStatusProjectApi, detailProjectApi, deleteProjectApi } from '@/api/project'
+import { listSpaceApi, detailSpaceApi, newProjectApi, updateProjectApi, listProjectApi, switchStatusProjectApi, detailProjectApi, deleteProjectApi, updateBuildScriptApi } from '@/api/project'
 import { listGroupApi } from '@/api/server' 
 import codeMirror from 'codemirror/lib/codemirror.js'
 import 'codemirror/lib/codemirror.css'
@@ -381,7 +383,6 @@ export default {
             dialogBuildLoading: false,
             dialogBuildForm: {
                 id: 0,
-                space_id: 0,
                 build_script: '',
             },
 
@@ -441,7 +442,12 @@ export default {
     },
     methods: {
         dialogSubmitBuildHandler() {
-
+            this.dialogBuildForm.build_script = this.getBuildEditorValue()
+            updateBuildScriptApi(this.dialogBuildForm).then(res => {
+                this.$root.MessageSuccess(() => {
+                    this.dialogBuildVisible = false
+                })
+            })
         },
         openBuildDialogHandler(row) {
             this.dialogBuildVisible = true
@@ -449,7 +455,6 @@ export default {
             detailProjectApi({id: row.id}).then(res => {
                 this.dialogBuildForm = {
                     id: res.id,
-                    space_id: res.space_id,
                     build_script: res.build_script,
                 }
                 this.dialogBuildLoading = false
@@ -630,7 +635,6 @@ export default {
     mounted() {
         this.loadSpaceList()
         this.loadClusterList()
-        this.spaceId = 7
     }
 }
 </script>

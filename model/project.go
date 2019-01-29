@@ -20,7 +20,8 @@ type Project struct {
     PreReleaseCluster   int     `gorm:"type:int(11);not null;default:0"`
     OnlineCluster       string  `gorm:"type:varchar(1000);not null;default:''"`
     DeployUser          string  `gorm:"type:varchar(100);not null;default:''"`
-    DeployPath          string  `gorm:"type:varchar(500);not null;default:''"`
+	DeployPath          string  `gorm:"type:varchar(500);not null;default:''"`
+	BuildScript         string  `gorm:"type:text;not null"`
     PreDeployCmd        string  `gorm:"type:text;not null"`
     AfterDeployCmd      string  `gorm:"type:text;not null"`
     DeployTimeout       int     `gorm:"type:int(11);not null;default:0"`
