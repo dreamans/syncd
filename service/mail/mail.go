@@ -34,7 +34,7 @@ func (m *SendMail) send() error {
         Body: m.Body,
     })
     if err != nil {
-        syncd.Logger.Error("send mail failed, to[%s], cc[%s], subject[%s]", gostring.JoinSepStrings(",", m.To...), gostring.JoinSepStrings(",", m.Cc...), m.Subject)
+        syncd.Logger.Error("send mail failed, err [%s], to[%s], cc[%s], subject[%s]", err.Error(), gostring.JoinSepStrings(",", m.To...), gostring.JoinSepStrings(",", m.Cc...), m.Subject)
     }
     return err
 }
