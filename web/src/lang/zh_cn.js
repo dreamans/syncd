@@ -180,4 +180,13 @@ export default {
     'please_input_deploy_illustrate': '请详细填写上线说明',
     'deploy_illustrate_cannot_empty': '上线说明不能为空',
     'commit_version': '选择上线版本',
+    'please_input_commit_version': '输入上线版本hash',
+    'branch': '分支',
+    'tag_deploy': 'TAG上线',
+    'deploy_apply_submit_success': '恭喜，上线申请提交成功',
+    'submit_success': '提交成功',
+    'submit_time': '提交时间',
+    'deploy_status': '上线状态',
+    'audit_status': '审核状态',
+    'select_project': '选择项目',
 }

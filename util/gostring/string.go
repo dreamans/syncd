@@ -10,7 +10,8 @@ import (
     "math/rand"
     "time"
     "crypto/md5"
-    "encoding/hex"
+	"encoding/hex"
+	"encoding/base64"
 )
 
 func JoinStrings(multiString ...string) string {
@@ -78,4 +79,22 @@ func StrMd5(s string) string {
     md5Ctx := md5.New()
     md5Ctx.Write([]byte(s))
     return hex.EncodeToString(md5Ctx.Sum(nil))
+}
+
+func Base64Encode(b []byte) string {
+    return base64.StdEncoding.EncodeToString(b)
+}
+
+func Base64Decode(s string) ([]byte, error) {
+    ds, err := base64.StdEncoding.DecodeString(s)
+    return ds, err
+}
+
+func Base64UrlEncode(b []byte) string {
+    return base64.URLEncoding.EncodeToString(b)
+}
+
+func Base64UrlDecode(s string) ([]byte, error) {
+    ds, err := base64.URLEncoding.DecodeString(s)
+    return ds, err
 }

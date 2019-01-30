@@ -2,6 +2,8 @@ import md5 from 'blueimp-md5'
 import Cookies from 'js-cookie'
 import moment from 'moment'
 
+let loginTokenKey = '_syd_identity'
+
 export default {
 
     MessageSuccess(cb){
@@ -76,5 +78,17 @@ export default {
             postfix = "..."
         }
         return str.substr(0, len) + postfix
+    },
+
+    SetLoginToken(token) {
+        return Cookies.set(loginTokenKey, token)
+    },
+
+    GetLoginToken() {
+        return Cookies.get(loginTokenKey)
+    },
+
+    DeleteLoginToken() {
+        return Cookies.remove(loginTokenKey)
     },
 }

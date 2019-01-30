@@ -14,10 +14,10 @@ import (
 )
 
 type Role struct {
-    ID		int	    `json:"id"`
-    Name	string	    `json:"name"`
-    Privilege	[]int	    `json:"privilege"`
-    Ctime       int	    `json:"ctime"`
+    ID          int         `json:"id"`
+    Name        string      `json:"name"`
+    Privilege   []int       `json:"privilege"`
+    Ctime       int         `json:"ctime"`
 }
 
 func RoleGetMapByIds(ids []int) (map[int]Role, error) {

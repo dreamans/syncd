@@ -12,7 +12,7 @@ import (
 	"github.com/dreamans/syncd/util/goslice"
 )
 
-type RoleForm struct {
+type RoleFormBind struct {
     ID          int     `form:"id"`
     Name        string  `form:"name" binding:"required"`
     Privilege   []int   `form:"privilege"`
@@ -97,7 +97,7 @@ func RoleUpdate(c *gin.Context) {
 }
 
 func roleCreateOrUpdate(c *gin.Context, id int) {
-    var roleForm RoleForm
+    var roleForm RoleFormBind
     if err := c.ShouldBind(&roleForm); err != nil {
         render.ParamError(c, err.Error())
         return

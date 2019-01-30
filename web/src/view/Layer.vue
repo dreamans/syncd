@@ -40,7 +40,7 @@
         <section class="layer-container">
             <aside class="layer-aside">
                 <ScrollBar>
-                    <el-menu class="aside-menu" :router="true" :unique-opened="true">
+                    <el-menu class="aside-menu" :default-active="activeMenu" :router="true" :unique-opened="true">
                         <template v-for="menu in AppMenu">
                             <el-submenu v-if="menu.children && menu.children.length > 1" :index="menu.name" :key="menu.name">
                                 <template slot="title">
@@ -77,10 +77,12 @@
 <script>
 import ScrollBar from '@/component/ScrollBar';
 import { routerMap } from '@/router'
+import { loginStatusApi } from '@/api/login'
 export default {
     data() {
         return {
             breadcrumb: [],
+            activeMenu: '',
         }
     },
     computed: {
@@ -91,12 +93,16 @@ export default {
     watch: {
         '$route.name'() {
             this.breadcrumbItems()
+            this.initActiveMenu()
         }
     },
     components: {
         ScrollBar,
     },
     methods: {
+        initActiveMenu() {
+            this.activeMenu = this.$route.name
+        },
         breadcrumbItems() {
             let breadcrumb = []
             this.AppMenu.forEach(menu => {
@@ -111,10 +117,23 @@ export default {
                 })
             })
             this.breadcrumb = breadcrumb
-        }
+        },
+        initLoginStatus() {
+            loginStatusApi().then(res => {
+                if (!res.is_login) {
+                    this.$root.GotoRouter('login')
+                } else {
+                    this.$store.dispatch('account/login', {user_id: res.       user_id, name: res.name, email: res.email, priv: res.priv, group_name: res.    group_name, mobile: res.mobile, true_name: res.true_name})
+                }
+            }).catch(err => {
+                this.$message.warning('用户未登录', 1)
+                this.$root.GotoRouter('login')
+            })
+        },
     },
     mounted() {
         this.breadcrumbItems()
+        this.initActiveMenu()
     },
 }
 </script>

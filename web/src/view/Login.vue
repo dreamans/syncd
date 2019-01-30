@@ -25,6 +25,8 @@
 </template>
 
 <script>
+import { loginApi } from '@/api/login'
+import Code from '@/lib/code'
 export default {
     data () {
         return {
@@ -54,6 +56,18 @@ export default {
                 if (!valid) {
                     return false
                 }
+                let postData = {
+                    username: this.loginForm.username,
+                    password: this.$root.Md5Sum(this.loginForm.password),
+                }
+                loginApi(postData).then(res => {
+                    this.$root.SetLoginToken(res.token)
+                    this.$router.push({name: 'dashboard'})
+                }).catch(err => {
+                    if (err.code && err.code == Code.CODE_ERR_LOGIN_FAILED) {
+                        this.$message.error('登录失败, 错误信息: ' + err.message);
+                    }
+                })
             });
         },
     },

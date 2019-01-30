@@ -55,3 +55,7 @@ func (m *User) Delete() bool {
 func (m *User) Get(id int) bool {
     return GetByPk(m, id)
 }
+
+func (m *User) GetOne(query QueryParam) bool {
+	return GetOne(m, query)
+}

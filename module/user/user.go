@@ -16,10 +16,11 @@ import (
 type User struct {
     ID              int         `json:"id"`
     RoleId          int         `json:"role_id"`
-    RoleName	    string		`json:"role_name"`
-    Username	    string      `json:"username"`
+    RoleName        string      `json:"role_name"`
+    Username        string      `json:"username"`
     Password        string      `json:"password"`
-    Email	    	string      `json:"email"`
+    Salt            string      `json:"salt"`
+    Email           string      `json:"email"`
     Truename        string      `json:"truename"`
     Mobile          string      `json:"mobile"`
     Status          int         `json:"status"`
@@ -29,35 +30,58 @@ type User struct {
 }
 
 func (u *User) Delete() error {
-	user := &model.User{
-		ID: u.ID,
-	}
-	if ok := user.Delete(); !ok {
-		return errors.New("user delete failed")
-	}
-	return nil
+    user := &model.User{
+        ID: u.ID,
+    }
+    if ok := user.Delete(); !ok {
+        return errors.New("user delete failed")
+    }
+    return nil
 }
 
 func (u *User) Detail() error {
-	user := &model.User{}
-    if ok := user.Get(u.ID); !ok {
+    var where []model.WhereParam
+    user := &model.User{}
+
+    if u.ID != 0 {
+        where = append(where, model.WhereParam{
+            Field: "id",
+            Prepare: u.ID,
+        })
+    }
+    if u.Username != "" {
+        where = append(where, model.WhereParam{
+            Field: "username",
+            Prepare: u.Username,
+        })
+	}
+	if u.Email != "" {
+        where = append(where, model.WhereParam{
+            Field: "email",
+            Prepare: u.Email,
+        })
+    }
+    if ok := user.GetOne(model.QueryParam{
+        Where: where,
+    }); !ok {
         return errors.New("get user detail failed")
     }
     if user.ID == 0 {
         return errors.New("user not exists")
     }
 
-	u.ID = user.ID
-	u.RoleId = user.RoleId
-	u.Username = user.Username
-	u.Password = user.Password
-	u.Email = user.Email
-	u.Truename = user.Truename
-	u.Mobile = user.Mobile
-	u.Status = user.Status
-	u.LastLoginTime = user.LastLoginTime
-	u.LastLoginIp = user.LastLoginIp
-	u.Ctime = user.Ctime
+    u.ID = user.ID
+    u.RoleId = user.RoleId
+    u.Username = user.Username
+    u.Password = user.Password
+    u.Salt = user.Salt
+    u.Email = user.Email
+    u.Truename = user.Truename
+    u.Mobile = user.Mobile
+    u.Status = user.Status
+    u.LastLoginTime = user.LastLoginTime
+    u.LastLoginIp = user.LastLoginIp
+    u.Ctime = user.Ctime
 
     return nil
 }
@@ -114,26 +138,26 @@ func (u *User) List(keyword string, offset, limit int) ([]User, error) {
 }
 
 func (u *User) Exists() (bool, error) {
-	var where []model.WhereParam
-	if u.Username != "" {
+    var where []model.WhereParam
+    if u.Username != "" {
         where = append(where, model.WhereParam{
             Field: "username",
             Prepare: u.Username,
         })
-	}
-	if u.ID != 0 {
+    }
+    if u.ID != 0 {
         where = append(where, model.WhereParam{
             Field: "id",
             Prepare: u.ID,
         })
-	}
-	if u.Email != "" {
+    }
+    if u.Email != "" {
         where = append(where, model.WhereParam{
             Field: "email",
             Prepare: u.Email,
         })
-	}
-	user := &model.User{}
+    }
+    user := &model.User{}
     count, ok := user.Count(model.QueryParam{
         Where: where,
     })
@@ -189,7 +213,7 @@ func (u *User) CreateOrUpdate() error {
         Email: u.Email,
         Truename: u.Truename,
         Mobile: u.Mobile,
-        Status: u.Status,		
+        Status: u.Status,
     }
     if u.ID > 0 {
         updateData := map[string]interface{}{

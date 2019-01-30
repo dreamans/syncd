@@ -5,60 +5,64 @@
 package route
 
 import (
+	reqApi "github.com/dreamans/syncd/router/route/api"
     "github.com/dreamans/syncd"
     "github.com/dreamans/syncd/router/user"
     "github.com/dreamans/syncd/router/server"
     "github.com/dreamans/syncd/router/project"
-    "github.com/dreamans/syncd/router/deploy"
+	"github.com/dreamans/syncd/router/deploy"
+	"github.com/dreamans/syncd/router/middleware"
 )
 
 func RegisterRoute() {
-    api := syncd.App.Gin.Group("/api")
+    api := syncd.App.Gin.Group("/api", middleware.ApiPriv())
     {
-        api.POST("/login", user.Login)
-        api.GET("/login/status", user.LoginStatus)
+        api.POST(reqApi.LOGIN, user.Login)
+        api.GET(reqApi.LOGIN_STATUS, user.LoginStatus)
 
-        api.POST("/server/group/add", server.GroupAdd)
-        api.GET("/server/group/list", server.GroupList)
-        api.POST("/server/group/delete", server.GroupDelete)
-        api.GET("/server/group/detail", server.GroupDetail)
-        api.POST("/server/group/update", server.GroupUpdate)
-        api.POST("/server/add", server.ServerAdd)
-        api.POST("/server/update", server.ServerUpdate)
-        api.GET("/server/list", server.ServerList)
-        api.POST("/server/delete", server.ServerDelete)
-        api.GET("/server/detail", server.ServerDetail)
+        api.POST(reqApi.SERVER_GROUP_ADD, server.GroupAdd)
+        api.GET(reqApi.SERVER_GROUP_LIST, server.GroupList)
+        api.POST(reqApi.SERVER_GROUP_DELETE, server.GroupDelete)
+        api.GET(reqApi.SERVER_GROUP_DETAIL, server.GroupDetail)
+        api.POST(reqApi.SERVER_GROUP_UPDATE, server.GroupUpdate)
+        api.POST(reqApi.SERVER_ADD, server.ServerAdd)
+        api.POST(reqApi.SERVER_UPDATE, server.ServerUpdate)
+        api.GET(reqApi.SERVER_LIST, server.ServerList)
+        api.POST(reqApi.SERVER_DELETE, server.ServerDelete)
+        api.GET(reqApi.SERVER_DETAIL, server.ServerDetail)
 
-        api.POST("/user/role/add", user.RoleAdd)
-        api.POST("/user/role/update", user.RoleUpdate)
-        api.GET("/user/role/list", user.RoleList)
-        api.GET("/user/role/detail", user.RoleDetail)
-        api.POST("/user/role/delete", user.RoleDelete)
-        api.POST("/user/add", user.UserAdd)
-        api.POST("/user/update", user.UserUpdate)
-        api.GET("/user/list", user.UserList)
-        api.GET("/user/exists", user.UserExists)
-        api.GET("/user/detail", user.UserDetail)
-        api.POST("/user/delete", user.UserDelete)
+        api.POST(reqApi.USER_ROLE_ADD, user.RoleAdd)
+        api.POST(reqApi.USER_ROLE_UPDATE, user.RoleUpdate)
+        api.GET(reqApi.USER_ROLE_LIST, user.RoleList)
+        api.GET(reqApi.USER_ROLE_DETAIL, user.RoleDetail)
+        api.POST(reqApi.USER_ROLE_DELETE, user.RoleDelete)
+        api.POST(reqApi.USER_ADD, user.UserAdd)
+        api.POST(reqApi.USER_UPDATE, user.UserUpdate)
+        api.GET(reqApi.USER_LIST, user.UserList)
+        api.GET(reqApi.USER_EXISTS, user.UserExists)
+        api.GET(reqApi.USER_DETAIL, user.UserDetail)
+        api.POST(reqApi.USER_DELETE, user.UserDelete)
 
-        api.POST("/project/space/add", project.SpaceAdd)
-        api.POST("/project/space/update", project.SpaceUpdate)
-        api.GET("/project/space/list", project.SpaceList)
-        api.GET("/project/space/detail", project.SpaceDetail)
-        api.POST("/project/space/delete", project.SpaceDelete)
-        api.GET("/project/member/search", project.MemberSearch)
-        api.POST("/project/member/add", project.MemberAdd)
-        api.GET("/project/member/list", project.MemberList)
-        api.POST("/project/member/remove", project.MemberRemove)
-        api.POST("/project/add", project.ProjectAdd)
-        api.POST("/project/update", project.ProjectUpdate)
-        api.GET("/project/list", project.ProjectList)
-        api.POST("/project/switchstatus", project.ProjectSwitchStatus)
-        api.GET("/project/detail", project.ProjectDetail)
-        api.POST("/project/delete", project.ProjectDelete)
-        api.POST("/project/buildscript", project.ProjectBuildScript)
+        api.POST(reqApi.PROJECT_SPACE_ADD, project.SpaceAdd)
+        api.POST(reqApi.PROJECT_SPACE_UPDATE, project.SpaceUpdate)
+        api.GET(reqApi.PROJECT_SPACE_LIST, project.SpaceList)
+        api.GET(reqApi.PROJECT_SPACE_DETAIL, project.SpaceDetail)
+        api.POST(reqApi.PROJECT_SPACE_DELETE, project.SpaceDelete)
+        api.GET(reqApi.PROJECT_MEMBER_SEARCH, project.MemberSearch)
+        api.POST(reqApi.PROJECT_MEMBER_ADD, project.MemberAdd)
+        api.GET(reqApi.PROJECT_MEMBER_LIST, project.MemberList)
+        api.POST(reqApi.PROJECT_MEMBER_REMOVE, project.MemberRemove)
+        api.POST(reqApi.PROJECT_ADD, project.ProjectAdd)
+        api.POST(reqApi.PROJECT_UPDATE, project.ProjectUpdate)
+        api.GET(reqApi.PROJECT_LIST, project.ProjectList)
+        api.POST(reqApi.PROJECT_SWITCHSTATUS, project.ProjectSwitchStatus)
+        api.GET(reqApi.PROJECT_DETAIL, project.ProjectDetail)
+        api.POST(reqApi.PROJECT_DELETE, project.ProjectDelete)
+        api.POST(reqApi.PROJECT_BUILDSCRIPT, project.ProjectBuildScript)
 
-        api.GET("/deploy/apply/project/detail", deploy.ApplyProjectDetail)
-        api.POST("/deploy/apply/submit", deploy.ApplySubmit)
+        api.GET(reqApi.DEPLOY_APPLY_PROJECT_DETAIL, deploy.ApplyProjectDetail)
+		api.POST(reqApi.DEPLOY_APPLY_SUBMIT, deploy.ApplySubmit)
+		api.GET(reqApi.DEPLOY_APPLY_PROJECT_ALL, deploy.ApplyProjectAll)
+		
     }
 }

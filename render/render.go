@@ -32,6 +32,13 @@ func JSON(c *gin.Context, data interface{}) {
     })
 }
 
+func CustomerError(c *gin.Context, code int, message string) {
+	c.JSON(http.StatusOK, gin.H{
+        "code": code,
+        "message": message,
+    })
+}
+
 func RepeatError(c *gin.Context, message string) {
     c.JSON(http.StatusOK, gin.H{
         "code": CODE_ERR_DATA_REPEAT,

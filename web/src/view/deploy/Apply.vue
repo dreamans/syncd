@@ -67,10 +67,10 @@
                 
                     <el-form-item :label="$t('deploy_mode')">
                         <span v-if="projectDetail.deploy_mode == 1">
-                            <i class="iconfont icon-branch"></i> - 分支上线<template v-if="projectDetail.repo_branch"> - <strong>{{ projectDetail.repo_branch }}</strong> 分支</template>
+                            <i class="iconfont icon-branch"></i> - {{ $t('branch_deploy') }}<template v-if="projectDetail.repo_branch"> - <strong>{{ projectDetail.repo_branch }}</strong> {{ $t('branch') }}</template>
                         </span>
                         <span v-if="projectDetail.deploy_mode == 2">
-                            <i class="iconfont icon-branch"></i> TAG上线
+                            <i class="iconfont icon-branch"></i> {{ $t('tag_deploy') }}
                         </span>
                     </el-form-item>
 
@@ -85,7 +85,7 @@
                     </el-form-item>
 
                     <el-form-item 
-                    v-if="projectDetail.deploy_mode == 1 && projectDetail.deploy_branch == ''"
+                    v-if="projectDetail.deploy_mode == 1 && projectDetail.repo_branch == ''"
                     :label="$t('branch_name')"
                     prop="branch_name"
                     :rules="[
@@ -98,7 +98,7 @@
                     v-if="projectDetail.deploy_mode == 1"
                     :label="$t('commit_version')"
                     prop="commit_version">
-                        <el-input class="app-input-mini" :placeholder="$t('please_input_commit_version')" v-model="dialogForm.commit_version" autocomplete="off"></el-input>
+                        <el-input class="app-input-normal" :placeholder="$t('please_input_commit_version')" v-model="dialogForm.commit_version" autocomplete="off"></el-input>
                     </el-form-item>
 
                     <el-form-item 
@@ -152,8 +152,17 @@ export default {
                     name: this.dialogForm.name,
                     branch_name: this.dialogForm.branch_name,
                     description: this.dialogForm.description,
+                    commit_version: this.dialogForm.commit_version,
                 }
                 applySubmitApi(postData).then(res => {
+                    this.$alert(this.$t('deploy_apply_submit_success'), this.$t('submit_success'), {
+                        type: 'success',
+                        confirmButtonText: this.$t('enter'),
+                        callback: action => {
+                            this.closeDialogHandler()
+                            this.$router.push({name: 'deployDeploy'})
+                        }
+                    })
                     this.btnLoading = false
                 }).catch(err => {
                     this.btnLoading = false
