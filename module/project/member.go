@@ -21,6 +21,22 @@ type Member struct {
     Ctime       int     `json:"ctime"`
 }
 
+func (m *Member) Detail() error {
+    member := model.ProjectMember{}
+    if ok := member.Get(m.ID); !ok {
+        return errors.New("get project member detail failed")
+    }
+    m.ID = member.ID
+    m.UserId = member.UserId
+    m.SpaceId = member.SpaceId
+    return nil
+}
+
+func (m *Member) MemberInSpace() bool {
+    exists , _ := m.Exists()
+    return exists
+}
+
 func (m *Member) Delete() error {
     member := &model.ProjectMember{
         ID: m.ID,
@@ -45,6 +61,28 @@ func (m *Member) Total(spaceId int) (int, error) {
         return 0, errors.New("get project member count failed")
     }
     return total, nil
+}
+
+func (m *Member) SpaceIdsByUserId() ([]int, error) {
+    member := &model.ProjectMember{}
+    list, ok := member.List(model.QueryParam{
+        Fields: "space_id",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "user_id",
+                Prepare: m.UserId,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get project member list failed")
+    }
+    var spaceIds []int
+    for _, l := range list {
+        spaceIds = append(spaceIds, l.SpaceId)
+    }
+
+    return spaceIds, nil
 }
 
 func (m *Member) List(spaceId, offset, limit int) ([]Member, error) {
@@ -125,7 +163,7 @@ func (m *Member) List(spaceId, offset, limit int) ([]Member, error) {
                 memberList[k].RoleName = r.Name
             }
         }
-       
+
     }
 
     return memberList, nil
@@ -142,7 +180,7 @@ func (m *Member) Exists() (bool, error) {
             Prepare: m.SpaceId,
         },
     }
-	member := &model.ProjectMember{}
+    member := &model.ProjectMember{}
     count, ok := member.Count(model.QueryParam{
         Where: where,
     })

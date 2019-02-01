@@ -52,12 +52,13 @@
                     size="medium" 
                     clearable 
                     style="width: 100%" 
-                    v-model="searchStatus">
+                    v-model="searchProjectId">
                         <el-option
-                            v-for="p in projectList"
-                            :key="p.id"
-                            :label="p.name"
-                            :value="p.id">
+                        v-for="p in projectList"
+                        :key="p.project_id"
+                        :label="p.project_name"
+                        :value="p.project_id">
+                            {{p.space_name}} <i class="el-icon-arrow-right"></i> {{p.project_name}}
                         </el-option>
                     </el-select>
                 </el-col>
@@ -67,17 +68,52 @@
                     </el-input>
                 </el-col>
             </el-row>
+            <el-table
+                class="app-table"
+                size="medium"
+                v-loading="tableLoading"
+                :data="tableData">
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="name" :label="$t('name')"></el-table-column>
+                <el-table-column label="空间/项目名称">
+                    <template slot-scope="scope">
+                        
+                    </template>
+                </el-table-column>
+                <el-table-column prop="ssh_port" width="100" label="提交时间"></el-table-column>
+                <el-table-column prop="ssh_port" width="100" label="提交者"></el-table-column>
+                <el-table-column prop="ssh_port" width="100" label="状态"></el-table-column>
+                <el-table-column :label="$t('operate')" width="180" align="right">
+                    <template slot-scope="scope">
+                        
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-pagination
+                background
+                layout="prev, pager, next"
+                class="app-pagination"
+                @current-change="currentChangeHandler"
+                :current-page.sync="$root.Page"
+                :page-size="$root.PageSize"
+                :total="$root.Total">
+            </el-pagination>
         </el-card>
     </div>
 </template>
 
 <script>
+import { applyProjectAllApi } from '@/api/deploy'
 export default {
     data() {
         return {
             searchInput: '',
             searchTime: undefined,
             searchStatus: undefined,
+            searchProjectId: undefined,
+
+            tableLoading: false,
+            tableData: [],
 
             timeList: [
                 {time: 1, label: '今天'},
@@ -106,6 +142,29 @@ export default {
         searchHandler() {
 
         },
+        currentChangeHandler() {
+            this.loadTableData()
+        },
+        loadTableData() {
+            this.tableLoading = true
+            listServerApi({keyword: this.searchInput, offset: this.$root.PageOffset(), limit: this.$root.PageSize}).then(res => {
+                this.tableData = res.list
+                this.$root.Total = res.total
+                this.tableLoading = false
+            }).catch(err => {
+                this.tableLoading = false
+            })
+        },
+        loadProjectAll() {
+            applyProjectAllApi().then(res => {
+                if (res && res.length > 0 ) {
+                    this.projectList = res
+                }
+            })
+        },
+    },
+    mounted() {
+        this.loadProjectAll()
     },
 }
 </script>

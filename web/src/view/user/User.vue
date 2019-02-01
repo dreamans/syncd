@@ -239,6 +239,7 @@ export default {
         openAddDialogHandler() {
             this.dialogVisible = true
             this.dialogTitle = this.$t('add_user')
+            this.loadRoleList()
         },
         openEditDialogHandler(row) {
             this.dialogVisible = true
@@ -246,6 +247,7 @@ export default {
             this.dialogLoading = true
             detailUserApi({id: row.id}).then(res => {
                 this.dialogLoading = false
+                this.loadRoleList()
                 this.dialogForm = {
                     id: res.id,
                     role_id: res.role_id,
@@ -339,7 +341,6 @@ export default {
     mounted() {
         this.$root.PageInit()
         this.loadTableData()
-        this.loadRoleList()
     }
 }
 </script>

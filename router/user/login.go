@@ -6,45 +6,62 @@ package user
 
 import (
     "github.com/gin-gonic/gin"
-	"github.com/dreamans/syncd/render"
-	"github.com/dreamans/syncd/module/user"
-	"github.com/dreamans/syncd/util/gois"
-	
+    "github.com/dreamans/syncd/render"
+    "github.com/dreamans/syncd/module/user"
+    "github.com/dreamans/syncd/util/gois"
+
 )
 
 type LoginBind struct {
     Username    string  `form:"username" binding:"required"`
-    Password	string	`form:"password" binding:"required"`
+    Password    string  `form:"password" binding:"required"`
 }
 
 func Login(c *gin.Context) {
-	var form LoginBind
+    var form LoginBind
     if err := c.ShouldBind(&form); err != nil {
         render.ParamError(c, err.Error())
         return
-	}
+    }
 
-	login := &user.Login{
-		Password: form.Password,
-	}
-	if gois.IsEmail(form.Username) {
-		login.Email = form.Username
-	} else {
-		login.Username = form.Username
-	}
+    login := &user.Login{
+        Password: form.Password,
+    }
+    if gois.IsEmail(form.Username) {
+        login.Email = form.Username
+    } else {
+        login.Username = form.Username
+    }
 
-	if err := login.Login(); err != nil {
-		render.CustomerError(c, render.CODE_ERR_LOGIN_FAILED , err.Error())
+    if err := login.Login(); err != nil {
+        render.CustomerError(c, render.CODE_ERR_LOGIN_FAILED , err.Error())
         return
-	}
+    }
 
-	userInfo := map[string]interface{}{
-		"token": login.Token,
-	}
+    userInfo := map[string]interface{}{
+        "token": login.Token,
+    }
 
-	render.JSON(c, userInfo)
+    render.JSON(c, userInfo)
 }
 
 func LoginStatus(c *gin.Context) {
-	
+    userId := c.GetInt("user_id")
+    if userId == 0 {
+        render.JSON(c, gin.H{
+            "is_login": 0,
+        })
+    } else {
+        privilege, _ := c.Get("privilege")
+        render.JSON(c, gin.H{
+            "is_login": 1,
+            "user_id": c.GetInt("user_id"),
+            "username": c.GetString("username"),
+            "email": c.GetString("email"),
+            "truename": c.GetString("truename"),
+            "mobile": c.GetString("mobile"),
+            "role_name": c.GetString("role_name"),
+            "privilege": privilege,
+        })
+    }
 }

@@ -2,20 +2,20 @@ import md5 from 'blueimp-md5'
 
 const state = {
     user_id: 0,
-    group_name: '',
-    name: '',
+    username: '',
     email: '',
     mobile: '',
-    true_name: '',
-    priv: [],
+    privilege: [],
+    role_name: '',
+    truename: '',
 }
 
 const getters = {
     isLogin(state) {
-        return state.userId > 0
+        return state.user_id > 0
     },
     getUserName(state) {
-        return state.name
+        return state.username
     },
     getUserId(state) {
         return state.user_id
@@ -24,29 +24,29 @@ const getters = {
         return 'https://www.gravatar.com/avatar/' + md5(state.email.toLowerCase()) + '? s=512'
     },
     getPriv(state) {
-        return state.priv ? state.priv : []
+        return state.privilege ? state.privilege : []
     },
-    getGroupName(state) {
-        return state.group_name
+    getRoleName(state) {
+        return state.role_name
     },
     getMobile(state) {
         return state.mobile
     },
     getTrueName(state) {
-        return state.true_name
+        return state.truename
     },
 }
 
 const actions = {
-    login({ commit }, userInfo) {
+    status({ commit }, userInfo) {
         commit('setUserInfo', {
             user_id: userInfo.user_id,
-            name: userInfo.name,
+            username: userInfo.username,
             email: userInfo.email,
-            priv: userInfo.priv,
-            group_name: userInfo.group_name,
             mobile: userInfo.mobile,
-            true_name: userInfo.true_name,
+            privilege: userInfo.privilege,
+            role_name: userInfo.role_name,
+            truename: userInfo.truename,
         })
     },
 }
@@ -54,12 +54,12 @@ const actions = {
 const mutations = {
     setUserInfo(state, userInfo) {
         state.user_id = userInfo.user_id
-        state.name = userInfo.name
+        state.username = userInfo.username
         state.email = userInfo.email
-        state.priv = userInfo.priv
-        state.group_name = userInfo.group_name
+        state.privilege = userInfo.privilege
+        state.role_name = userInfo.role_name
         state.mobile = userInfo.mobile
-        state.true_name = userInfo.true_name
+        state.truename = userInfo.truename
     },
 }
 

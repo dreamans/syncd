@@ -42,7 +42,33 @@ func ApiPriv() gin.HandlerFunc {
         }
 
         //priv check
+        role := &user.Role{
+            ID: login.RoleId,
+        }
+        if err := role.Detail(); err != nil {
+            respondWithError(c, render.CODE_ERR_APP, err.Error())
+            return
+        }
 
+        c.Set("user_id", login.UserId)
+        c.Set("username", login.Username)
+        c.Set("email", login.Email)
+        c.Set("truename", login.Truename)
+        c.Set("mobile", login.Mobile)
+        c.Set("role_name", role.Name)
+        c.Set("privilege", role.Privilege)
+
+        if path == reqApi.LOGIN_STATUS {
+            c.Next()
+            return
+        }
+
+        if pass := user.CheckHavePriv(path, role.Privilege); !pass {
+            respondWithError(c, render.CODE_ERR_NO_PRIV, "no priv")
+            return
+        }
+
+        c.Next()
     }
 }
 

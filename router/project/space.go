@@ -22,6 +22,14 @@ func SpaceDelete(c *gin.Context) {
         render.ParamError(c, "id cannot be empty")
         return
     }
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: id,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
     space := &project.Space{
         ID: id,
     }
@@ -36,6 +44,14 @@ func SpaceDetail(c *gin.Context) {
     id := gostring.Str2Int(c.Query("id"))
     if id == 0 {
         render.ParamError(c, "id cannot be empty")
+        return
+    }
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: id,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
         return
     }
     space := &project.Space{
@@ -54,14 +70,23 @@ func SpaceList(c *gin.Context) {
         render.ParamError(c, err.Error())
         return
     }
-    space := &project.Space{}
-    list, err := space.List(query.Keyword, query.Offset, query.Limit)
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+    }
+    spaceIds, err := member.SpaceIdsByUserId()
     if err != nil {
         render.AppError(c, err.Error())
         return
     }
 
-    total, err := space.Total(query.Keyword)
+    space := &project.Space{}
+    list, err := space.List(spaceIds, query.Keyword, query.Offset, query.Limit)
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    total, err := space.Total(spaceIds, query.Keyword)
     if err != nil {
         render.AppError(c, err.Error())
         return
@@ -82,6 +107,14 @@ func SpaceUpdate(c *gin.Context) {
         render.ParamError(c, "id cannot be empty")
         return
     }
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: id,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
     spaceCreateOrUpdate(c, id)
 }
 
@@ -99,6 +132,16 @@ func spaceCreateOrUpdate(c *gin.Context, id int) {
     if err := space.CreateOrUpdate(); err != nil {
         render.AppError(c, err.Error())
         return
+    }
+    if id == 0 {
+        member := &project.Member{
+            UserId: c.GetInt("user_id"),
+            SpaceId: space.ID,
+        }
+        if err := member.Create(); err != nil {
+            render.AppError(c, err.Error())
+            return
+        }
     }
     render.Success(c)
 }

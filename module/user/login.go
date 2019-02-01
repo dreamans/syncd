@@ -17,6 +17,7 @@ import (
 
 type Login struct {
     UserId      int
+    RoleId      int
     Username    string
     Password    string
     Email       string
@@ -91,6 +92,7 @@ func (login *Login) ValidateToken() error {
     login.Email = user.Email
     login.Truename = user.Truename
     login.Mobile = user.Mobile
+    login.RoleId = user.RoleId
 
     return nil
 }
@@ -111,7 +113,7 @@ func (login *Login) createToken() error {
     token := &Token{
         UserId: login.UserId,
         Token: loginKey,
-        Expire: int(time.Now().Unix()) + 3600 * 30,
+        Expire: int(time.Now().Unix()) + 86400 * 30,
     }
     if err := token.CreateOrUpdate(); err != nil {
         return err

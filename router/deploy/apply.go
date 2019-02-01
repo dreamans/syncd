@@ -22,7 +22,49 @@ type ApplyFormBind struct {
 }
 
 func ApplyProjectAll(c *gin.Context) {
-    
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+    }
+    spaceIds, err := member.SpaceIdsByUserId()
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    space := &project.Space{}
+    spaceList, err := space.List(spaceIds, "", 0, 999)
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    spaceMap := map[int]project.Space{}
+    for _, l := range spaceList {
+        spaceMap[l.ID] = l
+    }
+
+    projList, err := project.ProjectAllBySpaceIds(spaceIds)
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    list := []map[string]interface{}{}
+    for _, l := range projList {
+        var (
+            spaceId int
+            spaceName string
+        )
+        if space, exists := spaceMap[l.SpaceId]; exists {
+            spaceId, spaceName = space.ID, space.Name
+        }
+        list = append(list, map[string]interface{}{
+            "space_id": spaceId,
+            "project_id": l.ID,
+            "project_name": l.Name,
+            "space_name": spaceName,
+        })
+    }
+
+    render.JSON(c, list)
 }
 
 func ApplySubmit(c *gin.Context) {

@@ -20,7 +20,7 @@ type ProjectFormBind struct {
     NeedAudit           int     `form:"need_audit"`
     RepoUrl             string  `form:"repo_url" binding:"required"`
     RepoBranch          string  `form:"repo_branch"`
-    DeployMode			int		`form:"deploy_mode" binding:"required"`
+    DeployMode          int     `form:"deploy_mode" binding:"required"`
     PreReleaseCluster   int     `form:"pre_release_cluster"`
     OnlineCluster       []int   `form:"online_cluster" binding:"required"`
     DeployUser          string  `form:"deploy_user" binding:"required"`
@@ -37,9 +37,9 @@ type ProjectBuildScriptBind struct {
 
 type QueryBind struct {
     SpaceId     int     `form:"space_id"`
-    Keyword	    string  `form:"keyword"`
-    Offset	    int     `form:"offset"`
-    Limit	    int     `form:"limit" binding:"required,gte=1,lte=999"`
+    Keyword     string  `form:"keyword"`
+    Offset      int     `form:"offset"`
+    Limit       int     `form:"limit" binding:"required,gte=1,lte=999"`
 }
 
 func ProjectBuildScript(c *gin.Context) {
@@ -48,6 +48,24 @@ func ProjectBuildScript(c *gin.Context) {
         render.ParamError(c, err.Error())
         return
     }
+
+    p := &project.Project{
+        ID: form.ID,
+    }
+    if err := p.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: p.SpaceId,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
     proj := &project.Project{
         ID: form.ID,
         BuildScript: form.BuildScript,
@@ -68,6 +86,21 @@ func ProjectDelete(c *gin.Context) {
     proj := &project.Project{
         ID: id,
     }
+
+    if err := proj.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: proj.SpaceId,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
     if err := proj.Delete(); err != nil {
         render.AppError(c, err.Error())
         return
@@ -88,6 +121,16 @@ func ProjectDetail(c *gin.Context) {
         render.AppError(c, err.Error())
         return
     }
+
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: proj.SpaceId,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
     render.JSON(c, proj)
 }
 
@@ -97,6 +140,24 @@ func ProjectSwitchStatus(c *gin.Context) {
         render.ParamError(c, "id cannot be empty")
         return
     }
+
+    p := &project.Project{
+        ID: id,
+    }
+    if err := p.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: p.SpaceId,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
     if status !=0 {
         status = 1
     }
@@ -121,6 +182,16 @@ func ProjectList(c *gin.Context) {
         render.ParamError(c, "space_id cannot be empty")
         return
     }
+
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: query.SpaceId,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
     proj := &project.Project{}
     list, err := proj.List(query.Keyword, query.SpaceId, query.Offset, query.Limit)
     if err != nil {
@@ -169,6 +240,16 @@ func projectCreateOrUpdate(c *gin.Context) {
         render.ParamError(c, err.Error())
         return
     }
+
+    member := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: projectForm.SpaceId,
+    }
+    if in := member.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
     onlineCluster := goslice.FilterSliceInt(projectForm.OnlineCluster)
     if len(onlineCluster) == 0 {
         render.ParamError(c, "online_cluster cannot be empty")

@@ -7,3 +7,7 @@ export function applyProjectDetailApi(params) {
 export function applySubmitApi(data) {
     return post('/deploy/apply/submit', data)
 }
+
+export function applyProjectAllApi() {
+    return get('/deploy/apply/project/all')
+}

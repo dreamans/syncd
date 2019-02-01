@@ -24,11 +24,11 @@
                 <span class="r-item">
                     <el-dropdown trigger="click">
                         <span class="item app-cursor">
-                            <img class="avatar" src="https://www.gravatar.com/avatar/a8cb36173b0e2e1489c66965be0026cf" />
+                            <img class="avatar" :src="$store.getters['account/getAvatar']" />
                             <i class="iconfont small icon-arrow-down"></i>
                         </span>
                         <el-dropdown-menu slot="dropdown" class="app-header-dropdown">
-                            <el-dropdown-item class="text"><i class="iconfont small left icon-user"></i>admin</el-dropdown-item>
+                            <el-dropdown-item class="text"><i class="iconfont small left icon-user"></i>{{ $store.getters['account/getUserName'] }}</el-dropdown-item>
                             <el-dropdown-item divided><i class="iconfont small left icon-setting"></i>{{ $t('personal_setting') }}</el-dropdown-item>
                             <el-dropdown-item><i class="iconfont small left icon-key"></i>{{ $t('change_password') }}</el-dropdown-item>
                             <el-dropdown-item divided><i class="iconfont small left icon-logout"></i>{{ $t('sign_out') }}</el-dropdown-item>
@@ -120,18 +120,28 @@ export default {
         },
         initLoginStatus() {
             loginStatusApi().then(res => {
-                if (!res.is_login) {
-                    this.$root.GotoRouter('login')
+                if (res.is_login) {
+                    this.$store.dispatch('account/status', {
+                        user_id: res.user_id,
+                        username: res.username,
+                        email: res.email,
+                        mobile: res.mobile,
+                        privilege: res.privilege ? res.privilege : [],
+                        role_name: res.role_name,
+                        truename: res.truename,
+                    })
                 } else {
-                    this.$store.dispatch('account/login', {user_id: res.       user_id, name: res.name, email: res.email, priv: res.priv, group_name: res.    group_name, mobile: res.mobile, true_name: res.true_name})
+                    this.$message.error('用户未登录', 1)
+                    this.$router.push({name: 'login'})
                 }
             }).catch(err => {
-                this.$message.warning('用户未登录', 1)
-                this.$root.GotoRouter('login')
+                this.$message.error('用户未登录', 1)
+                this.$router.push({name: 'login'})
             })
         },
     },
     mounted() {
+        this.initLoginStatus()
         this.breadcrumbItems()
         this.initActiveMenu()
     },

@@ -33,6 +33,34 @@ type Project struct {
     Ctime               int     `json:"ctime"`
 }
 
+func ProjectAllBySpaceIds(spaceIds []int) ([]Project, error) {
+    project := &model.Project{}
+    list, ok := project.List(model.QueryParam{
+        Fields: "id, name, space_id",
+        Order: "id DESC",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "space_id",
+                Tag: "IN",
+                Prepare: spaceIds,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get project list failed")
+    }
+
+    var projList []Project
+    for _, l := range list {
+        projList = append(projList, Project{
+            ID: l.ID,
+            Name: l.Name,
+            SpaceId: l.SpaceId,
+        })
+    }
+    return projList, nil
+}
+
 func (p *Project) UpdateBuildScript() error {
     project := &model.Project{}
     updateData := map[string]interface{}{

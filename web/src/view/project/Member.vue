@@ -51,7 +51,12 @@
                 size="medium"
                 v-loading="tableLoading"
                 :data="tableData">
-                <el-table-column prop="username" width="220" :label="$t('username')"></el-table-column>
+                <el-table-column prop="username" width="220" :label="$t('username')">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.username">{{ scope.row.username }}</span>
+                        <span class="app-line-through" v-else>已删除</span>
+                    </template>
+                </el-table-column>
                 <el-table-column prop="email" width="260" :label="$t('email')"></el-table-column>
                 <el-table-column prop="role_name" :label="$t('role')"></el-table-column>
                 <el-table-column prop="status" width="100" :label="$t('status')">

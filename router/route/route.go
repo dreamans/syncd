@@ -5,13 +5,13 @@
 package route
 
 import (
-	reqApi "github.com/dreamans/syncd/router/route/api"
+    reqApi "github.com/dreamans/syncd/router/route/api"
     "github.com/dreamans/syncd"
     "github.com/dreamans/syncd/router/user"
     "github.com/dreamans/syncd/router/server"
     "github.com/dreamans/syncd/router/project"
-	"github.com/dreamans/syncd/router/deploy"
-	"github.com/dreamans/syncd/router/middleware"
+    "github.com/dreamans/syncd/router/deploy"
+    "github.com/dreamans/syncd/router/middleware"
 )
 
 func RegisterRoute() {
@@ -61,8 +61,7 @@ func RegisterRoute() {
         api.POST(reqApi.PROJECT_BUILDSCRIPT, project.ProjectBuildScript)
 
         api.GET(reqApi.DEPLOY_APPLY_PROJECT_DETAIL, deploy.ApplyProjectDetail)
-		api.POST(reqApi.DEPLOY_APPLY_SUBMIT, deploy.ApplySubmit)
-		api.GET(reqApi.DEPLOY_APPLY_PROJECT_ALL, deploy.ApplyProjectAll)
-		
+        api.POST(reqApi.DEPLOY_APPLY_SUBMIT, deploy.ApplySubmit)
+        api.GET(reqApi.DEPLOY_APPLY_PROJECT_ALL, deploy.ApplyProjectAll)
     }
 }

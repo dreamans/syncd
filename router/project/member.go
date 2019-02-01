@@ -19,8 +19,8 @@ type MemberAddQueryBind struct {
 
 type MemberListQueryBind struct {
     SpaceId     int     `form:"space_id" binding:"required"`
-    Offset	    int     `form:"offset"`
-    Limit	    int     `form:"limit" binding:"required,gte=1,lte=999"`
+    Offset      int     `form:"offset"`
+    Limit       int     `form:"limit" binding:"required,gte=1,lte=999"`
 }
 
 func MemberRemove(c *gin.Context) {
@@ -29,9 +29,24 @@ func MemberRemove(c *gin.Context) {
         render.ParamError(c, "id cannot be empty")
         return
     }
+
     member := &project.Member{
         ID: id,
     }
+    if err := member.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    m := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: member.SpaceId,
+    }
+    if in := m.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
     if err := member.Delete(); err != nil {
         render.AppError(c, err.Error())
         return
@@ -45,6 +60,16 @@ func MemberList(c *gin.Context) {
         render.ParamError(c, err.Error())
         return
     }
+
+    mb := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: query.SpaceId,
+    }
+    if in := mb.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
     m := &project.Member{}
     memberList, err := m.List(query.SpaceId, query.Offset, query.Limit)
     if err != nil {
@@ -88,6 +113,15 @@ func MemberAdd(c *gin.Context) {
     var query MemberAddQueryBind
     if err := c.ShouldBind(&query); err != nil {
         render.ParamError(c, err.Error())
+        return
+    }
+
+    mb := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: query.SpaceId,
+    }
+    if in := mb.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
         return
     }
 

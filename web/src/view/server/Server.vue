@@ -131,11 +131,13 @@ export default {
         openAddDialogHandler() {
             this.dialogVisible = true
             this.dialogTitle = this.$t('add_server')
+            this.loadServerGroupList()
         },
         openEditDialogHandler(row) {
             this.dialogVisible = true
             this.dialogTitle = this.$t('edit_server_info')
             this.dialogLoading = true
+            this.loadServerGroupList()
             detailServerApi({id: row.id}).then(res => {
                 this.dialogLoading = false
 
@@ -210,7 +212,6 @@ export default {
     mounted() {
         this.$root.PageInit()
         this.loadTableData()
-        this.loadServerGroupList()
     }
 }
 </script>

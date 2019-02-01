@@ -3,6 +3,7 @@ import qs from 'qs'
 import Vue from 'vue'
 import i18n from '@/lang'
 import Code from './code.js'
+import Router from '@/router'
 
 let API_URL = '/api'
 let CancelToken = axios.CancelToken
@@ -43,7 +44,14 @@ service.interceptors.response.use(response => {
                 //Router.push({name: 'dashboard'})
                 break
             case Code.CODE_ERR_NO_LOGIN:
-                Router.push({name: 'login'})
+                Vue.prototype.$message({
+                    message: '用户未登录',
+                    type: 'error',
+                    duration: 1000,
+                    onClose: () => {
+                        Router.push({name: 'login'})
+                    },
+                })
                 break
         }
         return Promise.reject(res)

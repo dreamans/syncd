@@ -55,6 +55,7 @@ func (s *Space) CreateOrUpdate() error {
         if ok := space.Create(); !ok {
             return errors.New("project space create failed")
         }
+        s.ID = space.ID
     } else {
         if ok := space.Update(); !ok {
             return errors.New("project space update failed")
@@ -63,14 +64,14 @@ func (s *Space) CreateOrUpdate() error {
     return nil
 }
 
-func (s *Space) List(keyword string, offset, limit int) ([]Space, error) {
+func (s *Space) List(spaceIds []int, keyword string, offset, limit int) ([]Space, error) {
     space := &model.ProjectSpace{}
     list, ok := space.List(model.QueryParam{
         Fields: "id, name, description, ctime",
         Offset: offset,
         Limit: limit,
         Order: "id DESC",
-        Where: s.parseWhereConds(keyword),
+        Where: s.parseWhereConds(spaceIds, keyword),
     })
     if !ok {
         return nil, errors.New("get project space list failed")
@@ -88,10 +89,10 @@ func (s *Space) List(keyword string, offset, limit int) ([]Space, error) {
     return spaceList, nil
 }
 
-func (s *Space) Total(keyword string) (int, error) {
+func (s *Space) Total(spaceIds []int, keyword string) (int, error) {
     space := &model.ProjectSpace{}
     total, ok := space.Count(model.QueryParam{
-        Where: s.parseWhereConds(keyword),
+        Where: s.parseWhereConds(spaceIds, keyword),
     })
     if !ok {
         return 0, errors.New("get project space count failed")
@@ -99,7 +100,7 @@ func (s *Space) Total(keyword string) (int, error) {
     return total, nil
 }
 
-func (s *Space) parseWhereConds(keyword string) []model.WhereParam {
+func (s *Space) parseWhereConds(spaceIds []int, keyword string) []model.WhereParam {
     var where []model.WhereParam
     if keyword != "" {
         where = append(where, model.WhereParam{
@@ -108,5 +109,10 @@ func (s *Space) parseWhereConds(keyword string) []model.WhereParam {
             Prepare: fmt.Sprintf("%%%s%%", keyword),
         })
     }
+    where = append(where, model.WhereParam{
+        Field: "id",
+        Tag: "IN",
+        Prepare: spaceIds,
+    })
     return where
 }
