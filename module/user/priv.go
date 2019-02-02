@@ -34,16 +34,11 @@ func PrivIn(privCode int, privList []int) bool {
 
 const (
     DEPLOY_APPLY      = 1001 // 填写上线单
-    DEPLOY_VIEW_MY    = 1002 // 查看上线单(自己)
-    DEPLOY_VIEW_ALL   = 1003 // 查看上线单(全部)
-    DEPLOY_AUDIT_MY   = 1004 // 审核上线单(自己)
-    DEPLOY_AUDIT_ALL  = 1005 // 审核上线单(全部)
-    DEPLOY_DEPLOY_MY  = 1006 // 上线操作(自己)
-    DEPLOY_DEPLOY_ALL = 1007 // 上线操作(全部)
-    DEPLOY_DROP_MY    = 1008 // 废弃上线单(自己)
-    DEPLOY_DROP_ALL   = 1009 // 废弃上线单(全部)
-    DEPLOY_EDIT_MY    = 1010 // 编辑上线单(自己)
-    DEPLOY_EDIT_ALL   = 1011 // 编辑上线单(全部)
+    DEPLOY_VIEW       = 1002 // 查看上线单
+    DEPLOY_AUDIT      = 1003 // 审核上线单
+    DEPLOY_DEPLOY     = 1004 // 上线操作
+    DEPLOY_DROP       = 1005 // 废弃上线单
+    DEPLOY_EDIT       = 1006 // 编辑上线单
 
     PROJECT_SPACE_VIEW  = 2001 // 查看空间
     PROJECT_SPACE_NEW   = 2002 // 新增空间
@@ -193,17 +188,10 @@ var privToApiMap = map[int][]string{
         reqApi.DEPLOY_APPLY_PROJECT_DETAIL,
         reqApi.DEPLOY_APPLY_SUBMIT,
     },
-    DEPLOY_VIEW_MY: []string{
+    DEPLOY_VIEW: []string{
         reqApi.DEPLOY_APPLY_PROJECT_ALL,
-        //syncd.API_DEPLOY_APPLY_LIST,
+        reqApi.DEPLOY_APPLY_LIST,
         // syncd.API_DEPLOY_APPLY_DETAIL,
-        //syncd.API_DEPLOY_APPLY_PROJECT_ALL,
-        //syncd.API_DEPLOY_APPLY_LOG,
-    },
-    DEPLOY_VIEW_ALL: []string{
-        reqApi.DEPLOY_APPLY_PROJECT_ALL,
-        //syncd.API_DEPLOY_APPLY_LIST,
-        //syncd.API_DEPLOY_APPLY_DETAIL,
         //syncd.API_DEPLOY_APPLY_PROJECT_ALL,
         //syncd.API_DEPLOY_APPLY_LOG,
     },

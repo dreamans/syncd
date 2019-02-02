@@ -22,7 +22,7 @@
                     size="medium" 
                     clearable 
                     style="width: 100%" 
-                    v-model="searchStatus">
+                    v-model="searchAuditStatus">
                         <el-option
                             v-for="s in auditStatusList"
                             :key="s.status"
@@ -75,17 +75,74 @@
                 :data="tableData">
                 <el-table-column prop="id" label="ID" width="80"></el-table-column>
                 <el-table-column prop="name" :label="$t('name')"></el-table-column>
-                <el-table-column label="空间/项目名称">
+                <el-table-column label="项目名称">
                     <template slot-scope="scope">
-                        
+                         {{ scope.row.project_name }}
+                         <el-tooltip effect="dark" :content="'所属空间: ' + scope.row.space_name" placement="top">
+                            <span class="app-cursor"><i class="iconfont icon-space"></i></span>
+                        </el-tooltip>
                     </template>
                 </el-table-column>
-                <el-table-column prop="ssh_port" width="100" label="提交时间"></el-table-column>
-                <el-table-column prop="ssh_port" width="100" label="提交者"></el-table-column>
-                <el-table-column prop="ssh_port" width="100" label="状态"></el-table-column>
-                <el-table-column :label="$t('operate')" width="180" align="right">
+                <el-table-column prop="ssh_port" width="100" label="提交时间">
                     <template slot-scope="scope">
-                        
+                        <el-tooltip effect="dark" :content="$root.FormatDateTime(scope.row.ctime)" placement="top">
+                            <span class="app-cursor">{{ $root.FormatDateFromNow(scope.row.ctime) }}</span>
+                        </el-tooltip>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="ssh_port" width="100" label="提交者">
+                    <template slot-scope="scope">
+                        <el-tooltip effect="dark" :content="scope.row.email" placement="top">
+                            <span class="app-cursor">{{ scope.row.username }}</span>
+                        </el-tooltip>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="audit_status" width="100" label="审核">
+                    <template slot-scope="scope">
+                        <span class="app-color-warning" v-if="scope.row.audit_status == 1">待审核</span>
+                        <span class="app-color-success" v-else-if="scope.row.audit_status == 2">通过</span>
+                        <span class="app-color-error" v-else-if="scope.row.audit_status == 3">拒绝</span>
+                        <span v-else>--</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="ssh_port" width="100" label="状态">
+                    <template slot-scope="scope">
+                        <span v-if="scope.row.status == 1"><i class="iconfont small left icon-wait"></i>待上线</span>
+                        <span v-else-if="scope.row.status == 2"><i class="iconfont small left icon-coffee"></i>上线中</span>
+                        <span class="app-color-success" v-else-if="scope.row.status == 3"><i class="iconfont small left icon-success"></i>成功</span>
+                        <span class="app-color-error" v-else-if="scope.row.status == 4"><i class="iconfont small left icon-failed"></i>失败</span>
+                        <span class="app-color-gray" v-else-if="scope.row.status == 5"><i class="iconfont small left icon-drop"></i>废弃</span>
+                        <span v-else>--</span>
+                    </template>
+                </el-table-column>
+                <el-table-column :label="$t('operate')" width="100" align="right">
+                    <template slot-scope="scope">
+                        <el-dropdown trigger="click" @command="operateHandler($event, scope.row)">
+                            <el-button size="small">
+                                操作<i class="el-icon-arrow-down el-icon--right"></i>
+                            </el-button>
+                            <el-dropdown-menu class="app-op-dropdown" slot="dropdown">
+                                <el-dropdown-item command="view">
+                                    <i class="iconfont left small icon-view"></i>查看
+                                </el-dropdown-item>
+                                <el-dropdown-item command="edit" 
+                                v-if="scope.row.status == 1">
+                                    <i class="iconfont left small icon-edit"></i>编辑
+                                </el-dropdown-item>
+                                <el-dropdown-item command="audit"
+                                v-if="scope.row.audit_status == 1">
+                                    <i class="iconfont left small icon-audit"></i>审核
+                                </el-dropdown-item>
+                                <el-dropdown-item command="deploy"
+                                v-if="scope.row.audit_status == 2 && (scope.row.status == 1 || scope.row.status == 4)">
+                                    <i class="iconfont left small icon-coffee"></i>上线
+                                </el-dropdown-item>
+                                <el-dropdown-item command="drop"
+                                v-if="scope.row.status != 2 && scope.row.status != 5">
+                                    <i class="iconfont left small icon-drop"></i>废弃
+                                </el-dropdown-item>
+                            </el-dropdown-menu>
+                        </el-dropdown>
                     </template>
                 </el-table-column>
             </el-table>
@@ -103,12 +160,13 @@
 </template>
 
 <script>
-import { applyProjectAllApi } from '@/api/deploy'
+import { applyProjectAllApi, applyListApi } from '@/api/deploy'
 export default {
     data() {
         return {
             searchInput: '',
             searchTime: undefined,
+            searchAuditStatus: undefined,
             searchStatus: undefined,
             searchProjectId: undefined,
 
@@ -139,15 +197,28 @@ export default {
         }
     },
     methods: {
+        operateHandler(cmd, row) {
+            console.log(cmd, row)
+        },
         searchHandler() {
-
+            this.$root.PageInit()
+            this.loadTableData()
         },
         currentChangeHandler() {
             this.loadTableData()
         },
         loadTableData() {
             this.tableLoading = true
-            listServerApi({keyword: this.searchInput, offset: this.$root.PageOffset(), limit: this.$root.PageSize}).then(res => {
+            let query = {
+                keyword : this.searchInput,
+                time: this.searchTime,
+                audit_status: this.searchAuditStatus,
+                status: this.searchStatus,
+                project_id: this.searchProjectId,
+                offset: this.$root.PageOffset(),
+                limit: this.$root.PageSize,
+            }
+            applyListApi(query).then(res => {
                 this.tableData = res.list
                 this.$root.Total = res.total
                 this.tableLoading = false
@@ -164,6 +235,8 @@ export default {
         },
     },
     mounted() {
+        this.$root.PageInit()
+        this.loadTableData()
         this.loadProjectAll()
     },
 }

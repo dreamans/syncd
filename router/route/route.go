@@ -18,6 +18,7 @@ func RegisterRoute() {
     api := syncd.App.Gin.Group("/api", middleware.ApiPriv())
     {
         api.POST(reqApi.LOGIN, user.Login)
+        api.POST(reqApi.LOGOUT, user.Logout)
         api.GET(reqApi.LOGIN_STATUS, user.LoginStatus)
 
         api.POST(reqApi.SERVER_GROUP_ADD, server.GroupAdd)
@@ -63,5 +64,6 @@ func RegisterRoute() {
         api.GET(reqApi.DEPLOY_APPLY_PROJECT_DETAIL, deploy.ApplyProjectDetail)
         api.POST(reqApi.DEPLOY_APPLY_SUBMIT, deploy.ApplySubmit)
         api.GET(reqApi.DEPLOY_APPLY_PROJECT_ALL, deploy.ApplyProjectAll)
+        api.GET(reqApi.DEPLOY_APPLY_LIST, deploy.ApplyList)
     }
 }

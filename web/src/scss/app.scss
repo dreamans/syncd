@@ -61,6 +61,15 @@ html, body {
         }
     }
 }
+.app-op-dropdown {
+    padding: 0;
+    &.el-popper {
+        margin-top: 5px;
+    }
+    .popper__arrow {
+        display: none;
+    }
+}
 .el-submenu {
     .el-menu-item {
         min-width: 180px;

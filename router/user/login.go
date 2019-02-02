@@ -17,6 +17,17 @@ type LoginBind struct {
     Password    string  `form:"password" binding:"required"`
 }
 
+func Logout(c *gin.Context) {
+    login := &user.Login{
+        UserId: c.GetInt("user_id"),
+    }
+    if err := login.Logout(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    render.Success(c)
+}
+
 func Login(c *gin.Context) {
     var form LoginBind
     if err := c.ShouldBind(&form); err != nil {
@@ -46,22 +57,15 @@ func Login(c *gin.Context) {
 }
 
 func LoginStatus(c *gin.Context) {
-    userId := c.GetInt("user_id")
-    if userId == 0 {
-        render.JSON(c, gin.H{
-            "is_login": 0,
-        })
-    } else {
-        privilege, _ := c.Get("privilege")
-        render.JSON(c, gin.H{
-            "is_login": 1,
-            "user_id": c.GetInt("user_id"),
-            "username": c.GetString("username"),
-            "email": c.GetString("email"),
-            "truename": c.GetString("truename"),
-            "mobile": c.GetString("mobile"),
-            "role_name": c.GetString("role_name"),
-            "privilege": privilege,
-        })
-    }
+    privilege, _ := c.Get("privilege")
+    render.JSON(c, gin.H{
+        "is_login": 1,
+        "user_id": c.GetInt("user_id"),
+        "username": c.GetString("username"),
+        "email": c.GetString("email"),
+        "truename": c.GetString("truename"),
+        "mobile": c.GetString("mobile"),
+        "role_name": c.GetString("role_name"),
+        "privilege": privilege,
+    })
 }

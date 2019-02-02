@@ -22,7 +22,7 @@
                     </el-dropdown>
                 </span>
                 <span class="r-item">
-                    <el-dropdown trigger="click">
+                    <el-dropdown trigger="click" @command="userSettingHandler">
                         <span class="item app-cursor">
                             <img class="avatar" :src="$store.getters['account/getAvatar']" />
                             <i class="iconfont small icon-arrow-down"></i>
@@ -31,7 +31,7 @@
                             <el-dropdown-item class="text"><i class="iconfont small left icon-user"></i>{{ $store.getters['account/getUserName'] }}</el-dropdown-item>
                             <el-dropdown-item divided><i class="iconfont small left icon-setting"></i>{{ $t('personal_setting') }}</el-dropdown-item>
                             <el-dropdown-item><i class="iconfont small left icon-key"></i>{{ $t('change_password') }}</el-dropdown-item>
-                            <el-dropdown-item divided><i class="iconfont small left icon-logout"></i>{{ $t('sign_out') }}</el-dropdown-item>
+                            <el-dropdown-item command="logout" divided><i class="iconfont small left icon-logout"></i>{{ $t('sign_out') }}</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
                 </span>
@@ -77,7 +77,7 @@
 <script>
 import ScrollBar from '@/component/ScrollBar';
 import { routerMap } from '@/router'
-import { loginStatusApi } from '@/api/login'
+import { loginStatusApi, logoutApi } from '@/api/login'
 export default {
     data() {
         return {
@@ -100,6 +100,15 @@ export default {
         ScrollBar,
     },
     methods: {
+        userSettingHandler(cmd) {
+            switch (cmd) {
+                case 'logout':
+                    logoutApi().then(res => {
+                        this.$router.push({name: 'login'})
+                    })
+                break;
+            }
+        },
         initActiveMenu() {
             this.activeMenu = this.$route.name
         },

@@ -6,6 +6,7 @@ package api
 
 const (
     LOGIN = "/login"
+    LOGOUT = "/logout"
     LOGIN_STATUS = "/login/status"
 
     SERVER_GROUP_ADD = "/server/group/add"
@@ -51,4 +52,5 @@ const (
     DEPLOY_APPLY_PROJECT_DETAIL = "/deploy/apply/project/detail"
     DEPLOY_APPLY_SUBMIT = "/deploy/apply/submit"
     DEPLOY_APPLY_PROJECT_ALL = "/deploy/apply/project/all"
+    DEPLOY_APPLY_LIST = "/deploy/apply/list"
 )

@@ -18,6 +18,11 @@ type Space struct {
     Ctime       int     `json:"ctime"`
 }
 
+func SpaceListByIds(spaceIds []int) ([]Space, error) {
+    s := &Space{}
+    return s.List(spaceIds, "", 0, 999)
+}
+
 func (s *Space) Delete() error {
     space := &model.ProjectSpace{
         ID: s.ID,

@@ -26,6 +26,13 @@ type Login struct {
     Token       string
 }
 
+func (login *Login) Logout() error {
+    token := &Token{
+        UserId: login.UserId,
+    }
+    return token.DeleteByUserId()
+}
+
 func (login *Login) Login() error {
     u := &User{}
     if login.Username != "" {

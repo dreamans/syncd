@@ -57,7 +57,7 @@ export default {
             return '--'
         }
         if (!format) {
-            format = 'YYYY-MM-DD HH:mm:SS'
+            format = 'YYYY-MM-DD HH:mm:ss'
         }
         return moment.unix(unixtime).format(format)
     },

@@ -58,7 +58,7 @@ func ApiPriv() gin.HandlerFunc {
         c.Set("role_name", role.Name)
         c.Set("privilege", role.Privilege)
 
-        if path == reqApi.LOGIN_STATUS {
+        if path == reqApi.LOGIN_STATUS || path == reqApi.LOGOUT {
             c.Next()
             return
         }

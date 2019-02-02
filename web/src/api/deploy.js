@@ -11,3 +11,7 @@ export function applySubmitApi(data) {
 export function applyProjectAllApi() {
     return get('/deploy/apply/project/all')
 }
+
+export function applyListApi(params) {
+    return get('/deploy/apply/list', params)
+}

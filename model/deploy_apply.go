@@ -16,7 +16,9 @@ type DeployApply struct {
     Description     string  `gorm:"type:varchar(500);not null;default:''"`
     BranchName      string  `gorm:"type:varchar(100);not null;default:''"`
     CommitVersion   string  `gorm:"type:varchar(50);not null;default:''"`
+    AuditStatus     int     `gorm:"type:int(11);not null;default:0"`
     Status          int     `gorm:"type:int(11);not null;default:0"`
+    UserId          int     `gorm:"type:int(11);not null;default:0"`
     Ctime           int     `gorm:"type:int(11);not null;default:0"`
 }
 

@@ -18,6 +18,21 @@ type Token struct {
     Expire      int
 }
 
+func (t *Token) DeleteByUserId() error {
+    token := &model.UserToken{}
+    if ok := token.DeleteByFields(model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "user_id",
+                Prepare: t.UserId,
+            },
+        },
+    }); !ok {
+        return errors.New("delete user token failed")
+    }
+    return nil
+}
+
 func (t *Token) CreateOrUpdate() error {
     token := &model.UserToken{}
     if ok := token.GetOne(model.QueryParam{

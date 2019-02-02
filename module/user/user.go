@@ -29,6 +29,33 @@ type User struct {
     Ctime           int         `json:"ctime"`
 }
 
+func UserGetListByIds(userIds []int) ([]User, error) {
+    user := &model.User{}
+    list, ok := user.List(model.QueryParam{
+        Fields: "id, username, email",
+        Order: "id DESC",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: userIds,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get user list failed")
+    }
+    var userList []User
+    for _, l := range list {
+        userList = append(userList, User{
+            ID: l.ID,
+            Username: l.Username,
+            Email: l.Email,
+        })
+    }
+    return userList, nil
+}
+
 func (u *User) Delete() error {
     user := &model.User{
         ID: u.ID,
@@ -54,8 +81,8 @@ func (u *User) Detail() error {
             Field: "username",
             Prepare: u.Username,
         })
-	}
-	if u.Email != "" {
+    }
+    if u.Email != "" {
         where = append(where, model.WhereParam{
             Field: "email",
             Prepare: u.Email,

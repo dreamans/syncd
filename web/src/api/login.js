@@ -7,3 +7,7 @@ export function loginApi(data) {
 export function loginStatusApi() {
     return get("/login/status")
 }
+
+export function logoutApi() {
+    return post('/logout')
+}

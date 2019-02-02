@@ -49,6 +49,10 @@ func (m *UserToken) Delete() bool {
     return DeleteByPk(m)
 }
 
+func (m *UserToken) DeleteByFields(query QueryParam) bool {
+    return Delete(m, query)
+}
+
 func (m *UserToken) Get(id int) bool {
     return GetByPk(m, id)
 }
