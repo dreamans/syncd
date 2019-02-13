@@ -8,14 +8,18 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/render"
     "github.com/dreamans/syncd/module/user"
-	"github.com/dreamans/syncd/util/gostring"
-	"github.com/dreamans/syncd/util/goslice"
+    "github.com/dreamans/syncd/util/gostring"
+    "github.com/dreamans/syncd/util/goslice"
 )
 
 type RoleFormBind struct {
     ID          int     `form:"id"`
     Name        string  `form:"name" binding:"required"`
     Privilege   []int   `form:"privilege"`
+}
+
+func RolePrivList(c *gin.Context) {
+    render.JSON(c, user.PrivList)
 }
 
 func RoleDelete(c *gin.Context) {

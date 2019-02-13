@@ -9,17 +9,18 @@ import(
 )
 
 type DeployApply struct {
-    ID              int     `gorm:"primary_key"`
-    SpaceId         int     `gorm:"type:int(11);not null;default:0"`
-    ProjectId       int     `gorm:"type:int(11);not null;default:0"`
-    Name            string  `gorm:"type:varchar(100);not null;default:''"`
-    Description     string  `gorm:"type:varchar(500);not null;default:''"`
-    BranchName      string  `gorm:"type:varchar(100);not null;default:''"`
-    CommitVersion   string  `gorm:"type:varchar(50);not null;default:''"`
-    AuditStatus     int     `gorm:"type:int(11);not null;default:0"`
-    Status          int     `gorm:"type:int(11);not null;default:0"`
-    UserId          int     `gorm:"type:int(11);not null;default:0"`
-    Ctime           int     `gorm:"type:int(11);not null;default:0"`
+    ID                  int     `gorm:"primary_key"`
+    SpaceId             int     `gorm:"type:int(11);not null;default:0"`
+    ProjectId           int     `gorm:"type:int(11);not null;default:0"`
+    Name                string  `gorm:"type:varchar(100);not null;default:''"`
+    Description         string  `gorm:"type:varchar(500);not null;default:''"`
+    BranchName          string  `gorm:"type:varchar(100);not null;default:''"`
+    CommitVersion       string  `gorm:"type:varchar(50);not null;default:''"`
+    AuditStatus         int     `gorm:"type:int(11);not null;default:0"`
+    AuditRefusalReasion	string  `gorm:"type:varchar(500);not null;default:''"`
+    Status              int     `gorm:"type:int(11);not null;default:0"`
+    UserId              int     `gorm:"type:int(11);not null;default:0"`
+    Ctime               int     `gorm:"type:int(11);not null;default:0"`
 }
 
 func (m *DeployApply) TableName() string {

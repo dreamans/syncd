@@ -83,7 +83,7 @@
 </template>
 
 <script>
-import { newRoleApi, listRoleApi, detailRoleApi, updateRoleApi, deleteRoleApi } from '@/api/user'
+import { privListApi, newRoleApi, listRoleApi, detailRoleApi, updateRoleApi, deleteRoleApi } from '@/api/user'
 export default {
     data() {
         return {
@@ -104,59 +104,7 @@ export default {
             isIndeterminate: false,
             privCheckAll: false,
 
-            privilegeList: [
-                {
-                    label: '发布',
-                    items: [
-                        {label: '上线单-申请', value: 1001},
-                        {label: '上线单-查看', value: 1002},
-                        {label: '上线单-审核', value: 1003},
-                        {label: '上线单-申请', value: 1004},
-                        {label: '上线单-查看', value: 1005},
-                        {label: '上线单-审核', value: 1006},
-                        {label: '上线单-申请', value: 1007},
-                        {label: '上线单-查看', value: 1008},
-                        {label: '上线单-审核', value: 1009},
-                        {label: '上线单-申请', value: 1010},
-                        {label: '上线单-查看', value: 1011},
-                        {label: '上线单-审核', value: 1012},
-                    ],
-                },
-                {
-                    label: '发布',
-                    items: [
-                        {label: '上线单-申请', value: 2001},
-                        {label: '上线单-查看', value: 2002},
-                        {label: '上线单-审核', value: 2003},
-                        {label: '上线单-申请', value: 2004},
-                        {label: '上线单-查看', value: 2005},
-                        {label: '上线单-审核', value: 2006},
-                        {label: '上线单-申请', value: 2007},
-                        {label: '上线单-查看', value: 2008},
-                        {label: '上线单-审核', value: 2009},
-                        {label: '上线单-申请', value: 2010},
-                        {label: '上线单-查看', value: 2011},
-                        {label: '上线单-审核', value: 2012},
-                    ],
-                },
-                {
-                    label: '发布',
-                    items: [
-                        {label: '上线单-申请', value: 3001},
-                        {label: '上线单-查看', value: 3002},
-                        {label: '上线单-审核', value: 3003},
-                        {label: '上线单-申请', value: 3004},
-                        {label: '上线单-查看', value: 3005},
-                        {label: '上线单-审核', value: 3006},
-                        {label: '上线单-申请', value: 3007},
-                        {label: '上线单-查看', value: 3008},
-                        {label: '上线单-审核', value: 3009},
-                        {label: '上线单-申请', value: 3010},
-                        {label: '上线单-查看', value: 3011},
-                        {label: '上线单-审核', value: 3012},
-                    ],
-                },
-            ],
+            privilegeList: [],
         }
     },
     watch: {
@@ -180,6 +128,7 @@ export default {
             this.isIndeterminate = false
         },
         checkedChange(val) {
+            this.isIndeterminate = false
             let checkAll = true
             this.privilegeList.forEach(privGroup => {
                 privGroup.items.forEach(p => {
@@ -205,10 +154,12 @@ export default {
         },
         openAddDialogHandler() {
             this.dialogVisible = true
+            this.loadPrivList()
             this.dialogTitle = this.$t('add_role')
         },
         openEditDialogHandler(row) {
             this.dialogVisible = true
+            this.loadPrivList()
             this.dialogTitle = this.$t('edit_role_info')
             this.dialogLoading = true
             detailRoleApi({id: row.id}).then(res => {
@@ -278,7 +229,12 @@ export default {
             }).catch(err => {
                 this.tableLoading = false
             })
-        }
+        },
+        loadPrivList() {
+            privListApi().then(res => {
+                this.privilegeList = res
+            })
+        },
     },
     mounted() {
         this.$root.PageInit()

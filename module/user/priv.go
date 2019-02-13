@@ -106,10 +106,12 @@ var privToApiMap = map[int][]string{
     },
     USER_ROLE_NEW: []string{
         reqApi.USER_ROLE_ADD,
+        reqApi.USER_ROLE_PRIV_LIST,
     },
     USER_ROLE_EDIT: []string{
         reqApi.USER_ROLE_DETAIL,
         reqApi.USER_ROLE_UPDATE,
+        reqApi.USER_ROLE_PRIV_LIST,
     },
     USER_ROLE_DEL: []string{
         reqApi.USER_ROLE_DELETE,
@@ -191,9 +193,16 @@ var privToApiMap = map[int][]string{
     DEPLOY_VIEW: []string{
         reqApi.DEPLOY_APPLY_PROJECT_ALL,
         reqApi.DEPLOY_APPLY_LIST,
+        reqApi.DEPLOY_APPLY_DETAIL,
+        reqApi.DEPLOY_APPLY_PROJECT_DETAIL,
         // syncd.API_DEPLOY_APPLY_DETAIL,
         //syncd.API_DEPLOY_APPLY_PROJECT_ALL,
         //syncd.API_DEPLOY_APPLY_LOG,
+    },
+    DEPLOY_AUDIT: []string{
+        reqApi.DEPLOY_APPLY_DETAIL,
+        reqApi.DEPLOY_APPLY_PROJECT_DETAIL,
+        reqApi.DEPLOY_APPLY_AUDIT,
     },
     /*
     DEPLOY_AUDIT_MY: []string{
@@ -229,4 +238,182 @@ var privToApiMap = map[int][]string{
         syncd.API_DEPLOY_DEPLOY_STOP,
     },
     */
+}
+
+type PrivItem struct {
+    Label   string  `json:"label"`
+    Value   int     `json:"value"`
+}
+
+type PrivGroup struct {
+    Label   string      `json:"label"`
+    Items   []PrivItem  `json:"items"`
+}
+
+var PrivList = []PrivGroup {
+    privProject, privUser, privServer, privDeploy,
+}
+
+var privProject = PrivGroup {
+    Label: "项目",
+    Items: []PrivItem {
+        PrivItem{
+            Label: "空间-查看",
+            Value: PROJECT_SPACE_VIEW,
+        },
+        PrivItem{
+            Label: "空间-新增",
+            Value: PROJECT_SPACE_NEW,
+        },
+        PrivItem{
+            Label: "空间-编辑",
+            Value: PROJECT_SPACE_EDIT,
+        },
+        PrivItem{
+            Label: "空间-删除",
+            Value: PROJECT_SPACE_DEL,
+        },
+        PrivItem{
+            Label: "成员-查看",
+            Value: PROJECT_USER_VIEW,
+        },
+        PrivItem{
+            Label: "成员-新增",
+            Value: PROJECT_USER_NEW,
+        },
+        PrivItem{
+            Label: "成员-移除",
+            Value: PROJECT_USER_DEL,
+        },
+        PrivItem{
+            Label: "项目-查看",
+            Value: PROJECT_VIEW,
+        },
+        PrivItem{
+            Label: "项目-新增",
+            Value: PROJECT_NEW,
+        },
+        PrivItem{
+            Label: "项目-编辑",
+            Value: PROJECT_EDIT,
+        },
+        PrivItem{
+            Label: "项目-删除",
+            Value: PROJECT_DEL,
+        },
+        PrivItem{
+            Label: "项目-启用",
+            Value: PROJECT_AUDIT,
+        },
+        PrivItem{
+            Label: "项目-构建设置",
+            Value: PROJECT_BUILD,
+        },
+    },
+}
+
+var privUser = PrivGroup {
+    Label: "用户",
+    Items: []PrivItem {
+        PrivItem{
+            Label: "角色-查看",
+            Value: USER_ROLE_VIEW,
+        },
+        PrivItem{
+            Label: "角色-新增",
+            Value: USER_ROLE_NEW,
+        },
+        PrivItem{
+            Label: "角色-删除",
+            Value: USER_ROLE_DEL,
+        },
+        PrivItem{
+            Label: "角色-编辑",
+            Value: USER_ROLE_EDIT,
+        },
+        PrivItem{
+            Label: "用户-查看",
+            Value: USER_VIEW,
+        },
+        PrivItem{
+            Label: "用户-新增",
+            Value: USER_NEW,
+        },
+        PrivItem{
+            Label: "用户-编辑",
+            Value: USER_EDIT,
+        },
+        PrivItem{
+            Label: "用户-删除",
+            Value: USER_DEL,
+        },
+    },
+}
+
+var privServer = PrivGroup {
+    Label: "服务器",
+    Items: []PrivItem {
+        PrivItem{
+            Label: "集群-查看",
+            Value: SERVER_GROUP_VIEW,
+        },
+        PrivItem{
+            Label: "集群-新增",
+            Value: SERVER_GROUP_NEW,
+        },
+        PrivItem{
+            Label: "集群-编辑",
+            Value: SERVER_GROUP_EDIT,
+        },
+        PrivItem{
+            Label: "集群-删除",
+            Value: SERVER_GROUP_DEL,
+        },
+        PrivItem{
+            Label: "服务器-查看",
+            Value: SERVER_VIEW,
+        },
+        PrivItem{
+            Label: "服务器-新增",
+            Value: SERVER_NEW,
+        },
+        PrivItem{
+            Label: "服务器-编辑",
+            Value: SERVER_EDIT,
+        },
+        PrivItem{
+            Label: "服务器-删除",
+            Value: SERVER_DEL,
+        },
+    },
+}
+
+var privDeploy = PrivGroup {
+    Label: "发布",
+    Items: []PrivItem {
+        PrivItem{
+            Label: "上线单-提交申请",
+            Value: DEPLOY_APPLY,
+        },
+        PrivItem{
+            Label: "上线单-查看",
+            Value: DEPLOY_VIEW,
+        },
+        PrivItem{
+            Label: "上线单-编辑",
+            Value: DEPLOY_EDIT,
+        },
+        PrivItem{
+            Label: "上线单-审核",
+            Value: DEPLOY_AUDIT,
+        },
+        PrivItem{
+            Label: "上线单-部署",
+            Value: DEPLOY_DEPLOY,
+        },
+        PrivItem{
+            Label: "上线单-废弃",
+            Value: DEPLOY_DROP,
+        },
+    },
 }

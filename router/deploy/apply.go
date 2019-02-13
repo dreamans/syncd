@@ -5,7 +5,6 @@
 package deploy
 
 import (
-    "log"
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/render"
     "github.com/dreamans/syncd/util/gostring"
@@ -31,6 +30,75 @@ type ApplyQueryBind struct {
     Keyword     string  `form:"keyword"`
     Offset      int     `form:"offset"`
     Limit       int     `form:"limit" binding:"required,gte=1,lte=999"`
+}
+
+type ApplyAuditFormBind struct {
+    ID          int     `form:"id" binding:"required"`
+    AuditStatus int     `form:"audit_status" binding:"required"`
+    AuditRefusalReasion string  `form:"audit_refusal_reasion"`
+}
+
+func ApplyAudit(c *gin.Context) {
+    var form ApplyAuditFormBind
+    if err := c.ShouldBind(&form); err != nil {
+        render.ParamError(c, err.Error())
+        return
+    }
+
+    apply := &deploy.Apply{
+        ID: form.ID,
+    }
+    if err := apply.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    m := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: apply.SpaceId,
+    }
+    if in := m.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
+    apply = &deploy.Apply{
+        ID: form.ID,
+        AuditStatus: form.AuditStatus,
+        AuditRefusalReasion: form.AuditRefusalReasion,
+    }
+    if err := apply.UpdateAuditStatus(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    render.JSON(c, nil)
+}
+
+func ApplyDetail(c *gin.Context) {
+    id := gostring.Str2Int(c.Query("id"))
+    if id == 0 {
+        render.ParamError(c, "id cannot be empty")
+        return
+    }
+    apply := &deploy.Apply{
+        ID: id,
+    }
+    if err := apply.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    m := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: apply.SpaceId,
+    }
+    if in := m.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
+    render.JSON(c, apply)
 }
 
 func ApplyList(c *gin.Context) {
@@ -89,8 +157,6 @@ func ApplyList(c *gin.Context) {
         projectMap[l.ID] = l
     }
 
-    log.Println(projectIds)
-
     userList, err := user.UserGetListByIds(userIds)
     if err != nil {
         render.AppError(c, err.Error())
@@ -116,7 +182,9 @@ func ApplyList(c *gin.Context) {
         restList = append(restList, map[string]interface{}{
             "id": l.ID,
             "name": l.Name,
+            "space_id": l.SpaceId,
             "space_name": spaceName,
+            "project_id": l.ProjectId,
             "project_name": projectName,
             "ctime": l.Ctime,
             "username": userName,

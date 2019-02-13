@@ -48,7 +48,11 @@
 
             </el-form>
         </el-card>
-        <el-dialog :width="$root.DialogNormalWidth" :title="$t('input_deploy_apply')" :visible.sync="dialogVisible" @close="closeDialogHandler">
+        <el-dialog
+        :width="$root.DialogNormalWidth"
+        :title="$t('input_deploy_apply')"
+        :visible.sync="dialogVisible"
+        @close="closeDialogHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form class="app-form" ref="dialogRef" :model="dialogForm" size="medium" label-width="130px">
                     <el-form-item 

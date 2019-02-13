@@ -1,5 +1,9 @@
 import {get, post} from '@/lib/fetch.js'
 
+export function privListApi() {
+    return get('/user/role/privlist')
+}
+
 export function newRoleApi(data) {
     return post('/user/role/add', data)
 }

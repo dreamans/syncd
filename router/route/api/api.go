@@ -20,6 +20,7 @@ const (
     SERVER_DELETE = "/server/delete"
     SERVER_DETAIL = "/server/detail"
 
+    USER_ROLE_PRIV_LIST = "/user/role/privlist"
     USER_ROLE_ADD = "/user/role/add"
     USER_ROLE_UPDATE = "/user/role/update"
     USER_ROLE_LIST = "/user/role/list"
@@ -53,4 +54,6 @@ const (
     DEPLOY_APPLY_SUBMIT = "/deploy/apply/submit"
     DEPLOY_APPLY_PROJECT_ALL = "/deploy/apply/project/all"
     DEPLOY_APPLY_LIST = "/deploy/apply/list"
+    DEPLOY_APPLY_DETAIL = "/deploy/apply/detail"
+    DEPLOY_APPLY_AUDIT = "/deploy/apply/audit"
 )

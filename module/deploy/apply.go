@@ -13,17 +13,18 @@ import (
 )
 
 type Apply struct {
-    ID              int     `json:"id"`
-    SpaceId         int     `json:"space_id"`
-    ProjectId       int     `json:"project_id"`
-    Name            string  `json:"name"`
-    Description     string  `json:"description"`
-    BranchName      string  `json:"branch_name"`
-    CommitVersion   string  `json:"commit_version"`
-    AuditStatus     int     `json:"audit_status"`
-    Status          int     `json:"status"`
-    UserId          int     `json:"user_id"`
-    Ctime           int     `json:"ctime"`
+    ID                  int     `json:"id"`
+    SpaceId             int     `json:"space_id"`
+    ProjectId           int     `json:"project_id"`
+    Name                string  `json:"name"`
+    Description         string  `json:"description"`
+    BranchName          string  `json:"branch_name"`
+    CommitVersion       string  `json:"commit_version"`
+    AuditStatus         int     `json:"audit_status"`
+    AuditRefusalReasion	string	`json:"audit_refusal_reasion"`
+    Status              int     `json:"status"`
+    UserId              int     `json:"user_id"`
+    Ctime               int     `json:"ctime"`
 }
 
 const (
@@ -39,6 +40,47 @@ const (
     STATUS_DEPLOY_FAILED = 4
     STATUS_DEPLOY_DROP = 5
 )
+
+func (a *Apply) UpdateAuditStatus() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "audit_status": a.AuditStatus,
+        "audit_refusal_reasion": a.AuditRefusalReasion,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update apply audit_status failed")
+    }
+
+    return nil
+}
+
+func (a *Apply) Detail() error {
+    apply := &model.DeployApply{}
+    if ok := apply.Get(a.ID); !ok {
+        return errors.New("get deploy apply detail failed")
+    }
+    if apply.ID == 0 {
+        return errors.New("deploy apply detail not exists")
+    }
+    a.SpaceId = apply.SpaceId
+    a.ProjectId = apply.ProjectId
+    a.Name = apply.Name
+    a.Description = apply.Description
+    a.BranchName = apply.BranchName
+    a.CommitVersion = apply.CommitVersion
+    a.AuditStatus = apply.AuditStatus
+    a.Status = apply.Status
+    a.UserId = apply.UserId
+    a.Ctime = apply.Ctime
+    return nil
+}
 
 func (a *Apply) Total(keyword string, spaceIds []int) (int, error) {
     apply := &model.DeployApply{}

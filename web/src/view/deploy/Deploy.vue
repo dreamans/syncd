@@ -156,11 +156,86 @@
                 :total="$root.Total">
             </el-pagination>
         </el-card>
+
+        <el-dialog
+        :width="$root.DialogNormalWidth"
+        :title="dialogTitle"
+        :visible.sync="dialogVisible"
+        @close="closeDialogHandler">
+            <div class="app-dialog" v-loading="dialogLoading">
+                <el-form size="medium" label-width="120px">
+                    <el-form-item label="空间名称">
+                        {{ dialogDetail.space_name }}
+                    </el-form-item>
+                    <el-form-item label="项目名称">
+                        {{ dialogDetail.project_name }}
+                    </el-form-item>
+                    <el-form-item label="上线单">
+                        {{ dialogDetail.name }}
+                    </el-form-item>
+                    <el-form-item label="上线模式">
+                        <div v-if="dialogDetail.deploy_mode == 1">
+                            <i class="iconfont icon-branch"></i> {{ this.$t('branch_deploy') }} - 分支名: {{ dialogDetail.branch_name }} - 版本: {{ dialogDetail.commit_version ? dialogDetail.commit_version :  'HEAD'}}
+                        </div>
+                        <div v-else>
+                            <i class="iconfont icon-branch"></i> {{ this.$t('tag_deploy') }} - {{ dialogDetail.branch_name }}
+                        </div>
+                    </el-form-item>
+                    <el-form-item label="上线说明">
+                        {{ dialogDetail.description }}
+                    </el-form-item>
+                    <el-form-item label="审核状态">
+                        {{ this.auditStatusTitle(dialogDetail.audit_status) }}
+                    </el-form-item>
+                    <el-form-item label="提交者">
+                        {{ dialogDetail.username }} - {{ dialogDetail.email }}
+                    </el-form-item>
+                    <el-form-item label="提交时间">
+                        {{ this.$root.FormatDateTime(dialogDetail.ctime) }}
+                    </el-form-item>
+                    <template v-if="dialogDetail.cmd == 'audit'">
+                        <el-form-item label="审核" v-if="dialogDetail.status == 1 && dialogDetail.audit_status == 1">
+                            <div>
+                                <el-radio v-model="auditStatus" :label="2"><span class="app-color-success">审核通过</span></el-radio>
+                                <el-radio v-model="auditStatus" :label="3"><span class="app-color-error">审核拒绝</span></el-radio>
+                            </div>
+                        </el-form-item>
+                        <el-form-item label="拒绝原因" v-if="dialogDetail.status == 1 && dialogDetail.audit_status == 1 && auditStatus == 3">
+                            <el-input type="textarea" :autosize="{ minRows: 2 }" v-model="auditRefusalReason"></el-input>
+                        </el-form-item>
+                        <el-form-item>
+                            <el-button size="small" type="primary" @click="auditStatusHandler">审核</el-button>
+                            <el-button size="small" @click="closeDialogHandler">关闭</el-button>
+                        </el-form-item>
+                    </template>
+                </el-form>
+            </div>
+        </el-dialog>
+
+        <el-dialog
+        :width="$root.DialogNormalWidth"
+        title="编辑上线单"
+        :visible.sync="dialogEditVisible"
+        @close="closeEditDialogHandler">
+            <div class="app-dialog" v-loading="dialogLoading">
+                <el-form 
+                class="app-form" 
+                ref="dialogRef" 
+                :model="dialogForm" 
+                size="medium" 
+                label-width="130px">
+                    <el-form-item
+                    :label="$t('project_name')">
+                    </el-form-item>
+                </el-form>
+            </div>
+        </el-dialog>
     </div>
 </template>
 
 <script>
-import { applyProjectAllApi, applyListApi } from '@/api/deploy'
+import { applyProjectAllApi, applyListApi, applyDetailApi, applyProjectDetailApi, applyAuditApi } from '@/api/deploy'
+import { resolve, reject } from 'q';
 export default {
     data() {
         return {
@@ -194,11 +269,128 @@ export default {
                 {status: 3, label: '审核拒绝'},
             ],
             projectList: [],
+
+            dialogTitle: '',
+            dialogVisible: false,
+            dialogEditVisible: false,
+            dialogLoading: false,
+            dialogBtnLoading: false,
+            dialogDetail: {},
+            dialogForm: {},
+
+            auditStatus: 2,
+            auditRefusalReason: '',
         }
     },
     methods: {
         operateHandler(cmd, row) {
-            console.log(cmd, row)
+            switch(cmd) {
+                case 'view':
+                case 'audit':
+                    this.viewHandler(cmd, row)
+                    break
+                case 'edit':
+                    this.editHandler(cmd, row)
+                    break
+            }
+        },
+        closeDialogHandler() {
+            this.dialogVisible = false
+        },
+        openDialogHandler(title) {
+            this.dialogTitle = title
+            this.dialogVisible = true
+        },
+        closeEditDialogHandler() {
+            this.dialogEditVisible = false
+        },
+        openEditDialogHandler() {
+            this.dialogEditVisible = true
+        },
+        auditStatusHandler() {
+            let postData = {
+                id: this.dialogDetail.id,
+                audit_status: this.auditStatus,
+                audit_refusal_reasion: this.auditRefusalReason,
+            }
+            this.dialogBtnLoading = true
+            applyAuditApi(postData).then(res => {
+                this.$message({
+                    message: '审核成功',
+                    type: 'success',
+                    duration: 1000,
+                    onClose: () => {
+                        this.closeDialogHandler()
+                        this.loadTableData()
+                        this.dialogBtnLoading = false
+                    },
+                })
+            }).catch(err => {
+                this.dialogBtnLoading = false
+            })
+        },
+        editHandler(cmd, row) {
+            this.dialogLoading = true
+            this.getApplyDetail(cmd, row).then(detail => {
+                this.dialogLoading = false
+                this.dialogDetail = detail
+                this.openEditDialogHandler()
+            }).catch(err => {
+                this.dialogLoading = false
+            })
+        },
+        viewHandler(cmd, row) {
+            this.dialogLoading = true
+            this.getApplyDetail(cmd, row).then(detail => {
+                this.dialogLoading = false
+                this.dialogDetail = detail
+                this.openDialogHandler(cmd == 'view' ? '查看' : '审核')
+            }).catch(err => {
+                this.dialogLoading = false
+            })
+        },
+        getApplyDetail(cmd, row) {
+            let promise = new Promise((resolve, reject) => {
+                let projDetailPromise = new Promise((resolve, reject) => {
+                    applyProjectDetailApi({id: row.project_id}).then(res => {
+                        resolve(res)
+                    }).catch(err => {
+                        reject(err)
+                    })
+                })
+                let applyDetailPromise = new Promise((resolve, reject) => {
+                    applyDetailApi({id: row.id}).then(res => {
+                        resolve(res)
+                    }).catch(err => {
+                        reject(err)
+                    })
+                })
+                Promise.all([projDetailPromise, applyDetailPromise]).then(res => {
+                    let projDetail = res[0]
+                    let applyDetail = res[1]
+                    let dialogDetail = {
+                        id: row.id,
+                        space_name: row.space_name,
+                        project_name: row.project_name,
+                        name: row.name,
+                        deploy_mode: projDetail.deploy_mode,
+                        branch_name: applyDetail.branch_name,
+                        commit_version: applyDetail.commit_version,
+                        description: applyDetail.description,
+                        audit_status: row.audit_status,
+                        email: row.email,
+                        username: row.username,
+                        ctime: row.ctime,
+                        audit_status: applyDetail.audit_status,
+                        status: applyDetail.status,
+                        cmd: cmd,
+                    }
+                    resolve(dialogDetail)
+                }).catch(err => {
+                    reject(err)
+                })
+            })
+            return promise
         },
         searchHandler() {
             this.$root.PageInit()
@@ -206,6 +398,15 @@ export default {
         },
         currentChangeHandler() {
             this.loadTableData()
+        },
+        auditStatusTitle(auditStatus) {
+            let auditTitle = ''
+            this.auditStatusList.forEach(item => {
+                if (auditStatus == item.status) {
+                    auditTitle = item.label
+                }
+            })
+            return auditTitle
         },
         loadTableData() {
             this.tableLoading = true

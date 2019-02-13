@@ -15,3 +15,11 @@ export function applyProjectAllApi() {
 export function applyListApi(params) {
     return get('/deploy/apply/list', params)
 }
+
+export function applyDetailApi(params) {
+    return get('/deploy/apply/detail', params)
+}
+
+export function applyAuditApi(data) {
+    return post('/deploy/apply/audit', data)
+}
