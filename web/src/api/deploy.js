@@ -23,3 +23,15 @@ export function applyDetailApi(params) {
 export function applyAuditApi(data) {
     return post('/deploy/apply/audit', data)
 }
+
+export function applyUpdateApi(data) {
+    return post('/deploy/apply/update', data)
+}
+
+export function applyDropApi(data) {
+    return post('/deploy/apply/drop', data)
+}
+
+export function buildStartApi(data) {
+    return post('/deploy/build/start', data)
+}

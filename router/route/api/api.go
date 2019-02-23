@@ -56,4 +56,7 @@ const (
     DEPLOY_APPLY_LIST = "/deploy/apply/list"
     DEPLOY_APPLY_DETAIL = "/deploy/apply/detail"
     DEPLOY_APPLY_AUDIT = "/deploy/apply/audit"
+    DEPLOY_APPLY_UPDATE = "/deploy/apply/update"
+    DEPLOY_APPLY_DROP = "/deploy/apply/drop"
+    DEPLOY_BUILD_START = "/deploy/build/start"
 )

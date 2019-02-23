@@ -126,11 +126,11 @@
                                     <i class="iconfont left small icon-view"></i>查看
                                 </el-dropdown-item>
                                 <el-dropdown-item command="edit" 
-                                v-if="scope.row.status == 1">
+                                v-if="scope.row.status == 1 && (scope.row.audit_status == 1 || scope.row.audit_status == 3)">
                                     <i class="iconfont left small icon-edit"></i>编辑
                                 </el-dropdown-item>
                                 <el-dropdown-item command="audit"
-                                v-if="scope.row.audit_status == 1">
+                                v-if="scope.row.audit_status == 1 && scope.row.status == 1">
                                     <i class="iconfont left small icon-audit"></i>审核
                                 </el-dropdown-item>
                                 <el-dropdown-item command="deploy"
@@ -178,7 +178,7 @@
                             <i class="iconfont icon-branch"></i> {{ this.$t('branch_deploy') }} - 分支名: {{ dialogDetail.branch_name }} - 版本: {{ dialogDetail.commit_version ? dialogDetail.commit_version :  'HEAD'}}
                         </div>
                         <div v-else>
-                            <i class="iconfont icon-branch"></i> {{ this.$t('tag_deploy') }} - {{ dialogDetail.branch_name }}
+                            <i class="iconfont icon-tag"></i> {{ this.$t('tag_deploy') }} - {{ dialogDetail.branch_name }}
                         </div>
                     </el-form-item>
                     <el-form-item label="上线说明">
@@ -204,7 +204,7 @@
                             <el-input type="textarea" :autosize="{ minRows: 2 }" v-model="auditRefusalReason"></el-input>
                         </el-form-item>
                         <el-form-item>
-                            <el-button size="small" type="primary" @click="auditStatusHandler">审核</el-button>
+                            <el-button size="small" type="primary" @click="dialogSubmitAuditStatusHandler">审核</el-button>
                             <el-button size="small" @click="closeDialogHandler">关闭</el-button>
                         </el-form-item>
                     </template>
@@ -226,16 +226,68 @@
                 label-width="130px">
                     <el-form-item
                     :label="$t('project_name')">
+                        {{ dialogDetail.project_name }}
+                    </el-form-item>
+                    <el-form-item 
+                    :label="$t('apply_name')">
+                        {{ dialogDetail.name}}
+                    </el-form-item>
+                    <el-form-item :label="$t('deploy_mode')">
+                        <span v-if="dialogDetail.deploy_mode == 1">
+                            <i class="iconfont icon-branch"></i> - {{ $t('branch_deploy') }}<template v-if="dialogDetail.repo_branch"> - <strong>{{ dialogDetail.repo_branch }}</strong> {{ $t('branch') }}</template>
+                        </span>
+                        <span v-if="dialogDetail.deploy_mode == 2">
+                            <i class="iconfont icon-tag"></i> {{ $t('tag_deploy') }}
+                        </span>
+                    </el-form-item>
+
+                    <el-form-item 
+                    v-if="dialogDetail.deploy_mode == 2"
+                    :label="$t('tag_name')"
+                    prop="branch_name"
+                    :rules="[
+                        { required: true, message: $t('tag_name_cannot_empty'), trigger: 'blur'},
+                    ]">
+                        <el-input class="app-input-mini" :placeholder="$t('please_input_tag_name')" v-model="dialogForm.branch_name" autocomplete="off"></el-input>
+                    </el-form-item>
+
+                    <el-form-item 
+                    v-if="dialogDetail.deploy_mode == 1 && dialogDetail.repo_branch == ''"
+                    :label="$t('branch_name')"
+                    prop="branch_name"
+                    :rules="[
+                        { required: true, message: $t('branch_name_cannot_empty'), trigger: 'blur'},
+                    ]">
+                        <el-input class="app-input-mini" :placeholder="$t('please_input_branch_name')" v-model="dialogForm.branch_name" autocomplete="off"></el-input>
+                    </el-form-item>
+
+                    <el-form-item 
+                    v-if="dialogDetail.deploy_mode == 1"
+                    :label="$t('commit_version')"
+                    prop="commit_version">
+                        <el-input class="app-input-normal" :placeholder="$t('please_input_commit_version')" v-model="dialogForm.commit_version" autocomplete="off"></el-input>
+                    </el-form-item>
+
+                    <el-form-item 
+                    :label="$t('deploy_illustrate')"
+                    prop="description"
+                    :rules="[
+                        { required: true, message: $t('deploy_illustrate_cannot_empty'), trigger: 'blur'},
+                    ]">
+                        <el-input :rows="4" type="textarea" :placeholder="$t('please_input_deploy_illustrate')" v-model="dialogForm.description" autocomplete="off"></el-input>
                     </el-form-item>
                 </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button size="small" @click="closeEditDialogHandler">{{ $t('cancel') }}</el-button>
+                    <el-button :loading="dialogBtnLoading" size="small" type="primary" @click="dialogSubmitEditHandler">{{ $t('enter') }}</el-button>
+                </div>
             </div>
         </el-dialog>
     </div>
 </template>
 
 <script>
-import { applyProjectAllApi, applyListApi, applyDetailApi, applyProjectDetailApi, applyAuditApi } from '@/api/deploy'
-import { resolve, reject } from 'q';
+import { applyProjectAllApi, applyListApi, applyDetailApi, applyProjectDetailApi, applyAuditApi, applyUpdateApi, applyDropApi } from '@/api/deploy'
 export default {
     data() {
         return {
@@ -276,7 +328,12 @@ export default {
             dialogLoading: false,
             dialogBtnLoading: false,
             dialogDetail: {},
-            dialogForm: {},
+            dialogForm: {
+                id: 0,
+                branch_name: '',
+                commit_version: '',
+                description: '',
+            },
 
             auditStatus: 2,
             auditRefusalReason: '',
@@ -291,6 +348,12 @@ export default {
                     break
                 case 'edit':
                     this.editHandler(cmd, row)
+                    break
+                case 'drop':
+                    this.dropHandler(cmd, row)
+                    break
+                case 'deploy':
+                    this.deployHandler(cmd, row)
                     break
             }
         },
@@ -307,7 +370,29 @@ export default {
         openEditDialogHandler() {
             this.dialogEditVisible = true
         },
-        auditStatusHandler() {
+        dialogSubmitEditHandler() {
+            this.$refs.dialogRef.validate((valid) => {
+                if (!valid) {
+                    return false;
+                }
+                this.dialogBtnLoading = true
+                applyUpdateApi(this.dialogForm).then(res => {
+                    this.$message({
+                        message: '更新成功',
+                        type: 'success',
+                        duration: 1000,
+                        onClose: () => {
+                            this.closeEditDialogHandler()
+                            this.loadTableData()
+                            this.dialogBtnLoading = false
+                        },
+                    })
+                }).catch(err => {
+                    this.dialogBtnLoading = false
+                })
+            })
+        },
+        dialogSubmitAuditStatusHandler() {
             let postData = {
                 id: this.dialogDetail.id,
                 audit_status: this.auditStatus,
@@ -329,11 +414,27 @@ export default {
                 this.dialogBtnLoading = false
             })
         },
+        deployHandler(cmd, row) {
+            this.$router.push({name: 'deployRelease', query: { id: row.id}})
+        },
+        dropHandler(cmd, row) {
+            this.$root.ConfirmDelete(() => {
+                applyDropApi({id: row.id}).then(res => {
+                    this.loadTableData()
+                })
+            }, '此操作将废弃该上线单, 是否继续?')
+        },
         editHandler(cmd, row) {
             this.dialogLoading = true
             this.getApplyDetail(cmd, row).then(detail => {
                 this.dialogLoading = false
                 this.dialogDetail = detail
+                this.dialogForm = {
+                    id: row.id,
+                    branch_name: detail.branch_name,
+                    commit_version: detail.commit_version,
+                    description: detail.description,
+                }
                 this.openEditDialogHandler()
             }).catch(err => {
                 this.dialogLoading = false
@@ -374,6 +475,7 @@ export default {
                         project_name: row.project_name,
                         name: row.name,
                         deploy_mode: projDetail.deploy_mode,
+                        repo_branch: projDetail.repo_branch,
                         branch_name: applyDetail.branch_name,
                         commit_version: applyDetail.commit_version,
                         description: applyDetail.description,

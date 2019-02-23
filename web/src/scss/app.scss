@@ -5,6 +5,7 @@ blockquote, body, dd, dl, dt, fieldset, figure, h1, h2, h3, h4, h5, h6, hr, html
 }
 body {
     font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+    font-size: 14px;
 }
 html, body {
     width: 100%;
@@ -19,6 +20,9 @@ html, body {
     }
     &.left {
         margin-right: 3px;
+    }
+    &.right {
+        margin-left: 3px;
     }
 }
 
@@ -37,6 +41,9 @@ html, body {
 }
 .app-cursor {
     cursor: pointer;
+}
+.app-mt-20 {
+    margin-top: 20px;
 }
 .app-header-dropdown {
     padding: 0;
@@ -219,4 +226,29 @@ html, body {
     border-radius: 4px;
     background: #282a36;
     margin-bottom: 20px;
+}
+.app-release {
+    .sp-title {
+        font-weight: 500;
+        width: 100px;
+        display: inline-block;
+    }
+    .app-terminal-log {
+        background-color: #282e34;
+        color: #b8c0cc;
+        padding: 10px;
+        border-radius: 4px;
+        margin-top: 20px;
+        margin-bottom: 20px;
+        max-height: 600px;
+        min-height: 100px;
+        overflow: hidden;
+        overflow-y: auto;
+        .terminal-cmd {
+            color: #fff;
+        }
+    }
+}
+.app-item {
+    padding: 6px 0;
 }

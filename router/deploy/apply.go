@@ -38,6 +38,93 @@ type ApplyAuditFormBind struct {
     AuditRefusalReasion string  `form:"audit_refusal_reasion"`
 }
 
+type ApplyUpdateFormBind struct {
+    ID              int     `form:"id" binding:"required"`
+    BranchName      string  `form:"branch_name" binding:"required"`
+    CommitVersion   string  `form:"commit_version"`
+    Description     string  `form:"description" binding:"required"`
+}
+
+func ApplyDrop(c *gin.Context) {
+    id := gostring.Str2Int(c.PostForm("id"))
+    if id == 0 {
+        render.ParamError(c, "id cannot be empty")
+        return
+    }
+    apply := &deploy.Apply{
+        ID: id,
+    }
+    if err := apply.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    if deploy.STATUS_DEPLOY_ING == apply.Status {
+        render.AppError(c, "deploy apply status incorrect")
+        return
+    }
+    m := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: apply.SpaceId,
+    }
+    if in := m.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+    if err := apply.DropStatus(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    render.JSON(c, nil)
+}
+
+func ApplyUpdate(c *gin.Context) {
+    var form ApplyUpdateFormBind
+    if err := c.ShouldBind(&form); err != nil {
+        render.ParamError(c, err.Error())
+        return
+    }
+    apply := &deploy.Apply{
+        ID: form.ID,
+    }
+    if err := apply.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    if deploy.STATUS_DEPLOY_NONE != apply.Status || deploy.AUDIT_STATUS_OK == apply.AuditStatus {
+        render.AppError(c, "deploy apply status incorrect")
+        return
+    }
+
+    m := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: apply.SpaceId,
+    }
+    if in := m.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+    branchName := apply.BranchName
+    if form.BranchName != "" {
+        branchName = form.BranchName
+    } 
+    apply = &deploy.Apply{
+        ID: form.ID,
+        BranchName: branchName,
+        AuditStatus: deploy.AUDIT_STATUS_PENDING,
+        CommitVersion: form.CommitVersion,
+        Description: form.Description,
+    }
+
+    if err := apply.Update(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    render.JSON(c, nil)
+}
+
 func ApplyAudit(c *gin.Context) {
     var form ApplyAuditFormBind
     if err := c.ShouldBind(&form); err != nil {
@@ -97,6 +184,16 @@ func ApplyDetail(c *gin.Context) {
         render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
         return
     }
+
+    u := &user.User{
+        ID: apply.UserId,
+    }
+    if err := u.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    apply.Username = u.Username
+    apply.Email = u.Email
 
     render.JSON(c, apply)
 }

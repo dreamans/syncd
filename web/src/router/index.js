@@ -91,7 +91,6 @@ const routerMap = [
                 name: 'projectProject',
                 meta: {
                     title: i18n.t('project_manage'),
-                    hide: true,
                 },
                 component: _import('project/Project'),
             },
@@ -100,7 +99,6 @@ const routerMap = [
                 name: 'projectUser',
                 meta: {
                     title: i18n.t('member_manage'),
-                    hide: true,
                 },
                 component: _import('project/Member'),
             },

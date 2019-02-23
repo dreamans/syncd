@@ -195,14 +195,24 @@ var privToApiMap = map[int][]string{
         reqApi.DEPLOY_APPLY_LIST,
         reqApi.DEPLOY_APPLY_DETAIL,
         reqApi.DEPLOY_APPLY_PROJECT_DETAIL,
-        // syncd.API_DEPLOY_APPLY_DETAIL,
-        //syncd.API_DEPLOY_APPLY_PROJECT_ALL,
-        //syncd.API_DEPLOY_APPLY_LOG,
     },
     DEPLOY_AUDIT: []string{
         reqApi.DEPLOY_APPLY_DETAIL,
         reqApi.DEPLOY_APPLY_PROJECT_DETAIL,
         reqApi.DEPLOY_APPLY_AUDIT,
+    },
+    DEPLOY_EDIT: []string{
+        reqApi.DEPLOY_APPLY_DETAIL,
+        reqApi.DEPLOY_APPLY_PROJECT_DETAIL,
+        reqApi.DEPLOY_APPLY_UPDATE,
+    },
+    DEPLOY_DROP: []string{
+        reqApi.DEPLOY_APPLY_DROP,
+    },
+    DEPLOY_DEPLOY: []string{
+        reqApi.DEPLOY_BUILD_START,
+        reqApi.DEPLOY_APPLY_DETAIL,
+        reqApi.DEPLOY_APPLY_PROJECT_DETAIL,
     },
     /*
     DEPLOY_AUDIT_MY: []string{

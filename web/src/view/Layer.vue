@@ -46,12 +46,14 @@
                                 <template slot="title">
                                     <span v-if="menu.meta.icon" class="iconfont left" :class="menu.meta.icon"></span><span>{{ menu.meta.title }}</span>
                                 </template>
-                                <el-menu-item :route="{name: childMenu.name}" v-for="childMenu in menu.children" :index="childMenu.name" :key="childMenu.name">
-                                    <i class="iconfont small left">
-                                        <svg viewBox="0 0 1024 1024" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M384.023552 384.083968l256.016384 0 0 256.016384-256.016384 0 0-256.016384Z"></path></svg>
-                                    </i>
-                                    <span>{{ childMenu.meta.title }}</span>
-                                </el-menu-item>
+                                <template v-for="childMenu in menu.children">
+                                    <el-menu-item v-if="!(childMenu.meta && childMenu.meta.hide)" :route="{name: childMenu.name}" :index="childMenu.name" :key="childMenu.name">
+                                        <i class="iconfont small left">
+                                            <svg viewBox="0 0 1024 1024" width="1em" height="1em" fill="currentColor" aria-hidden="true"><path d="M384.023552 384.083968l256.016384 0 0 256.016384-256.016384 0 0-256.016384Z"></path></svg>
+                                        </i>
+                                        <span>{{ childMenu.meta.title }}</span>
+                                    </el-menu-item>
+                                </template>
                             </el-submenu>
                             <el-menu-item :route="{name: menu.children[0].name}" v-else-if="menu.children && menu.children.length == 1" :index="menu.children[0].name" :key="menu.children[0].name">
                                 <i v-if="menu.children[0].meta.icon" class="iconfont left" :class="menu.children[0].meta.icon"></i>
@@ -87,6 +89,17 @@ export default {
     },
     computed: {
         AppMenu() {
+            let menu = []
+            let currName = this.$route.name
+            routerMap.forEach(first => {
+                let newSecond = []
+                let newFirst = Object.assign({}, first)
+                first.children.forEach(second => {
+                    newSecond.push(second)
+                })
+                newFirst.children = newSecond
+                menu.push(newFirst)
+            })
             return routerMap
         }
     },
@@ -94,7 +107,7 @@ export default {
         '$route.name'() {
             this.breadcrumbItems()
             this.initActiveMenu()
-        }
+        },
     },
     components: {
         ScrollBar,

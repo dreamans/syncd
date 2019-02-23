@@ -68,13 +68,13 @@
                     ]">
                         <el-input :placeholder="$t('please_input_apply_name')" v-model="dialogForm.name" autocomplete="off"></el-input>
                     </el-form-item>
-                
+
                     <el-form-item :label="$t('deploy_mode')">
                         <span v-if="projectDetail.deploy_mode == 1">
                             <i class="iconfont icon-branch"></i> - {{ $t('branch_deploy') }}<template v-if="projectDetail.repo_branch"> - <strong>{{ projectDetail.repo_branch }}</strong> {{ $t('branch') }}</template>
                         </span>
                         <span v-if="projectDetail.deploy_mode == 2">
-                            <i class="iconfont icon-branch"></i> {{ $t('tag_deploy') }}
+                            <i class="iconfont icon-tag"></i> {{ $t('tag_deploy') }}
                         </span>
                     </el-form-item>
 

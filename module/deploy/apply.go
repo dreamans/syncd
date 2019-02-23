@@ -24,6 +24,8 @@ type Apply struct {
     AuditRefusalReasion	string	`json:"audit_refusal_reasion"`
     Status              int     `json:"status"`
     UserId              int     `json:"user_id"`
+    Username			string	`json:"username"`
+    Email				string	`json:"email"`
     Ctime               int     `json:"ctime"`
 }
 
@@ -40,6 +42,47 @@ const (
     STATUS_DEPLOY_FAILED = 4
     STATUS_DEPLOY_DROP = 5
 )
+
+func (a *Apply) DropStatus() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "status": STATUS_DEPLOY_DROP,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update deploy apply status failed")
+    }
+
+    return nil
+}
+
+func (a *Apply) Update() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "branch_name": a.BranchName,
+        "audit_status": a.AuditStatus,
+        "commit_version": a.CommitVersion,
+        "description": a.Description,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update deploy apply failed")
+    }
+
+    return nil
+}
 
 func (a *Apply) UpdateAuditStatus() error {
     apply := &model.DeployApply{}
