@@ -6,11 +6,12 @@ package deploy
 
 import (
     "github.com/gin-gonic/gin"
+    "github.com/dreamans/syncd"
     "github.com/dreamans/syncd/render"
     "github.com/dreamans/syncd/util/gostring"
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/module/deploy"
-    //"github.com/dreamans/syncd/module/user"
+    "github.com/dreamans/syncd/integrate"
 )
 
 func BuildStart(c *gin.Context) {
@@ -72,6 +73,18 @@ func BuildStart(c *gin.Context) {
         render.AppError(c, err.Error())
         return
     }
+
+    // build
+    workSpace := gostring.JoinStrings(syncd.App.LocalTmpSpace, "/", gostring.Int2Str(build.ApplyId))
+    packFile := gostring.JoinStrings(syncd.App.LocalTarSpace, "/", gostring.Int2Str(build.ApplyId), ".tgz")
+    repo := &integrate.Repo{
+        Url: p.RepoUrl,
+        Branch: apply.BranchName,
+        Commit: apply.CommitVersion,
+        Local: workSpace,
+    }
+    b := integrate.NewBuild(workSpace, packFile, p.BuildScript, repo)
+    b.Build()
 
     render.JSON(c, nil)
 }

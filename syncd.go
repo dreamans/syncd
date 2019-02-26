@@ -13,6 +13,7 @@ import (
 
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/util/golog"
+    "github.com/dreamans/syncd/util/gopath"
 )
 
 var (
@@ -28,13 +29,15 @@ func init() {
 }
 
 type syncd struct {
-    Gin				*gin.Engine
-    DB				*DB
-    Logger			*golog.Logger
-    LocalSpace		string
-    RemoteSpace		string
-    CipherKey		[]byte
-    config			*Config
+    Gin             *gin.Engine
+    DB              *DB
+    Logger          *golog.Logger
+    LocalSpace      string
+    LocalTmpSpace   string
+    LocalTarSpace   string
+    RemoteSpace     string
+    CipherKey       []byte
+    config          *Config
 }
 
 func newSyncd() *syncd {
@@ -85,6 +88,20 @@ func (s *syncd) registerLog() {
 
 func (s *syncd) initEnv() error {
     s.LocalSpace = s.config.Syncd.LocalSpace
+    s.LocalTmpSpace = s.LocalSpace + "/tmp"
+    s.LocalTarSpace = s.LocalSpace + "/tar"
+
+    println(s.LocalSpace)
+    if err := gopath.CreatePath(s.LocalSpace); err != nil {
+        return err
+    }
+    if err := gopath.CreatePath(s.LocalTmpSpace); err != nil {
+        return err
+    }
+    if err := gopath.CreatePath(s.LocalTarSpace); err != nil {
+        return err
+    }
+
     s.RemoteSpace = s.config.Syncd.RemoteSpace
     if s.config.Syncd.Cipher == "" {
         return errors.New("syncd config 'Cipher' not setting")
