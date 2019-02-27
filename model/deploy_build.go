@@ -15,8 +15,8 @@ type DeployBuild struct {
     FinishTime          int     `gorm:"type:int(11);not null;default:0"`
     Status              int     `gorm:"type:int(11);not null;default:0"`
     Tar                 string  `gorm:"type:varchar(500);not null;default:''"`
-    Cmd                 string  `gorm:"type:text;not null"`
     Output              string  `gorm:"type:text;not null"`
+    Errmsg              string  `gorm:"type:varchar(1000);not null;default:''"`
     Ctime               int     `gorm:"type:int(11);not null;default:0"`
 }
 
@@ -33,6 +33,10 @@ func (m *DeployBuild) GetByApplyId(id int) bool {
             },
         },
     })
+}
+
+func (m *DeployBuild) UpdateByFields(data map[string]interface{}, query QueryParam) bool {
+    return Update(m, data, query)
 }
 
 func (m *DeployBuild) Create() bool {

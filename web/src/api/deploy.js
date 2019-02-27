@@ -35,3 +35,11 @@ export function applyDropApi(data) {
 export function buildStartApi(data) {
     return post('/deploy/build/start', data)
 }
+
+export function buildStatusApi(params) {
+    return get('/deploy/build/status', params)
+}
+
+export function buildStopApi(data) {
+    return post('/deploy/build/stop', data)
+}

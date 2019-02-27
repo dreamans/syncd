@@ -243,12 +243,18 @@ html, body {
         max-height: 600px;
         min-height: 100px;
         overflow: hidden;
-        overflow-y: auto;
+        overflow: auto;
         .terminal-cmd {
-            color: #fff;
+            padding: 3px 0;
         }
     }
 }
-.app-item {
-    padding: 6px 0;
+.app-cluster-group {
+    .el-collapse {
+        border-top: none;
+        border-bottom: none;
+    }
+    .app-item {
+        padding: 6px 0;
+    }
 }

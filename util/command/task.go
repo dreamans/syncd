@@ -19,10 +19,10 @@ type Task struct {
 }
 
 type TaskResult struct {
-    Cmd         string
-    Stdout      string
-    Stderr      string
-    Success     bool
+    Cmd         string      `json:"cmd"`
+    Stdout      string      `json:"stdout"`
+    Stderr      string      `json:"stderr"`
+    Success     bool        `json:"success"`
 }
 
 func TaskNew(cmds []string, timeout int) *Task {

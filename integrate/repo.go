@@ -37,10 +37,10 @@ func (repo *Repo) FetchCmd() []string {
     cmds := []string{
         fmt.Sprintf("rm -fr %s", repo.Local),
         fmt.Sprintf("/usr/bin/env git clone -q %s %s", repo.Url, repo.Local),
-        fmt.Sprintf("/usr/bin/env git checkout -q %s", repo.Branch),
+        fmt.Sprintf("cd %s && /usr/bin/env git checkout -q %s", repo.Local, repo.Branch),
     }
     if repo.Commit != "" {
-        cmds = append(cmds, fmt.Sprintf("/usr/bin/env git reset -q --hard %s", repo.Commit))
+        cmds = append(cmds, fmt.Sprintf("cd %s && /usr/bin/env git reset -q --hard %s", repo.Local, repo.Commit))
     }
     return cmds
 }

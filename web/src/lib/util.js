@@ -65,6 +65,10 @@ export default {
         return moment.unix(unixtime).format(format)
     },
 
+    FormatDateDuration(num) {
+        return moment.duration(num).humanize(false)
+    },
+
     FormatDateFromNow(unixtime) {
         if (!unixtime) {
             return '--'

@@ -10,8 +10,9 @@ import (
     "math/rand"
     "time"
     "crypto/md5"
-	"encoding/hex"
-	"encoding/base64"
+    "encoding/hex"
+    "encoding/base64"
+    "encoding/json"
 )
 
 func JoinStrings(multiString ...string) string {
@@ -97,4 +98,13 @@ func Base64UrlEncode(b []byte) string {
 func Base64UrlDecode(s string) ([]byte, error) {
     ds, err := base64.URLEncoding.DecodeString(s)
     return ds, err
+}
+
+func JsonEncode(obj interface{}) []byte {
+    b, _ := json.Marshal(obj)
+    return b
+}
+
+func JsonDecode(data []byte, obj interface{}) {
+    json.Unmarshal(data, obj)
 }

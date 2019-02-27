@@ -11,6 +11,7 @@ import (
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/module/deploy"
     "github.com/dreamans/syncd/module/user"
+    "github.com/dreamans/syncd/module/server"
 )
 
 type ApplyFormBind struct {
@@ -431,11 +432,30 @@ func ApplyProjectDetail(c *gin.Context) {
         return
     }
 
+    clusterIds := proj.OnlineCluster
+    if proj.PreReleaseCluster > 0 {
+        clusterIds = append(clusterIds, proj.PreReleaseCluster)
+    }
+    clusterList, err := server.GroupGetMapByIds(clusterIds)
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    serverList, err := server.ServerGetListByGroupIds(clusterIds)
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
     restProj := map[string]interface{}{
         "id": proj.ID,
         "name": proj.Name,
         "deploy_mode": proj.DeployMode,
         "repo_branch": proj.RepoBranch,
+        "cluster_list": clusterList,
+        "pre_cluster_id": proj.PreReleaseCluster,
+        "online_cluster_ids": proj.OnlineCluster,
+        "server_list": serverList,
     }
 
     render.JSON(c, restProj)

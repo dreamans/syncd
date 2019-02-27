@@ -59,4 +59,6 @@ const (
     DEPLOY_APPLY_UPDATE = "/deploy/apply/update"
     DEPLOY_APPLY_DROP = "/deploy/apply/drop"
     DEPLOY_BUILD_START = "/deploy/build/start"
+    DEPLOY_BUILD_STATUS = "/deploy/build/status"
+    DEPLOY_BUILD_STOP = "/deploy/build/stop"
 )

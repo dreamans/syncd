@@ -13,9 +13,9 @@ import (
 )
 
 type Group struct {
-    ID		int	    `json:"id"`
-    Name	string	    `json:"name"`
-    Ctime	int	    `json:"ctime"`
+    ID      int     `json:"id"`
+    Name    string  `json:"name"`
+    Ctime   int     `json:"ctime"`
 }
 
 func GroupGetMapByIds(ids []int) (map[int]Group, error) {

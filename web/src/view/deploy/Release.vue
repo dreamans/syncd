@@ -37,55 +37,90 @@
             </el-row>
             <div class="app-divider"></div>
             <div>
-                <el-button @click="startBuildHandler" size="small" icon="iconfont small left icon-build" type="primary">构建</el-button>
+                <el-button :loading="buildDetail.status == 1" @click="startBuildHandler" size="medium" icon="iconfont small left icon-build" type="primary">构建</el-button>
+                <el-button v-if="buildDetail.status == 1" @click="stopBuildHandler" size="medium" type="warning" icon="iconfont small left icon-stop">强制终止</el-button>
                 <el-row class="app-mt-20" :gutter="20">
                     <el-col :span="10">
                         <span class="sp-title">上次构建时间:</span>
-                        <span>2019-02-12 11:30:50</span>
+                        <span v-if="buildDetail.start_time">{{ $root.FormatDateTime(buildDetail.start_time) }}</span>
+                        <span v-if="buildDetail.finish_time"> - 耗时: {{ $root.FormatDateDuration((buildDetail.finish_time-buildDetail.start_time) * 1000) }}</span>
                     </el-col>
                     <el-col :span="14">
                         <span class="sp-title">状态:</span>
                         <span>
-                            未构建
-                            <span class="app-color-info">构建中</span>
-                            <span class="app-color-success">构建成功</span>
-                            <span class="app-color-error">构建失败</span>
+                            <span v-if="isStopBuildLoading && buildDetail.status == 1" class="app-color-warning">
+                                正在终止...
+                            </span>
+                            <span v-else-if="buildDetail.status == 1" class="app-color-info">构建中...</span>
+                            <span v-else-if="buildDetail.status == 2" class="app-color-success">构建成功</span>
+                            <span v-else-if="buildDetail.status == 3" class="app-color-error">构建失败</span>
+                            <span v-else>
+                                未构建
+                            </span>
                         </span>
                     </el-col>
                 </el-row>
                 <el-row class="app-mt-20" :gutter="20">
+                    <el-col :span="10">
+                        <span class="sp-title">构建日志:</span>
+                        <span v-if="buildDetail.status == 2 || buildDetail.status == 3">
+                            <span @click="openDialogBuildHandler" class="app-link">查看</span>
+                        </span>
+                    </el-col>
                     <el-col :span="14">
                         <span class="sp-title">Tar包位置:</span>
-                        <span>/usr/local/var/syncd_build/74b4358ed86b2d873.tar.gz</span>
+                        <span v-if="buildDetail.tar">{{ buildDetail.tar }}</span>
+                        <span v-else>未生成</span>
                     </el-col>
                 </el-row>
             </div>
+            <template v-if="preCluster.id">
             <div class="app-divider"></div>
             <div>
-                <el-button size="small" icon="iconfont small left icon-send" type="primary">部署</el-button>
-                <el-card shadow="never" class="app-mt-20">
+                <el-button size="small" icon="iconfont small left icon-send" type="primary">部署-预发布环境</el-button>
+                <el-card shadow="never" class="app-mt-20 app-cluster-group">
                     <el-collapse>
-                        <el-collapse-item name="3">
+                        <el-collapse-item :name="preCluster.id">
                             <template slot="title">
                                 <i class="iconfont small left icon-cluster"></i>
-                                阿里云集群.huabei.01
+                                {{ preCluster.name }}
                                 <i class="app-color-success iconfont small left icon-success"></i>
                             </template>
-                            <div class="app-item">
+                            <div class="app-item" v-for="s in preCluster.servers" :key="s.id">
                                 <i class="iconfont small left icon-wait"></i>
-                                1.2.3.4 - local.xyz.001 <span @click="openDialogDeployHandler" class="app-link">查看</span>
+                                {{ s.ip }} - {{ s.name }} <span @click="openDialogBuildHandler" class="app-link">查看</span>
                             </div>
-                            <div class="app-item app-color-info">
+                            <!--div class="app-item app-color-info">
                                 <i class="el-icon-loading"></i>
-                                1.2.3.4 - local.xyz.001 <span @click="openDialogDeployHandler" class="app-link">查看</span>
+                                1.2.3.4 - local.xyz.001 <span @click="openDialogBuildHandler" class="app-link">查看</span>
                             </div>
                             <div class="app-item app-color-error">
                                 <i class="iconfont small left icon-failed"></i>
-                                1.2.3.4 - local.xyz.001 <span @click="openDialogDeployHandler" class="app-link">查看</span>
+                                1.2.3.4 - local.xyz.001 <span @click="openDialogBuildHandler" class="app-link">查看</span>
                             </div>
                             <div class="app-item app-color-success">
                                 <i class="iconfont small left icon-success"></i>
-                                1.2.3.4 - local.xyz.001 <span @click="openDialogDeployHandler" class="app-link">查看</span>
+                                1.2.3.4 - local.xyz.001 <span @click="openDialogBuildHandler" class="app-link">查看</span>
+                            </div-->
+                        </el-collapse-item>
+                    </el-collapse>
+                </el-card>
+            </div>
+            </template>
+            <div class="app-divider"></div>
+            <div>
+                <el-button size="small" icon="iconfont small left icon-send" type="primary">部署-生产环境</el-button>
+                <el-card shadow="never" class="app-mt-20 app-cluster-group">
+                    <el-collapse>
+                        <el-collapse-item v-for="c in onlineCluster" :name="c.id" :key="c.id">
+                            <template slot="title">
+                                <i class="iconfont small left icon-cluster"></i>
+                                {{ c.name }}
+                                <i class="app-color-success iconfont small left icon-success"></i>
+                            </template>
+                            <div class="app-item" v-for="s in c.servers" :key="s.id">
+                                <i class="iconfont small left icon-wait"></i>
+                                {{ s.ip }} - {{ s.name }} <span @click="openDialogBuildHandler" class="app-link">查看</span>
                             </div>
                         </el-collapse-item>
                     </el-collapse>
@@ -94,54 +129,107 @@
         </el-card>
         <el-dialog
         :width="$root.DialogNormalWidth"
-        title="部署详情"
-        :visible.sync="dialogDeployVisible"
-        @close="closeDialogDeployHandler">
-            <div>
-                服务器: 1.2.3.4 - local.xyz.001
-            </div>
+        title="构建日志"
+        :visible.sync="dialogBuildVisible"
+        @close="closeDialogBuildHandler">
+            <div v-if="buildDetail.status == 3"><i class="app-color-error el-icon-warning"></i> 构建失败: <span v-if="buildDetail.errmsg" class="app-color-error">{{ buildDetail.errmsg }}</span></div>
+            <div v-if="buildDetail.status == 2"><i class="app-color-success el-icon-success"></i> 构建成功</div>
             <div class="app-terminal-log">
-<pre>
-<span class="terminal-cmd">$ ./scp a git@hello</span>
-syncd@localhost:~$ 上线成功
->>> 更新代码仓库文件 
-完成
->>> 拉取代码文件 
-完成
->>> 打包 
-完成
->>> 部署到> asdf-www.yizhuanlan.com 
-完成
-/usr/local/nginx/sbin/nginx -s stop
-
-/usr/local/nginx/sbin/nginx
-</pre>
-                </div>
+                <template v-for="(cmd, index) in buildDetail.output">
+                    <div :key="index">
+                        <div class="terminal-cmd" :class="{ 'app-color-success': cmd.success, 'app-color-error': !cmd.success}">
+                            [cmd ] $ {{ cmd.cmd }}
+                            <span v-if="cmd.success" class="iconfont icon-right"></span>
+                            <span v-else class="iconfont icon-wrong"></span>
+                        </div>
+                        <div><pre>{{ cmd.stdout }}</pre></div>
+                        <div><pre>{{ cmd.stderr }}</pre></div>
+                    </div>
+                </template>
+            </div>
         </el-dialog>
     </div>
 </template>
 
 <script>
-import { applyDetailApi, applyProjectDetailApi, buildStartApi } from '@/api/deploy'
+import { applyDetailApi, applyProjectDetailApi, buildStartApi, buildStatusApi, buildStopApi } from '@/api/deploy'
 export default {
     data(){
         return {
             id: 0,
             applyDetail: {},
             projectDetail: {},
-            dialogDeployVisible: false,
+            buildDetail: {},
+            dialogBuildVisible: false,
+            isStopBuildLoading: false,
+
+            preCluster: {},
+            onlineCluster: {},
         }
     },
-    methods: {
-        closeDialogDeployHandler() {
-            this.dialogDeployVisible = false
+    watch: {
+        projectDetail() {
+            let preCluster = {}
+            if ( this.projectDetail.pre_cluster_id 
+                && this.projectDetail.cluster_list[this.projectDetail.pre_cluster_id]) {
+                let cluster = this.projectDetail.cluster_list[this.projectDetail.pre_cluster_id]
+                preCluster.id = cluster.id
+                preCluster.name = cluster.name
+                preCluster.servers = []
+                if (this.projectDetail.server_list[preCluster.id]) {
+                    preCluster.servers = this.projectDetail.server_list[preCluster.id]
+                    this.preCluster = preCluster
+                }
+            }
+
+            let clusters = []
+            this.projectDetail.online_cluster_ids.forEach(id => {
+                if (this.projectDetail.cluster_list[id]) {
+                    let cluster = this.projectDetail.cluster_list[id]
+                    let servers = []
+                    if (this.projectDetail.server_list[id]) {
+                        servers = this.projectDetail.server_list[id]
+                    }
+                    if (servers.length) {
+                        clusters.push({
+                            id: cluster.id,
+                            name: cluster.name,
+                            servers: servers,
+                        })
+                    }
+                }
+            })
+            this.onlineCluster = clusters
         },
-        openDialogDeployHandler() {
-            this.dialogDeployVisible = true
+    },
+    methods: {
+        closeDialogBuildHandler() {
+            this.dialogBuildVisible = false
+        },
+        openDialogBuildHandler() {
+            this.dialogBuildVisible = true
         },
         startBuildHandler() {
             buildStartApi({id: this.id}).then(res => {
-                
+                this.loadBuildStatus()
+            })
+        },
+        stopBuildHandler() {
+            buildStopApi({id: this.id}).then(res => {
+                this.isStopBuildLoading = true
+            })
+        },
+        loadBuildStatus() {
+            buildStatusApi({id: this.id}).then(res => {
+                this.buildDetail = res
+                if (res.status == 1) {
+                    let vm = this
+                    setTimeout(function() {
+                        vm.loadBuildStatus()
+                    }, 3000)
+                } else {
+                    this.isStopBuildLoading = false
+                }
             })
         },
         initApplyDetail() {
@@ -156,6 +244,7 @@ export default {
     mounted() {
         this.id = this.$route.query.id
         this.initApplyDetail()
+        this.loadBuildStatus()
     },
 }
 </script>

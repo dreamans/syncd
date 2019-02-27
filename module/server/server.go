@@ -22,6 +22,34 @@ type Server struct {
     Ctime       int     `json:"ctime"`
 }
 
+func ServerGetListByGroupIds(groupIds []int) (map[int][]Server, error){
+    server := &model.Server{}
+    list, ok := server.List(model.QueryParam{
+        Fields: "id, group_id, name, ip, ssh_port, ctime",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "group_id",
+                Tag: "IN",
+                Prepare: groupIds,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get server list failed")
+    }
+    serList := make(map[int][]Server)
+    for _, s := range list {
+        serList[s.GroupId] = append(serList[s.GroupId], Server{
+            ID: s.ID,
+            GroupId: s.GroupId,
+            Name: s.Name,
+            Ip: s.Ip,
+            SSHPort: s.SSHPort,
+        })
+    }
+    return serList, nil
+}
+
 func (s *Server) CreateOrUpdate() error {
     server := &model.Server{
         ID: s.ID,
