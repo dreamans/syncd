@@ -15,6 +15,9 @@ syncd是一款开源的代码部署工具，它具有简单、高效、易用等
 **目前只支持类Linux系统.**
 
 ## 目录
+
+[![Join the chat at https://gitter.im/dreamans/syncd](https://badges.gitter.im/dreamans/syncd.svg)](https://gitter.im/dreamans/syncd?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 - [特性](#特性)
 - [原理](#原理)
 - [安装](#安装)
