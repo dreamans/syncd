@@ -59,7 +59,7 @@ func ApplyDrop(c *gin.Context) {
         render.AppError(c, err.Error())
         return
     }
-    if deploy.STATUS_DEPLOY_ING == apply.Status {
+    if deploy.APPLY_STATUS_ING == apply.Status {
         render.AppError(c, "deploy apply status incorrect")
         return
     }
@@ -93,7 +93,7 @@ func ApplyUpdate(c *gin.Context) {
         return
     }
 
-    if deploy.STATUS_DEPLOY_NONE != apply.Status || deploy.AUDIT_STATUS_OK == apply.AuditStatus {
+    if deploy.APPLY_STATUS_NONE != apply.Status || deploy.AUDIT_STATUS_OK == apply.AuditStatus {
         render.AppError(c, "deploy apply status incorrect")
         return
     }
@@ -395,7 +395,7 @@ func ApplySubmit(c *gin.Context) {
         CommitVersion: commitVersion,
         UserId: c.GetInt("user_id"),
         AuditStatus: deploy.AUDIT_STATUS_PENDING,
-        Status: deploy.STATUS_DEPLOY_NONE,
+        Status: deploy.APPLY_STATUS_NONE,
     }
 
     if proj.NeedAudit == 0 {
@@ -432,16 +432,12 @@ func ApplyProjectDetail(c *gin.Context) {
         return
     }
 
-    clusterIds := proj.OnlineCluster
-    if proj.PreReleaseCluster > 0 {
-        clusterIds = append(clusterIds, proj.PreReleaseCluster)
-    }
-    clusterList, err := server.GroupGetMapByIds(clusterIds)
+    clusterList, err := server.GroupGetMapByIds(proj.OnlineCluster)
     if err != nil {
         render.AppError(c, err.Error())
         return
     }
-    serverList, err := server.ServerGetListByGroupIds(clusterIds)
+    serverList, err := server.ServerGetListByGroupIds(proj.OnlineCluster)
     if err != nil {
         render.AppError(c, err.Error())
         return
@@ -453,7 +449,6 @@ func ApplyProjectDetail(c *gin.Context) {
         "deploy_mode": proj.DeployMode,
         "repo_branch": proj.RepoBranch,
         "cluster_list": clusterList,
-        "pre_cluster_id": proj.PreReleaseCluster,
         "online_cluster_ids": proj.OnlineCluster,
         "server_list": serverList,
     }

@@ -43,3 +43,11 @@ export function buildStatusApi(params) {
 export function buildStopApi(data) {
     return post('/deploy/build/stop', data)
 }
+
+export function deployStart(data) {
+    return post('/deploy/deploy/start', data)
+}
+
+export function deployStatusApi(params) {
+    return get('/deploy/deploy/status', params)
+}

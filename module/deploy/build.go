@@ -7,7 +7,6 @@ package deploy
 import (
     "errors"
     "time"
-    //"fmt"
 
     "github.com/dreamans/syncd/model"
 )
@@ -65,16 +64,13 @@ func (b *Build) Detail() error {
 }
 
 func (b *Build) Exists() (bool, error) {
-    build := &model.DeployBuild{}
-    if ok := build.GetByApplyId(b.ApplyId); !ok {
-        return false, errors.New("get deploy build detail failed")
+    if err := b.Detail(); err != nil {
+        return false, err
     }
-    if build.ID == 0 {
+    if b.ID == 0 {
         return false, nil
     }
-    b.ID = build.ID
-    b.Status = build.Status
-    return true, nil
+    return true, nil 
 }
 
 func (b *Build) Finish() error {

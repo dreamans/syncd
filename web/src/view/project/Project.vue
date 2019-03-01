@@ -167,24 +167,6 @@
                     <h4 class="app-form-subtitle">{{ $t('deploy_setting') }}</h4>
 
                     <el-form-item 
-                    :label="$t('pre_release_cluster')"
-                    prop="pre_release_cluster">
-                        <el-select 
-                        class="app-input-mini"
-                        v-model="dialogForm.pre_release_cluster" 
-                        filterable 
-                        clearable 
-                        :placeholder="$t('please_input_keyword')">
-                            <el-option
-                            v-for="cluster in clusterList"
-                            :key="cluster.id"
-                            :label="cluster.name"
-                            :value="cluster.id">
-                            </el-option>
-                        </el-select>
-                    </el-form-item>
-
-                    <el-form-item 
                     :label="$t('online_cluster')"
                     prop="online_cluster"
                     :rules="[
@@ -309,13 +291,6 @@
                     <div class="app-divider"></div>
                     <h4 class="app-form-subtitle">{{ $t('deploy_setting') }}</h4>
 
-                    <el-form-item :label="$t('pre_release_cluster')">
-                        <span v-if="dialogViewForm.pre_release_cluster">
-                            <i class="iconfont small left icon-cluster"></i>{{ formatClusterName(dialogViewForm.pre_release_cluster) }}
-                        </span>
-                        <span v-else>--</span>
-                    </el-form-item>
-
                     <el-form-item :label="$t('online_cluster')">
                         <div v-if="dialogViewForm.online_cluster && dialogViewForm.online_cluster.length">
                             <ul class="app-form-box">
@@ -429,7 +404,6 @@ export default {
                 repo_url: '',
                 repo_branch: '',
                 deploy_mode: 0,
-                pre_release_cluster: undefined,
                 online_cluster: [],
                 deploy_user: '',
                 deploy_path: '',
@@ -553,10 +527,6 @@ export default {
             detailProjectApi({id: row.id}).then(res => {
                 this.dialogLoading = false
                 this.dialogForm = res
-                // type adaptation
-                if (!this.dialogForm.pre_release_cluster) {
-                    this.dialogForm.pre_release_cluster = undefined
-                }
             }).catch(err => {
                 this.dialogCloseHandler()
             })

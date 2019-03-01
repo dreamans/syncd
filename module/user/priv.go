@@ -215,6 +215,8 @@ var privToApiMap = map[int][]string{
         reqApi.DEPLOY_BUILD_START,
         reqApi.DEPLOY_BUILD_STATUS,
         reqApi.DEPLOY_BUILD_STOP,
+        reqApi.DEPLOY_DEPLOY_START,
+        reqApi.DEPLOY_DEPLOY_STATUS,
     },
     /*
     DEPLOY_AUDIT_MY: []string{

@@ -255,6 +255,16 @@ html, body {
         border-bottom: none;
     }
     .app-item {
-        padding: 6px 0;
+        padding: 8px;
+    }
+    .app-cluster-item {
+        &:not(:last-child){
+            margin-bottom: 10px;
+        }
+        .el-collapse-item__header {
+            background: #f0f2f5;
+            border-radius: 6px;
+            padding-left: 6px;
+        }
     }
 }

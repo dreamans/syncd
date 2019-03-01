@@ -134,7 +134,7 @@
                                     <i class="iconfont left small icon-audit"></i>审核
                                 </el-dropdown-item>
                                 <el-dropdown-item command="deploy"
-                                v-if="scope.row.audit_status == 2 && (scope.row.status == 1 || scope.row.status == 4)">
+                                v-if="scope.row.audit_status == 2 && (scope.row.status == 1 || scope.row.status == 2 || scope.row.status == 4)">
                                     <i class="iconfont left small icon-coffee"></i>上线
                                 </el-dropdown-item>
                                 <el-dropdown-item command="drop"

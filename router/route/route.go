@@ -73,5 +73,7 @@ func RegisterRoute() {
         api.POST(reqApi.DEPLOY_BUILD_START, deploy.BuildStart)
         api.GET(reqApi.DEPLOY_BUILD_STATUS, deploy.BuildStatus)
         api.POST(reqApi.DEPLOY_BUILD_STOP, deploy.BuildStop)
+        api.POST(reqApi.DEPLOY_DEPLOY_START, deploy.DeployStart)
+        api.GET(reqApi.DEPLOY_DEPLOY_STATUS, deploy.DeployStatus)
     }
 }

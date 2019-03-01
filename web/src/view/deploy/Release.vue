@@ -2,7 +2,13 @@
     <div class="app-release">
         <el-card shadow="never">
             <div slot="header" class="clearfix">
-                <span>部署发布单</span>
+                <span>
+                    部署发布单 - 
+                    <span v-if="deployDetail.status == 1">待上线</span>
+                    <span v-if="deployDetail.status == 2" class="app-color-info">上线中</span>
+                    <span v-if="deployDetail.status == 3" class="app-color-success">已上线</span>
+                    <span v-if="deployDetail.status == 4" class="app-color-error">上线失败</span>
+                </span>
             </div>
             <el-row :gutter="20">
                 <el-col :span="10">
@@ -37,8 +43,10 @@
             </el-row>
             <div class="app-divider"></div>
             <div>
-                <el-button :loading="buildDetail.status == 1" @click="startBuildHandler" size="medium" icon="iconfont small left icon-build" type="primary">构建</el-button>
-                <el-button v-if="buildDetail.status == 1" @click="stopBuildHandler" size="medium" type="warning" icon="iconfont small left icon-stop">强制终止</el-button>
+                <template v-if="deployDetail.status == 1 || deployDetail.status == 2 || deployDetail.status == 4">
+                    <el-button :loading="buildDetail.status == 1" @click="startBuildHandler" size="medium" icon="iconfont small left icon-build" type="primary">构建</el-button>
+                    <el-button v-if="buildDetail.status == 1" @click="stopBuildHandler" size="medium" type="warning" icon="iconfont small left icon-stop">强制终止</el-button>
+                </template>
                 <el-row class="app-mt-20" :gutter="20">
                     <el-col :span="10">
                         <span class="sp-title">上次构建时间:</span>
@@ -74,53 +82,33 @@
                     </el-col>
                 </el-row>
             </div>
-            <template v-if="preCluster.id">
             <div class="app-divider"></div>
             <div>
-                <el-button size="small" icon="iconfont small left icon-send" type="primary">部署-预发布环境</el-button>
+                <template v-if="deployDetail.status == 1 || deployDetail.status == 2 || deployDetail.status == 4">
+                    <el-button v-if="deployDetail.status == 1 || deployDetail.status == 2" :loading="deployDetail.status == 2" @click="startDeployHandler" size="small" icon="iconfont small left icon-send" type="primary">部署</el-button>
+                    <el-button v-if="deployDetail.status == 4" :loading="deployDetail.status == 2" @click="startDeployHandler" size="small" icon="iconfont small left icon-send" type="primary">重新部署</el-button>
+                </template>
                 <el-card shadow="never" class="app-mt-20 app-cluster-group">
+                    <div slot="header">集群列表</div>
                     <el-collapse>
-                        <el-collapse-item :name="preCluster.id">
+                        <el-collapse-item class="app-cluster-item" v-for="c in onlineCluster" :name="c.id" :key="c.id">
                             <template slot="title">
                                 <i class="iconfont small left icon-cluster"></i>
-                                {{ preCluster.name }}
-                                <i class="app-color-success iconfont small left icon-success"></i>
-                            </template>
-                            <div class="app-item" v-for="s in preCluster.servers" :key="s.id">
-                                <i class="iconfont small left icon-wait"></i>
-                                {{ s.ip }} - {{ s.name }} <span @click="openDialogBuildHandler" class="app-link">查看</span>
-                            </div>
-                            <!--div class="app-item app-color-info">
-                                <i class="el-icon-loading"></i>
-                                1.2.3.4 - local.xyz.001 <span @click="openDialogBuildHandler" class="app-link">查看</span>
-                            </div>
-                            <div class="app-item app-color-error">
-                                <i class="iconfont small left icon-failed"></i>
-                                1.2.3.4 - local.xyz.001 <span @click="openDialogBuildHandler" class="app-link">查看</span>
-                            </div>
-                            <div class="app-item app-color-success">
-                                <i class="iconfont small left icon-success"></i>
-                                1.2.3.4 - local.xyz.001 <span @click="openDialogBuildHandler" class="app-link">查看</span>
-                            </div-->
-                        </el-collapse-item>
-                    </el-collapse>
-                </el-card>
-            </div>
-            </template>
-            <div class="app-divider"></div>
-            <div>
-                <el-button size="small" icon="iconfont small left icon-send" type="primary">部署-生产环境</el-button>
-                <el-card shadow="never" class="app-mt-20 app-cluster-group">
-                    <el-collapse>
-                        <el-collapse-item v-for="c in onlineCluster" :name="c.id" :key="c.id">
-                            <template slot="title">
-                                <i class="iconfont small left icon-cluster"></i>
-                                {{ c.name }}
-                                <i class="app-color-success iconfont small left icon-success"></i>
+                                {{ c.name }}&nbsp;&nbsp;
+                                <span v-if="deployDetail.groupStatus[c.id] == 0" class="app-color-gray"><i class="iconfont small left icon-wait"></i>等待部署</span>
+                                <span v-else-if="deployDetail.groupStatus[c.id] == 1" class="app-color-info"><i class="iconfont el-icon-loading"></i>部署中</span>
+                                <span v-else-if="deployDetail.groupStatus[c.id] == 2" class="app-color-success"><i class="iconfont small left icon-success"></i>部署成功</span>
+                                <span v-else-if="deployDetail.groupStatus[c.id] == 3" class="app-color-error"><i class="iconfont small left icon-failed"></i>部署失败</span>
+                                <span v-else class="app-color-warning"><i class="iconfont small left icon-question"></i>未知集群</span>
                             </template>
                             <div class="app-item" v-for="s in c.servers" :key="s.id">
-                                <i class="iconfont small left icon-wait"></i>
-                                {{ s.ip }} - {{ s.name }} <span @click="openDialogBuildHandler" class="app-link">查看</span>
+                                <i class="iconfont small left icon-server"></i>
+                                {{ s.ip }} - {{ s.name }}
+                                <span v-if="deployDetail.servers[s.id] == undefined" class="app-color-warning"><i class="app-color-gray iconfont small left icon-question"></i></span>
+                                <span v-else-if="deployDetail.servers[s.id].status == 0" class="app-color-gray"><i class="iconfont small left icon-wait"></i></span>
+                                <span v-else-if="deployDetail.servers[s.id].status == 1" class="app-color-info"><i class="iconfont el-icon-loading"></i></span>
+                                <span v-else-if="deployDetail.servers[s.id].status == 2" class="app-color-success"><i class="iconfont small left icon-success"></i> <span @click="openDialogBuildHandler" class="app-link">查看</span></span>
+                                <span v-else-if="deployDetail.servers[s.id].status == 3" class="app-color-error"><i class="iconfont small left icon-failed"></i> <span @click="openDialogBuildHandler" class="app-link">查看</span></span>
                             </div>
                         </el-collapse-item>
                     </el-collapse>
@@ -152,7 +140,7 @@
 </template>
 
 <script>
-import { applyDetailApi, applyProjectDetailApi, buildStartApi, buildStatusApi, buildStopApi } from '@/api/deploy'
+import { applyDetailApi, applyProjectDetailApi, buildStartApi, buildStatusApi, buildStopApi, deployStart, deployStatusApi } from '@/api/deploy'
 export default {
     data(){
         return {
@@ -160,43 +148,29 @@ export default {
             applyDetail: {},
             projectDetail: {},
             buildDetail: {},
+            deployDetail: {},
             dialogBuildVisible: false,
             isStopBuildLoading: false,
-
-            preCluster: {},
             onlineCluster: {},
         }
     },
     watch: {
         projectDetail() {
-            let preCluster = {}
-            if ( this.projectDetail.pre_cluster_id 
-                && this.projectDetail.cluster_list[this.projectDetail.pre_cluster_id]) {
-                let cluster = this.projectDetail.cluster_list[this.projectDetail.pre_cluster_id]
-                preCluster.id = cluster.id
-                preCluster.name = cluster.name
-                preCluster.servers = []
-                if (this.projectDetail.server_list[preCluster.id]) {
-                    preCluster.servers = this.projectDetail.server_list[preCluster.id]
-                    this.preCluster = preCluster
-                }
-            }
-
             let clusters = []
             this.projectDetail.online_cluster_ids.forEach(id => {
                 if (this.projectDetail.cluster_list[id]) {
                     let cluster = this.projectDetail.cluster_list[id]
                     let servers = []
-                    if (this.projectDetail.server_list[id]) {
-                        servers = this.projectDetail.server_list[id]
-                    }
-                    if (servers.length) {
-                        clusters.push({
-                            id: cluster.id,
-                            name: cluster.name,
-                            servers: servers,
-                        })
-                    }
+                    this.projectDetail.server_list.forEach(s => {
+                        if (s.group_id == id) {
+                            servers.push(s)
+                        }
+                    })
+                    clusters.push({
+                        id: cluster.id,
+                        name: cluster.name,
+                        servers: servers,
+                    })
                 }
             })
             this.onlineCluster = clusters
@@ -219,6 +193,55 @@ export default {
                 this.isStopBuildLoading = true
             })
         },
+        startDeployHandler() {
+            deployStart({id: this.id}).then(res => {
+                this.loadDeployStatus()
+            })
+        },
+        deployStatusDetail(detail) {
+            let groupStatus = {}
+            let servers = {}
+            if (detail.task_list) {
+                let groupStatusList = {}
+                let groupIds = []
+                detail.task_list.forEach(srv => {
+                    if (!groupStatusList[srv.group_id]) {
+                        groupStatusList[srv.group_id] = []
+                    }
+                    groupIds.push(srv.group_id)
+                    groupStatusList[srv.group_id].push(srv.status)
+                    servers[srv.server_id] = srv
+                })
+                groupIds.forEach(gid => {
+                    let none = groupStatusList[gid].indexOf(0) > -1
+                    let ing = groupStatusList[gid].indexOf(1) > -1
+                    let done = groupStatusList[gid].indexOf(2) > -1
+                    let failed = groupStatusList[gid].indexOf(3) > -1
+                    let status = 2 // 0 - unstart, 1 - starting, 2 - done , 3 - failed
+                    if (none) {
+                        if (ing || done || failed) {
+                            status = 1
+                        } else {
+                            status = 0
+                        }
+                    } else if (ing) {
+                        status = 1
+                    } else {
+                        if (failed) {
+                            status = 3
+                        } else {
+                            status = 2
+                        }
+                    }
+                    groupStatus[gid] = status
+                })
+            }
+            this.deployDetail = {
+                status: detail.status,
+                groupStatus: groupStatus,
+                servers: servers,
+            }
+        },
         loadBuildStatus() {
             buildStatusApi({id: this.id}).then(res => {
                 this.buildDetail = res
@@ -226,9 +249,20 @@ export default {
                     let vm = this
                     setTimeout(function() {
                         vm.loadBuildStatus()
-                    }, 3000)
+                    }, 5000)
                 } else {
                     this.isStopBuildLoading = false
+                }
+            })
+        },
+        loadDeployStatus() {
+            deployStatusApi({id: this.id}).then(res => {
+                this.deployStatusDetail(res)
+                if (res.status == 2) {
+                    let vm = this
+                    setTimeout(function() {
+                        vm.loadDeployStatus()
+                    }, 5000)
                 }
             })
         },
@@ -245,6 +279,7 @@ export default {
         this.id = this.$route.query.id
         this.initApplyDetail()
         this.loadBuildStatus()
+        this.loadDeployStatus()
     },
 }
 </script>

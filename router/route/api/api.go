@@ -61,4 +61,6 @@ const (
     DEPLOY_BUILD_START = "/deploy/build/start"
     DEPLOY_BUILD_STATUS = "/deploy/build/status"
     DEPLOY_BUILD_STOP = "/deploy/build/stop"
+    DEPLOY_DEPLOY_START = "/deploy/deploy/start"
+    DEPLOY_DEPLOY_STATUS = "/deploy/deploy/status"
 )

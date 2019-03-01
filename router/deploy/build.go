@@ -114,7 +114,7 @@ func BuildStart(c *gin.Context) {
     }
 
     // apply status checked
-    if apply.Status != deploy.STATUS_DEPLOY_NONE && apply.Status != deploy.STATUS_DEPLOY_FAILED {
+    if apply.Status != deploy.APPLY_STATUS_NONE && apply.Status != deploy.APPLY_STATUS_FAILED {
         render.AppError(c, "apply status must none or failed")
         return
     }

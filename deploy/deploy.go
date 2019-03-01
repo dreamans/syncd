@@ -15,10 +15,10 @@ const (
     STATUS_RUNNING = 1
     STATUS_DONE = 2
     STATUS_FAILED = 3
-    STATUS_TERMINATE = 4
 )
 
 type Deploy struct {
+    ID              int
     Srvs            []*Server
     PreCmd          string
     PostCmd         string
@@ -26,8 +26,23 @@ type Deploy struct {
     DeployTmpPath   string
     PackFile        string
     PackFileName    string
+    CallbackFn      deployCallbackFn
+    StartCallbackFn	deployCallbackFn
     status          int
     wg              sync.WaitGroup
+}
+
+type deployTask struct {
+    deployList  map[int][]*Deploy
+    mu          sync.Mutex
+}
+
+type taskCallbackFn func(int, bool)
+
+type deployCallbackFn func(int, int, *ServerStatus)
+
+var deployTaskList = &deployTask{
+    deployList: make(map[int][]*Deploy),
 }
 
 func NewDepoly(deploy *Deploy) (*Deploy, error) {
@@ -47,12 +62,40 @@ func NewDepoly(deploy *Deploy) (*Deploy, error) {
     return deploy, nil
 }
 
-func (deploy *Deploy) Deploy() {
+func DeployGroups (id int, deployGroups []*Deploy, callbackFn taskCallbackFn) {
+    go func() {
+        haveError := false
+        for _, dep := range deployGroups {
+            dep.deploy()
+            if dep.status == STATUS_FAILED {
+                haveError = true
+            }
+        }
+        callbackFn(id, haveError)
+    }()
+}
+
+func (deploy *Deploy) deploy() {
     deploy.status = STATUS_RUNNING
+    var srvError error
     for _, srv := range deploy.Srvs {
+        if deploy.StartCallbackFn != nil {
+            deploy.StartCallbackFn(deploy.ID, srv.ID, nil)
+        }
         srv.Deploy(deploy)
+        srvStatus := srv.Status()
+        if deploy.CallbackFn != nil {
+            deploy.CallbackFn(deploy.ID, srv.ID, srvStatus)
+        }
+        if srvStatus.Error != nil {
+            srvError = srvStatus.Error
+        }
     }
-    deploy.status = STATUS_DONE
+    if srvError == nil {
+        deploy.status = STATUS_DONE
+    } else {
+        deploy.status = STATUS_FAILED
+    }
 }
 
 func (deploy *Deploy) ParalDeploy() func() {

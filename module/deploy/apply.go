@@ -21,11 +21,11 @@ type Apply struct {
     BranchName          string  `json:"branch_name"`
     CommitVersion       string  `json:"commit_version"`
     AuditStatus         int     `json:"audit_status"`
-    AuditRefusalReasion	string	`json:"audit_refusal_reasion"`
+    AuditRefusalReasion string  `json:"audit_refusal_reasion"`
     Status              int     `json:"status"`
     UserId              int     `json:"user_id"`
-    Username			string	`json:"username"`
-    Email				string	`json:"email"`
+    Username            string  `json:"username"`
+    Email               string  `json:"email"`
     Ctime               int     `json:"ctime"`
 }
 
@@ -36,17 +36,17 @@ const (
 )
 
 const (
-    STATUS_DEPLOY_NONE = 1
-    STATUS_DEPLOY_ING = 2
-    STATUS_DEPLOY_SUCCESS = 3
-    STATUS_DEPLOY_FAILED = 4
-    STATUS_DEPLOY_DROP = 5
+    APPLY_STATUS_NONE = 1
+    APPLY_STATUS_ING = 2
+    APPLY_STATUS_SUCCESS = 3
+    APPLY_STATUS_FAILED = 4
+    APPLY_STATUS_DROP = 5
 )
 
 func (a *Apply) DropStatus() error {
     apply := &model.DeployApply{}
     updateData := map[string]interface{}{
-        "status": STATUS_DEPLOY_DROP,
+        "status": APPLY_STATUS_DROP,
     }
     if ok := apply.UpdateByFields(updateData, model.QueryParam{
         Where: []model.WhereParam{
@@ -79,6 +79,25 @@ func (a *Apply) Update() error {
         },
     }); !ok {
         return errors.New("update deploy apply failed")
+    }
+
+    return nil
+}
+
+func (a *Apply) UpdateStatus() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "status": a.Status,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update deploy apply status failed")
     }
 
     return nil
@@ -134,6 +153,37 @@ func (a *Apply) Total(keyword string, spaceIds []int) (int, error) {
         return 0, errors.New("get apply count failed")
     }
     return total, nil
+}
+
+func (a *Apply) CheckHaveDeploying() (bool, error) {
+    apply := &model.DeployApply{}
+    count, ok := apply.Count(model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Tag: "!=",
+                Prepare: a.ID,
+            },
+            model.WhereParam{
+                Field: "project_id",
+                Prepare: a.ProjectId,
+            },
+            model.WhereParam{
+                Field: "status",
+                Prepare: APPLY_STATUS_ING,
+            },
+            model.WhereParam{
+                Field: "ctime",
+                Tag: ">=",
+                Prepare: int(time.Now().Unix()) - 86400,
+            },
+        },
+    })
+    if !ok {
+        return false, errors.New("get apply count failed")
+    }
+
+    return count == 0, nil
 }
 
 func (a *Apply) List(keyword string, spaceIds []int, offset, limit int) ([]Apply, error) {

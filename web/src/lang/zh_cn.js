@@ -122,7 +122,6 @@ export default {
     'repo_url_cannot_empty': '仓库地址不能为空',
     'repo_branch': '指定上线分支',
     'online_cluster': '线上集群',
-    'pre_release_cluster': '预发布集群',
     'online_cluster_cannot_empty': '线上集群不能为空',
     'user': '用户',
     'user_cannot_empty': '用户不能为空',

@@ -21,7 +21,6 @@ type ProjectFormBind struct {
     RepoUrl             string  `form:"repo_url" binding:"required"`
     RepoBranch          string  `form:"repo_branch"`
     DeployMode          int     `form:"deploy_mode" binding:"required"`
-    PreReleaseCluster   int     `form:"pre_release_cluster"`
     OnlineCluster       []int   `form:"online_cluster" binding:"required"`
     DeployUser          string  `form:"deploy_user" binding:"required"`
     DeployPath          string  `form:"deploy_path" binding:"required"`
@@ -268,7 +267,6 @@ func projectCreateOrUpdate(c *gin.Context) {
         RepoUrl: projectForm.RepoUrl,
         DeployMode: projectForm.DeployMode,
         RepoBranch: repoBranch,
-        PreReleaseCluster: projectForm.PreReleaseCluster,
         OnlineCluster: onlineCluster,
         DeployUser: projectForm.DeployUser,
         DeployPath: projectForm.DeployPath,

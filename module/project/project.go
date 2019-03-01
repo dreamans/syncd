@@ -22,7 +22,6 @@ type Project struct {
     RepoUrl             string  `json:"repo_url"`
     RepoBranch          string  `json:"repo_branch"`
     DeployMode          int     `json:"deploy_mode"`
-    PreReleaseCluster   int     `json:"pre_release_cluster"`
     OnlineCluster       []int   `json:"online_cluster"`
     DeployUser          string  `json:"deploy_user"`
     DeployPath          string  `json:"deploy_path"`
@@ -124,7 +123,6 @@ func (p *Project) Detail() error {
     p.RepoUrl = project.RepoUrl
     p.DeployMode = project.DeployMode
     p.RepoBranch = project.RepoBranch
-    p.PreReleaseCluster = project.PreReleaseCluster
     p.OnlineCluster = gostring.StrSplit2IntSlice(project.OnlineCluster, ",")
     p.DeployUser = project.DeployUser
     p.DeployPath = project.DeployPath
@@ -202,7 +200,6 @@ func (p *Project) CreateOrUpdate() error {
         RepoUrl: p.RepoUrl,
         DeployMode: p.DeployMode,
         RepoBranch: p.RepoBranch,
-        PreReleaseCluster: p.PreReleaseCluster,
         OnlineCluster: gostring.JoinIntSlice2String(p.OnlineCluster, ","),
         DeployUser: p.DeployUser,
         DeployPath: p.DeployPath,
@@ -218,7 +215,6 @@ func (p *Project) CreateOrUpdate() error {
             "repo_url": p.RepoUrl,
             "deploy_mode": p.DeployMode,
             "repo_branch": p.RepoBranch,
-            "pre_release_cluster": p.PreReleaseCluster,
             "online_cluster": gostring.JoinIntSlice2String(p.OnlineCluster, ","),
             "deploy_user": p.DeployUser,
             "deploy_path": p.DeployPath,

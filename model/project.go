@@ -10,15 +10,14 @@ import(
 
 type Project struct {
     ID                  int     `gorm:"primary_key"`
-    SpaceId				int		`gorm:"type:int(11);not null;default:0"`
+    SpaceId		int	`gorm:"type:int(11);not null;default:0"`
     Name                string  `gorm:"type:varchar(100);not null;default:''"`
     Description         string  `gorm:"type:varchar(500);not null;default:''"`
     NeedAudit           int     `gorm:"type:int(11);not null;default:0"`
-    Status				int		`gorm:"type:int(11);not null;default:0"`
+    Status		int	`gorm:"type:int(11);not null;default:0"`
     RepoUrl             string  `gorm:"type:varchar(500);not null;default:''"`
-    DeployMode			int		`gorm:"type:int(11);not null;default:0"`
+    DeployMode		int	`gorm:"type:int(11);not null;default:0"`
     RepoBranch          string  `gorm:"type:varchar(100);not null;default:''"`
-    PreReleaseCluster   int     `gorm:"type:int(11);not null;default:0"`
     OnlineCluster       string  `gorm:"type:varchar(1000);not null;default:''"`
     DeployUser          string  `gorm:"type:varchar(100);not null;default:''"`
     DeployPath          string  `gorm:"type:varchar(500);not null;default:''"`
