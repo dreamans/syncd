@@ -1,137 +1,123 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
 package project
 
 import (
-    "github.com/tinystack/goweb"
-    "github.com/dreamans/syncd"
-    projectService "github.com/dreamans/syncd/service/project"
+    "errors"
+    "fmt"
+
+    "github.com/dreamans/syncd/model"
 )
 
-func SpaceNew(c *goweb.Context) error {
-    return spaceUpdate(c, 0)
+type Space struct {
+    ID          int     `json:"id"`
+    Name        string  `json:"name"`
+    Description string  `json:"description"`
+    Ctime       int     `json:"ctime"`
 }
 
-func SpaceEdit(c *goweb.Context) error {
-    id := c.PostFormInt("id")
-    if id == 0 {
-        return syncd.RenderParamError("id can not be empty")
-    }
-    return spaceUpdate(c, id)
+func SpaceListByIds(spaceIds []int) ([]Space, error) {
+    s := &Space{}
+    return s.List(spaceIds, "", 0, 999)
 }
 
-func spaceUpdate(c *goweb.Context, id int) error {
-    name := c.PostForm("name")
-    if name == "" {
-        return syncd.RenderParamError("name can not be empty")
+func (s *Space) Delete() error {
+    space := &model.ProjectSpace{
+        ID: s.ID,
     }
-    var space *projectService.Space
-    space = &projectService.Space{
-        ID: id,
-        Name: name,
+    if ok := space.Delete(); !ok {
+        return errors.New("delete project space failed")
     }
-    exists, err := space.CheckExists()
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if exists {
-        return syncd.RenderAppError("space data update failed, space name have exists")
-    }
-    space = &projectService.Space{
-        ID: id,
-        Name: name,
-        Description: c.PostForm("description"),
-    }
-    if err := space.CreateOrUpdate(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, nil)
+    return nil
 }
 
-func SpaceList(c *goweb.Context) error {
-    offset, limit, keyword := c.QueryInt("offset"), c.GetInt("limit"), c.Query("keyword")
-    space := &projectService.Space{}
-    list, total, err := space.List(keyword, offset, limit)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
+func (s *Space) Detail() error {
+    space := &model.ProjectSpace{}
+    if ok := space.Get(s.ID); !ok {
+        return errors.New("get project space detail failed")
+    }
+    if space.ID == 0 {
+        return errors.New("project space detail not exists")
     }
 
-    //check if project exists in the space
-    var newList []map[string]interface{}
+    s.ID = space.ID
+    s.Name = space.Name
+    s.Description = space.Description
+    s.Ctime = space.Ctime
+
+    return nil
+}
+
+func (s *Space) CreateOrUpdate() error {
+    space := &model.ProjectSpace{
+        ID: s.ID,
+        Name: s.Name,
+        Description: s.Description,
+    }
+    if space.ID == 0 {
+        if ok := space.Create(); !ok {
+            return errors.New("project space create failed")
+        }
+        s.ID = space.ID
+    } else {
+        if ok := space.Update(); !ok {
+            return errors.New("project space update failed")
+        }
+    }
+    return nil
+}
+
+func (s *Space) List(spaceIds []int, keyword string, offset, limit int) ([]Space, error) {
+    space := &model.ProjectSpace{}
+    list, ok := space.List(model.QueryParam{
+        Fields: "id, name, description, ctime",
+        Offset: offset,
+        Limit: limit,
+        Order: "id DESC",
+        Where: s.parseWhereConds(spaceIds, keyword),
+    })
+    if !ok {
+        return nil, errors.New("get project space list failed")
+    }
+
+    var spaceList []Space
     for _, l := range list {
-        project := &projectService.Project{
-            SpaceId: l.ID,
-        }
-        exists, err := project.CheckSpaceHaveProject()
-        if err != nil {
-            return syncd.RenderAppError(err.Error())
-        }
-        newList = append(newList, map[string]interface{}{
-            "id": l.ID,
-            "name": l.Name,
-            "description": l.Description,
-            "have_project": exists,
-            "ctime": l.Ctime,
+        spaceList = append(spaceList, Space{
+            ID: l.ID,
+            Name: l.Name,
+            Description: l.Description,
+            Ctime: l.Ctime,
         })
     }
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": newList,
-        "total": total,
+    return spaceList, nil
+}
+
+func (s *Space) Total(spaceIds []int, keyword string) (int, error) {
+    space := &model.ProjectSpace{}
+    total, ok := space.Count(model.QueryParam{
+        Where: s.parseWhereConds(spaceIds, keyword),
     })
+    if !ok {
+        return 0, errors.New("get project space count failed")
+    }
+    return total, nil
 }
 
-func SpaceDetail(c *goweb.Context) error {
-    space := &projectService.Space{
-        ID: c.QueryInt("id"),
+func (s *Space) parseWhereConds(spaceIds []int, keyword string) []model.WhereParam {
+    var where []model.WhereParam
+    if keyword != "" {
+        where = append(where, model.WhereParam{
+            Field: "name",
+            Tag: "LIKE",
+            Prepare: fmt.Sprintf("%%%s%%", keyword),
+        })
     }
-    if err := space.Detail(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, space)
-}
-
-func SpaceDelete(c *goweb.Context) error {
-    var (
-        id int
-        exists bool
-        err error
-    )
-    id = c.PostFormInt("id")
-    proj := &projectService.Project{
-        SpaceId: id,
-    }
-    exists, err = proj.CheckSpaceHaveProject()
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if exists {
-        return syncd.RenderAppError("space delete failed, project in space is not empty")
-    }
-    space := &projectService.Space{
-        ID: id,
-    }
-    if err = space.Delete(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, nil)
-}
-
-func SpaceExists(c *goweb.Context) error {
-    keyword, id := c.Query("keyword"), c.QueryInt("id")
-    if keyword == "" {
-        return syncd.RenderParamError("params error")
-    }
-    space := &projectService.Space{
-        ID: id,
-        Name: keyword,
-    }
-    exists, err := space.CheckExists()
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "exists": exists,
+    where = append(where, model.WhereParam{
+        Field: "id",
+        Tag: "IN",
+        Prepare: spaceIds,
     })
+    return where
 }

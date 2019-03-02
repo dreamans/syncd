@@ -1,7 +1,7 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 
-import account from './modules/account.js'
+import account from './module/account.js'
 
 Vue.use(Vuex)
 

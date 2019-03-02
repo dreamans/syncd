@@ -1,4 +1,4 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -14,8 +14,9 @@ type (
     }
 
     SyncdConfig struct {
-        Dir     string
-        Cipher  string
+        LocalSpace      string
+        RemoteSpace     string
+        Cipher          string
     }
 
     LogConfig struct {
@@ -40,7 +41,7 @@ type (
     DbConfig struct {
         Unix            string
         Host            string
-        Port            string
+        Port            int
         Charset         string
         User            string
         Pass            string

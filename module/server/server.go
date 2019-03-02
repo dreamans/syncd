@@ -1,88 +1,179 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
 package server
 
 import (
-    "github.com/tinystack/goweb"
-    "github.com/tinystack/govalidate"
-    "github.com/dreamans/syncd"
-    serverService "github.com/dreamans/syncd/service/server"
+    "errors"
+    "fmt"
+
+    "github.com/dreamans/syncd/util/gois"
+    "github.com/dreamans/syncd/model"
 )
 
-type ServerParamValid struct {
-    GroupId     int         `valid:"required" errmsg:"required=sverver group cannot be empty"`
-    Name        string      `valid:"required" errmsg:"required=server name cannot be empty"`
-    Ip          string      `valid:"required" errmsg:"required=server Ip cannot be empty"`
-    SshPort     int         `valid:"required|int_min=1|int_max=65535" errmsg:"required=ssh port cannot be empty|int_min=ssh port must be between 1 and 65535|int_max=ssh port must be between 1 and 65535"`
+type Server struct {
+    ID          int     `json:"id"`
+    GroupId     int     `json:"group_id"`
+    GroupName   string  `json:"group_name"`
+    Name        string  `json:"name"`
+    Ip          string  `json:"ip"`
+    SSHPort     int     `json:"ssh_port"`
+    Ctime       int     `json:"ctime"`
 }
 
-func ServerNew(c *goweb.Context) error {
-    return serverUpdate(c, 0)
-}
-
-func ServerEdit(c *goweb.Context) error {
-    id := c.PostFormInt("id")
-    if id == 0 {
-        return syncd.RenderParamError("id can not be empty")
-    }
-    return serverUpdate(c, id)
-}
-
-func serverUpdate(c *goweb.Context, id int) error {
-    params := ServerParamValid{
-        GroupId: c.PostFormInt("group_id"),
-        Name: c.PostForm("name"),
-        Ip: c.PostForm("ip"),
-        SshPort: c.PostFormInt("ssh_port"),
-    }
-    if valid := govalidate.NewValidate(&params); !valid.Pass() {
-        return syncd.RenderParamError(valid.LastFailed().Msg)
-    }
-    server := &serverService.Server{
-        ID: id,
-        GroupId: params.GroupId,
-        Name: params.Name,
-        Ip: params.Ip,
-        SshPort: params.SshPort,
-    }
-    if err := server.CreateOrUpdate(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, nil)
-}
-
-func ServerList(c *goweb.Context) error {
-    groupId, offset, limit := c.QueryInt("group_id"), c.QueryInt("offset"), c.GetInt("limit")
-    keyword := c.Query("keyword")
-    server := &serverService.Server{}
-    list, total, err := server.List(keyword, groupId, offset, limit)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": list,
-        "total": total,
+func ServerGetListByGroupIds(groupIds []int) ([]Server, error){
+    server := &model.Server{}
+    list, ok := server.List(model.QueryParam{
+        Fields: "id, group_id, name, ip, ssh_port, ctime",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "group_id",
+                Tag: "IN",
+                Prepare: groupIds,
+            },
+        },
     })
+    if !ok {
+        return nil, errors.New("get server list failed")
+    }
+    serList := []Server{}
+    for _, s := range list {
+        serList = append(serList, Server{
+            ID: s.ID,
+            GroupId: s.GroupId,
+            Name: s.Name,
+            Ip: s.Ip,
+            SSHPort: s.SSHPort,
+        })
+    }
+    return serList, nil
 }
 
-func ServerDetail(c *goweb.Context) error {
-    server := &serverService.Server{
-        ID: c.QueryInt("id"),
+func (s *Server) CreateOrUpdate() error {
+    server := &model.Server{
+        ID: s.ID,
+        GroupId: s.GroupId,
+        Name: s.Name,
+        Ip: s.Ip,
+        SSHPort: s.SSHPort,
     }
-    if err := server.Get(); err != nil {
-        return syncd.RenderAppError(err.Error())
+    if server.ID == 0 {
+        if ok := server.Create(); !ok {
+            return errors.New("create server failed")
+        }
+    } else {
+        if ok := server.Update(); !ok {
+            return errors.New("update server failed")
+        }
     }
-    return syncd.RenderJson(c, server)
+    return nil
 }
 
-func ServerDelete(c *goweb.Context) error {
-    server := &serverService.Server{
-        ID: c.PostFormInt("id"),
+func (s *Server) List(keyword string, offset, limit int) ([]Server, error) {
+    server := &model.Server{}
+    list, ok := server.List(model.QueryParam{
+        Fields: "id, group_id, name, ip, ssh_port, ctime",
+        Offset: offset,
+        Limit: limit,
+        Order: "id DESC",
+        Where: s.parseWhereConds(keyword),
+    })
+    if !ok {
+        return nil, errors.New("get server list failed")
     }
-    if err := server.Delete(); err != nil {
-        return syncd.RenderAppError(err.Error())
+
+    var (
+        serverList []Server
+        groupIds []int
+    )
+    for _, l := range list {
+        serverList = append(serverList, Server{
+            ID: l.ID,
+            GroupId: l.GroupId,
+            Name: l.Name,
+            Ip: l.Ip,
+            SSHPort: l.SSHPort,
+            Ctime: l.Ctime,
+        })
+        groupIds = append(groupIds, l.GroupId)
     }
-    return syncd.RenderJson(c, nil)
+
+    groupMap, err := GroupGetMapByIds(groupIds)
+    if err != nil {
+        return nil, errors.New("get server group map failed")
+    }
+    for k, l := range serverList {
+        if g, exists := groupMap[l.GroupId]; exists {
+            serverList[k].GroupName = g.Name
+        }
+    }
+
+    return serverList, nil
+}
+
+func (s *Server) Total(keyword string) (int, error) {
+    server := model.Server{}
+    total, ok := server.Count(model.QueryParam{
+        Where: s.parseWhereConds(keyword),
+    })
+    if !ok {
+        return 0, errors.New("get server count failed")
+    }
+    return total, nil
+}
+
+func (s *Server) Delete() error {
+    server := &model.Server{
+        ID: s.ID,
+    }
+    if ok := server.Delete(); !ok {
+        return errors.New("delete server failed")
+    }
+    return nil
+}
+
+func (s *Server) Detail() error {
+    server := &model.Server{}
+    if ok := server.Get(s.ID); !ok {
+        return errors.New("get server detail failed")
+    }
+    if server.ID == 0 {
+        return errors.New("server not exists")
+    }
+
+    s.ID = server.ID
+    s.GroupId = server.GroupId
+    s.Name = server.Name
+    s.Ip = server.Ip
+    s.SSHPort = server.SSHPort
+    s.Ctime = server.Ctime
+
+    return nil
+}
+
+func (s *Server) parseWhereConds(keyword string) []model.WhereParam {
+    var where []model.WhereParam
+    if keyword != "" {
+        if gois.IsInteger(keyword) {
+            where = append(where, model.WhereParam{
+                Field: "id",
+                Prepare: keyword,
+            })
+        } else {
+            if gois.IsIp(keyword) {
+                where = append(where, model.WhereParam{
+                    Field: "ip",
+                    Prepare: keyword,
+                })
+            } else {
+                where = append(where, model.WhereParam{
+                    Field: "name",
+                    Tag: "LIKE",
+                    Prepare: fmt.Sprintf("%%%s%%", keyword),
+                })
+            }
+        }
+    }
+    return where
 }
