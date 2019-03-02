@@ -22,10 +22,14 @@ type Apply struct {
     CommitVersion       string  `json:"commit_version"`
     AuditStatus         int     `json:"audit_status"`
     AuditRefusalReasion string  `json:"audit_refusal_reasion"`
+    RollbackId          int     `json:"rollback_id"`
+    RollbackApplyId     int     `json:"rollback_apply_id"`
+    IsRollbackApply     int     `json:"is_rollback_apply"`
     Status              int     `json:"status"`
     UserId              int     `json:"user_id"`
     Username            string  `json:"username"`
     Email               string  `json:"email"`
+    RollbackStatus      int     `json:"rollback_status"`
     Ctime               int     `json:"ctime"`
 }
 
@@ -41,7 +45,42 @@ const (
     APPLY_STATUS_SUCCESS = 3
     APPLY_STATUS_FAILED = 4
     APPLY_STATUS_DROP = 5
+    APPLY_STATUS_ROLLBACK = 6
 )
+
+func (a *Apply) RollbackList() ([]Apply, error) {
+    apply := &model.DeployApply{}
+    list, ok := apply.List(model.QueryParam{
+        Fields: "id, name",
+        Limit: 10,
+        Order: "ctime DESC",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "project_id",
+                Prepare: a.ProjectId,
+            },
+            model.WhereParam{
+                Field: "audit_status",
+                Prepare: AUDIT_STATUS_OK,
+            },
+            model.WhereParam{
+                Field: "status",
+                Prepare: APPLY_STATUS_SUCCESS,
+            },
+        },
+    })
+    if !ok {
+        return nil, errors.New("get apply list failed")
+    }
+    var applyList []Apply
+    for _, l := range list {
+        applyList = append(applyList, Apply{
+            ID: l.ID,
+            Name: l.Name,
+        })
+    }
+    return applyList, nil
+}
 
 func (a *Apply) DropStatus() error {
     apply := &model.DeployApply{}
@@ -103,6 +142,26 @@ func (a *Apply) UpdateStatus() error {
     return nil
 }
 
+func (a *Apply) UpdateRollback() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "rollback_apply_id": a.RollbackApplyId,
+        "status": APPLY_STATUS_ROLLBACK,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update deploy apply rollback_apply_id failed")
+    }
+
+    return nil
+}
+
 func (a *Apply) UpdateAuditStatus() error {
     apply := &model.DeployApply{}
     updateData := map[string]interface{}{
@@ -140,6 +199,10 @@ func (a *Apply) Detail() error {
     a.AuditStatus = apply.AuditStatus
     a.Status = apply.Status
     a.UserId = apply.UserId
+    a.RollbackId = apply.RollbackId
+    a.RollbackApplyId = apply.RollbackApplyId
+    a.IsRollbackApply = apply.IsRollbackApply
+    a.RollbackStatus = APPLY_STATUS_NONE
     a.Ctime = apply.Ctime
     return nil
 }
@@ -196,7 +259,7 @@ func (a *Apply) List(keyword string, spaceIds []int, offset, limit int) ([]Apply
         Where: a.parseWhereConds(keyword, spaceIds),
     })
     if !ok {
-        return nil, errors.New("get project list failed")
+        return nil, errors.New("get apply list failed")
     }
     var applyList []Apply
     for _, l := range list {
@@ -225,10 +288,13 @@ func (a *Apply) Create() error {
         Status: a.Status,
         UserId: a.UserId,
         AuditStatus: a.AuditStatus,
+        RollbackId: a.RollbackId,
+        IsRollbackApply: a.IsRollbackApply,
     }
     if ok := apply.Create(); !ok {
         return errors.New("create deploy apply failed")
     }
+    a.ID = apply.ID
     return nil
 }
 

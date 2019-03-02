@@ -10,4 +10,5 @@ export default {
     'CODE_ERR_NO_PRIV': 1006,
     'CODE_ERR_TASK_ERROR': 1007,
     'CODE_ERR_USER_OR_PASS_WRONG': 1008,
+    'CODE_ERR_NO_DATA': 1009,
 }

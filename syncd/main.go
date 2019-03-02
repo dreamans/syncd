@@ -10,6 +10,7 @@ import (
     "fmt"
     "os"
 
+    "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/util/gopath"
     "github.com/dreamans/syncd"
     "github.com/dreamans/syncd/router/route"
@@ -24,6 +25,8 @@ var (
 )
 
 func init() {
+    gin.SetMode(gin.ReleaseMode)
+
     flag.BoolVar(&helpFlag, "h", false, "This help")
     flag.StringVar(&syncdIniFlag, "c", "", "Set configuration file `file`")
     flag.BoolVar(&versionFlag, "v", false, "Version number")
@@ -156,6 +159,7 @@ func main() {
 
     route.RegisterRoute()
 
+    fmt.Println("Start Running...")
     if err := syncd.App.Start(); err != nil {
         log.Fatal(err)
     }

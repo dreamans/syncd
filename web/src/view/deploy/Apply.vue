@@ -113,6 +113,24 @@
                     ]">
                         <el-input :rows="4" type="textarea" :placeholder="$t('please_input_deploy_illustrate')" v-model="dialogForm.description" autocomplete="off"></el-input>
                     </el-form-item>
+
+                    <el-form-item
+                    :label="$t('rollback_apply')"
+                    prop="rollback_id">
+                        <el-select 
+                        v-model="dialogForm.rollback_id" 
+                        filterable 
+                        style="width: 100%;"
+                        :placeholder="$t('please_input_keyword')">
+                            <el-option
+                            v-for="r in rollbackList"
+                            :key="r.id"
+                            :label="'(ID:' + r.id + ') ' + r.name"
+                            :value="r.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+
                  </el-form>
                  <div slot="footer" class="dialog-footer">
                     <el-button size="small" @click="closeDialogHandler">{{ $t('cancel') }}</el-button>
@@ -125,7 +143,7 @@
 
 <script>
 import { listSpaceApi, listProjectApi } from '@/api/project'
-import { applyProjectDetailApi, applySubmitApi } from '@/api/deploy'
+import { applyProjectDetailApi, applySubmitApi, applyRollbackListApi } from '@/api/deploy'
 export default {
     data() {
         return {
@@ -135,6 +153,7 @@ export default {
             },
             spaceList: [],
             projectList: [],
+            rollbackList: [],
 
             dialogVisible: false,
             dialogLoading: false,
@@ -157,6 +176,7 @@ export default {
                     branch_name: this.dialogForm.branch_name,
                     description: this.dialogForm.description,
                     commit_version: this.dialogForm.commit_version,
+                    rollback_id: this.dialogForm.rollback_id,
                 }
                 applySubmitApi(postData).then(res => {
                     this.$alert(this.$t('deploy_apply_submit_success'), this.$t('submit_success'), {
@@ -181,6 +201,11 @@ export default {
                 applyProjectDetailApi({id: this.form.project_id}).then(res => {
                     this.projectDetail = res
                     this.dialogVisible = true
+                })
+                applyRollbackListApi({id: this.form.project_id}).then(res => {
+                    if (res) {
+                        this.rollbackList = res
+                    }
                 })
             })
         },

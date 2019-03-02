@@ -75,43 +75,44 @@
                 :data="tableData">
                 <el-table-column prop="id" label="ID" width="80"></el-table-column>
                 <el-table-column prop="name" :label="$t('name')"></el-table-column>
-                <el-table-column label="项目名称">
+                <el-table-column :label="$t('project_name')">
                     <template slot-scope="scope">
                          {{ scope.row.project_name }}
-                         <el-tooltip effect="dark" :content="'所属空间: ' + scope.row.space_name" placement="top">
+                         <el-tooltip effect="dark" :content="$t('belong_to_space') + ': ' + scope.row.space_name" placement="top">
                             <span class="app-cursor"><i class="iconfont icon-space"></i></span>
                         </el-tooltip>
                     </template>
                 </el-table-column>
-                <el-table-column prop="ssh_port" width="100" label="提交时间">
+                <el-table-column prop="ssh_port" width="100" :label="$t('submit_time')">
                     <template slot-scope="scope">
                         <el-tooltip effect="dark" :content="$root.FormatDateTime(scope.row.ctime)" placement="top">
                             <span class="app-cursor">{{ $root.FormatDateFromNow(scope.row.ctime) }}</span>
                         </el-tooltip>
                     </template>
                 </el-table-column>
-                <el-table-column prop="ssh_port" width="100" label="提交者">
+                <el-table-column prop="ssh_port" width="100" :label="$t('submiter')">
                     <template slot-scope="scope">
                         <el-tooltip effect="dark" :content="scope.row.email" placement="top">
                             <span class="app-cursor">{{ scope.row.username }}</span>
                         </el-tooltip>
                     </template>
                 </el-table-column>
-                <el-table-column prop="audit_status" width="100" label="审核">
+                <el-table-column prop="audit_status" width="100" :label="$t('audit')">
                     <template slot-scope="scope">
-                        <span class="app-color-warning" v-if="scope.row.audit_status == 1">待审核</span>
-                        <span class="app-color-success" v-else-if="scope.row.audit_status == 2">通过</span>
-                        <span class="app-color-error" v-else-if="scope.row.audit_status == 3">拒绝</span>
+                        <span class="app-color-warning" v-if="scope.row.audit_status == 1">{{ $t('unaudit') }}</span>
+                        <span class="app-color-success" v-else-if="scope.row.audit_status == 2">{{ $t('pass') }}</span>
+                        <span class="app-color-error" v-else-if="scope.row.audit_status == 3">{{ $t('denied') }}</span>
                         <span v-else>--</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="ssh_port" width="100" label="状态">
+                <el-table-column prop="ssh_port" width="100" :label="$t('status')">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.status == 1"><i class="iconfont small left icon-wait"></i>待上线</span>
-                        <span v-else-if="scope.row.status == 2"><i class="iconfont small left icon-coffee"></i>上线中</span>
-                        <span class="app-color-success" v-else-if="scope.row.status == 3"><i class="iconfont small left icon-success"></i>成功</span>
-                        <span class="app-color-error" v-else-if="scope.row.status == 4"><i class="iconfont small left icon-failed"></i>失败</span>
-                        <span class="app-color-gray" v-else-if="scope.row.status == 5"><i class="iconfont small left icon-drop"></i>废弃</span>
+                        <span v-if="scope.row.status == 1"><i class="iconfont small left icon-wait"></i>{{ $t('wait_online') }}</span>
+                        <span v-else-if="scope.row.status == 2"><i class="iconfont small left icon-coffee"></i>{{ $t('onlineing') }}</span>
+                        <span class="app-color-success" v-else-if="scope.row.status == 3"><i class="iconfont small left icon-success"></i>{{ $t('success') }}</span>
+                        <span class="app-color-error" v-else-if="scope.row.status == 4"><i class="iconfont small left icon-failed"></i>{{ $t('failed') }}</span>
+                        <span class="app-color-gray" v-else-if="scope.row.status == 5"><i class="iconfont small left icon-drop"></i>{{ $t('drop') }}</span>
+                        <span class="app-color-error" v-else-if="scope.row.status == 6"><i class="iconfont small left icon-rollback"></i>{{ $t('rollback') }}</span>
                         <span v-else>--</span>
                     </template>
                 </el-table-column>
@@ -119,27 +120,27 @@
                     <template slot-scope="scope">
                         <el-dropdown trigger="click" @command="operateHandler($event, scope.row)">
                             <el-button size="small">
-                                操作<i class="el-icon-arrow-down el-icon--right"></i>
+                                {{ $t('operate') }}<i class="el-icon-arrow-down el-icon--right"></i>
                             </el-button>
                             <el-dropdown-menu class="app-op-dropdown" slot="dropdown">
                                 <el-dropdown-item command="view">
-                                    <i class="iconfont left small icon-view"></i>查看
+                                    <i class="iconfont left small icon-view"></i>{{ $t('view') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item command="edit" 
                                 v-if="scope.row.status == 1 && (scope.row.audit_status == 1 || scope.row.audit_status == 3)">
-                                    <i class="iconfont left small icon-edit"></i>编辑
+                                    <i class="iconfont left small icon-edit"></i>{{ $t('edit') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item command="audit"
                                 v-if="scope.row.audit_status == 1 && scope.row.status == 1">
-                                    <i class="iconfont left small icon-audit"></i>审核
+                                    <i class="iconfont left small icon-audit"></i>{{ $t('audit') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item command="deploy"
-                                v-if="scope.row.audit_status == 2 && (scope.row.status == 1 || scope.row.status == 2 || scope.row.status == 4)">
-                                    <i class="iconfont left small icon-coffee"></i>上线
+                                v-if="scope.row.audit_status == 2 && (scope.row.status == 1 || scope.row.status == 2 || scope.row.status == 3 || scope.row.status == 4 || scope.row.status == 6)">
+                                    <i class="iconfont left small icon-coffee"></i>{{ $t('online') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item command="drop"
                                 v-if="scope.row.status != 2 && scope.row.status != 5">
-                                    <i class="iconfont left small icon-drop"></i>废弃
+                                    <i class="iconfont left small icon-drop"></i>{{ $t('drop') }}
                                 </el-dropdown-item>
                             </el-dropdown-menu>
                         </el-dropdown>
@@ -164,48 +165,48 @@
         @close="closeDialogHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form size="medium" label-width="120px">
-                    <el-form-item label="空间名称">
+                    <el-form-item :label="$t('space_name')">
                         {{ dialogDetail.space_name }}
                     </el-form-item>
-                    <el-form-item label="项目名称">
+                    <el-form-item :label="$t('project_name')">
                         {{ dialogDetail.project_name }}
                     </el-form-item>
-                    <el-form-item label="上线单">
+                    <el-form-item :label="$t('apply_order')">
                         {{ dialogDetail.name }}
                     </el-form-item>
-                    <el-form-item label="上线模式">
+                    <el-form-item :label="$t('deploy_mode')">
                         <div v-if="dialogDetail.deploy_mode == 1">
-                            <i class="iconfont icon-branch"></i> {{ this.$t('branch_deploy') }} - 分支名: {{ dialogDetail.branch_name }} - 版本: {{ dialogDetail.commit_version ? dialogDetail.commit_version :  'HEAD'}}
+                            <i class="iconfont icon-branch"></i> {{ this.$t('branch_deploy') }} - {{ $t('branch_name') }}: {{ dialogDetail.branch_name }} - {{ $t('version') }}: {{ dialogDetail.commit_version ? dialogDetail.commit_version :  'HEAD'}}
                         </div>
                         <div v-else>
                             <i class="iconfont icon-tag"></i> {{ this.$t('tag_deploy') }} - {{ dialogDetail.branch_name }}
                         </div>
                     </el-form-item>
-                    <el-form-item label="上线说明">
+                    <el-form-item :label="$t('deploy_illustrate')">
                         {{ dialogDetail.description }}
                     </el-form-item>
-                    <el-form-item label="审核状态">
+                    <el-form-item :label="$t('audit_status')">
                         {{ this.auditStatusTitle(dialogDetail.audit_status) }}
                     </el-form-item>
-                    <el-form-item label="提交者">
+                    <el-form-item :label="$t('submiter')">
                         {{ dialogDetail.username }} - {{ dialogDetail.email }}
                     </el-form-item>
-                    <el-form-item label="提交时间">
+                    <el-form-item :label="$t('submit_time')">
                         {{ this.$root.FormatDateTime(dialogDetail.ctime) }}
                     </el-form-item>
                     <template v-if="dialogDetail.cmd == 'audit'">
-                        <el-form-item label="审核" v-if="dialogDetail.status == 1 && dialogDetail.audit_status == 1">
+                        <el-form-item :label="$t('audit')" v-if="dialogDetail.status == 1 && dialogDetail.audit_status == 1">
                             <div>
-                                <el-radio v-model="auditStatus" :label="2"><span class="app-color-success">审核通过</span></el-radio>
-                                <el-radio v-model="auditStatus" :label="3"><span class="app-color-error">审核拒绝</span></el-radio>
+                                <el-radio v-model="auditStatus" :label="2"><span class="app-color-success">{{ $t('audit_pass') }}</span></el-radio>
+                                <el-radio v-model="auditStatus" :label="3"><span class="app-color-error">{{ $t('audit_denied') }}</span></el-radio>
                             </div>
                         </el-form-item>
-                        <el-form-item label="拒绝原因" v-if="dialogDetail.status == 1 && dialogDetail.audit_status == 1 && auditStatus == 3">
+                        <el-form-item :label="$t('deined_reason')" v-if="dialogDetail.status == 1 && dialogDetail.audit_status == 1 && auditStatus == 3">
                             <el-input type="textarea" :autosize="{ minRows: 2 }" v-model="auditRefusalReason"></el-input>
                         </el-form-item>
                         <el-form-item>
-                            <el-button size="small" type="primary" @click="dialogSubmitAuditStatusHandler">审核</el-button>
-                            <el-button size="small" @click="closeDialogHandler">关闭</el-button>
+                            <el-button size="small" type="primary" @click="dialogSubmitAuditStatusHandler">{{ $t('audit') }}</el-button>
+                            <el-button size="small" @click="closeDialogHandler">{{ $t('close') }}</el-button>
                         </el-form-item>
                     </template>
                 </el-form>
@@ -214,7 +215,7 @@
 
         <el-dialog
         :width="$root.DialogNormalWidth"
-        title="编辑上线单"
+        :title="$t('edit_apply_order')"
         :visible.sync="dialogEditVisible"
         @close="closeEditDialogHandler">
             <div class="app-dialog" v-loading="dialogLoading">
@@ -301,24 +302,24 @@ export default {
             tableData: [],
 
             timeList: [
-                {time: 1, label: '今天'},
-                {time: 7, label: '7天内'},
-                {time: 30, label: '一个月内'},
-                {time: 90, label: '3个月内'},
-                {time: 365, label: '一年内'},
-                {time: 0, label: '时间不限'},
+                {time: 1, label: this.$t('today')},
+                {time: 7, label: this.$t('7day')},
+                {time: 30, label: this.$t('within_one_month')},
+                {time: 90, label: this.$t('within_three_months')},
+                {time: 365, label: this.$t('within_a_year')},
+                {time: 0, label: this.$t('any_time')},
             ],
             statusList: [
-                {status: 1, label: '未上线'},
-                {status: 2, label: '上线中'},
-                {status: 3, label: '上线成功'},
-                {status: 4, label: '上线失败'},
-                {status: 5, label: '已废弃'},
+                {status: 1, label: this.$t('not_online')},
+                {status: 2, label: this.$t('onlineing')},
+                {status: 3, label: this.$t('online_success')},
+                {status: 4, label: this.$t('online_failed')},
+                {status: 5, label: this.$t('deprecated')},
             ],
             auditStatusList: [
-                {status: 1, label: '待审核'},
-                {status: 2, label: '审核通过'},
-                {status: 3, label: '审核拒绝'},
+                {status: 1, label: this.$t('unaudit')},
+                {status: 2, label: this.$t('audit_pass')},
+                {status: 3, label: this.$t('audit_denied')},
             ],
             projectList: [],
 
@@ -378,7 +379,7 @@ export default {
                 this.dialogBtnLoading = true
                 applyUpdateApi(this.dialogForm).then(res => {
                     this.$message({
-                        message: '更新成功',
+                        message: this.$t('update_success'),
                         type: 'success',
                         duration: 1000,
                         onClose: () => {
@@ -401,7 +402,7 @@ export default {
             this.dialogBtnLoading = true
             applyAuditApi(postData).then(res => {
                 this.$message({
-                    message: '审核成功',
+                    message: this.$t('audit_success'),
                     type: 'success',
                     duration: 1000,
                     onClose: () => {
@@ -422,7 +423,7 @@ export default {
                 applyDropApi({id: row.id}).then(res => {
                     this.loadTableData()
                 })
-            }, '此操作将废弃该上线单, 是否继续?')
+            }, this.$t('drop_deploy_apply_tips'))
         },
         editHandler(cmd, row) {
             this.dialogLoading = true
@@ -445,7 +446,7 @@ export default {
             this.getApplyDetail(cmd, row).then(detail => {
                 this.dialogLoading = false
                 this.dialogDetail = detail
-                this.openDialogHandler(cmd == 'view' ? '查看' : '审核')
+                this.openDialogHandler(cmd == 'view' ? this.$t('view') : this.$t('audit'))
             }).catch(err => {
                 this.dialogLoading = false
             })

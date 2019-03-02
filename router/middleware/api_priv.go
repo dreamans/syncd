@@ -7,6 +7,7 @@ package middleware
 import (
     "strings"
     "github.com/gin-gonic/gin"
+    "github.com/dreamans/syncd/util/goslice"
     "github.com/dreamans/syncd/render"
     "github.com/dreamans/syncd/module/user"
     reqApi "github.com/dreamans/syncd/router/route/api"
@@ -58,7 +59,13 @@ func ApiPriv() gin.HandlerFunc {
         c.Set("role_name", role.Name)
         c.Set("privilege", role.Privilege)
 
-        if path == reqApi.LOGIN_STATUS || path == reqApi.LOGOUT {
+        needLoginReq := []string{
+            reqApi.LOGIN_STATUS,
+            reqApi.LOGOUT,
+            reqApi.MY_USER_SETTING,
+            reqApi.MY_USER_PASSWORD,
+        }
+        if goslice.InSliceString(path, needLoginReq) {
             c.Next()
             return
         }

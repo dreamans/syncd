@@ -21,6 +21,9 @@ func RegisterRoute() {
         api.POST(reqApi.LOGOUT, user.Logout)
         api.GET(reqApi.LOGIN_STATUS, user.LoginStatus)
 
+        api.POST(reqApi.MY_USER_SETTING, user.MyUserSetting)
+        api.POST(reqApi.MY_USER_PASSWORD, user.MyUserPassword)
+
         api.POST(reqApi.SERVER_GROUP_ADD, server.GroupAdd)
         api.GET(reqApi.SERVER_GROUP_LIST, server.GroupList)
         api.POST(reqApi.SERVER_GROUP_DELETE, server.GroupDelete)
@@ -75,5 +78,8 @@ func RegisterRoute() {
         api.POST(reqApi.DEPLOY_BUILD_STOP, deploy.BuildStop)
         api.POST(reqApi.DEPLOY_DEPLOY_START, deploy.DeployStart)
         api.GET(reqApi.DEPLOY_DEPLOY_STATUS, deploy.DeployStatus)
+        api.POST(reqApi.DEPLOY_DEPLOY_STOP, deploy.DeployStop)
+        api.GET(reqApi.DEPLOY_APPLY_ROLLBACK, deploy.ApplyRollbackList)
+        api.POST(reqApi.DEPLOY_DEPLOY_ROLLBACK, deploy.DeployRollback)
     }
 }

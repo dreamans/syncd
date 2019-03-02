@@ -47,3 +47,11 @@ export function detailUserApi(params) {
 export function deleteUserApi(data) {
     return post('/user/delete', data)
 }
+
+export function userSettingApi(data) {
+    return post('/user/my/setting', data)
+}
+
+export function userPasswordApi(data) {
+    return post('/user/my/password', data)
+}

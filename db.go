@@ -30,7 +30,7 @@ func (db *DB) Open() error {
         return errors.New(fmt.Sprintf("mysql connect failed, %s", err.Error()))
     }
 
-    c.LogMode(true)
+    c.LogMode(false)
     c.DB().SetMaxIdleConns(db.cfg.MaxIdleConns)
     c.DB().SetMaxOpenConns(db.cfg.MaxOpenConns)
     c.DB().SetConnMaxLifetime(time.Second * time.Duration(db.cfg.ConnMaxLifeTime))

@@ -42,6 +42,22 @@ func (b *Build) Create() error {
     return nil
 }
 
+func (b *Build) CreateFull() error {
+    build := &model.DeployBuild{
+        ApplyId: b.ApplyId,
+        StartTime: b.StartTime,
+        FinishTime: b.FinishTime,
+        Status: b.Status,
+        Tar: b.Tar,
+        Output: b.Output,
+        Errmsg: b.Errmsg,
+    }
+    if ok := build.Create(); !ok {
+        return errors.New("create deploy build failed")
+    }
+    return nil
+}
+
 func (b *Build) Detail() error {
     build := &model.DeployBuild{}
     if ok := build.GetByApplyId(b.ApplyId); !ok {

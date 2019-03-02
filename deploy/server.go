@@ -60,7 +60,9 @@ func (srv *Server) Deploy(deploy *Deploy) {
 }
 
 func (srv *Server) Terminate() {
-    srv.task.Terminate()
+    if srv.status.Status == STATUS_RUNNING {
+        srv.task.Terminate()
+    }
 }
 
 func (srv *Server) Status() *ServerStatus {
@@ -130,14 +132,14 @@ func (srv *Server) deployCmd(deploy *Deploy) []string {
         cmds = append(
             cmds,
             fmt.Sprintf("/usr/bin/env ssh -o StrictHostKeyChecking=no %s %s %s@%s '%s'",
-                useCustomKey,
-                useSshPort,
-                srv.User,
-                srv.Addr,
-                deploy.PostCmd,
-            ),
-        )
-    }
-    return cmds
+            useCustomKey,
+            useSshPort,
+            srv.User,
+            srv.Addr,
+            deploy.PostCmd,
+        ),
+    )
+}
+return cmds
 }
 

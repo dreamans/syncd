@@ -32,6 +32,10 @@ export function applyDropApi(data) {
     return post('/deploy/apply/drop', data)
 }
 
+export function applyRollbackListApi(params) {
+    return get('/deploy/apply/rollbacklist', params)
+}
+
 export function buildStartApi(data) {
     return post('/deploy/build/start', data)
 }
@@ -50,4 +54,12 @@ export function deployStart(data) {
 
 export function deployStatusApi(params) {
     return get('/deploy/deploy/status', params)
+}
+
+export function deployStopApi(data) {
+    return post('/deploy/deploy/stop', data)
+}
+
+export function deployRollbackApi(data) {
+    return post('/deploy/deploy/rollback', data)
 }

@@ -21,7 +21,7 @@ var (
 )
 
 const (
-    Version = "v2.0.0"
+    Version = "v2.0.0-dev"
 )
 
 func init() {
@@ -91,7 +91,6 @@ func (s *syncd) initEnv() error {
     s.LocalTmpSpace = s.LocalSpace + "/tmp"
     s.LocalTarSpace = s.LocalSpace + "/tar"
 
-    println(s.LocalSpace)
     if err := gopath.CreatePath(s.LocalSpace); err != nil {
         return err
     }

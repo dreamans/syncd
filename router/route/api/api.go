@@ -9,6 +9,9 @@ const (
     LOGOUT = "/logout"
     LOGIN_STATUS = "/login/status"
 
+    MY_USER_SETTING = "/user/my/setting"
+    MY_USER_PASSWORD = "/user/my/password"
+
     SERVER_GROUP_ADD = "/server/group/add"
     SERVER_GROUP_LIST = "/server/group/list"
     SERVER_GROUP_DELETE = "/server/group/delete"
@@ -58,9 +61,12 @@ const (
     DEPLOY_APPLY_AUDIT = "/deploy/apply/audit"
     DEPLOY_APPLY_UPDATE = "/deploy/apply/update"
     DEPLOY_APPLY_DROP = "/deploy/apply/drop"
+    DEPLOY_APPLY_ROLLBACK = "/deploy/apply/rollbacklist"
     DEPLOY_BUILD_START = "/deploy/build/start"
     DEPLOY_BUILD_STATUS = "/deploy/build/status"
     DEPLOY_BUILD_STOP = "/deploy/build/stop"
     DEPLOY_DEPLOY_START = "/deploy/deploy/start"
     DEPLOY_DEPLOY_STATUS = "/deploy/deploy/status"
+    DEPLOY_DEPLOY_STOP = "/deploy/deploy/stop"
+    DEPLOY_DEPLOY_ROLLBACK = "/deploy/deploy/rollback"
 )

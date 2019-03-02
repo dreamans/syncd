@@ -43,8 +43,8 @@
                 <el-table-column prop="name" :label="$t('project_name')"></el-table-column>
                 <el-table-column align="center" prop="need_audit" width="150" :label="$t('open_audit')">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.need_audit == 1">是</span>
-                        <span v-else>否</span>
+                        <span v-if="scope.row.need_audit == 1">{{ $t('yes') }}</span>
+                        <span v-else>{{ $t('no') }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column prop="status" width="180" :label="$t('project_enable')">
@@ -56,8 +56,8 @@
                         :inactive-value="0"
                         active-color="#13ce66">
                         </el-switch>
-                        <span style="margin-left: 5px;" v-if="scope.row.status">已启用</span>
-                        <span style="margin-left: 5px;" v-else>未启用</span>
+                        <span style="margin-left: 5px;" v-if="scope.row.status">{{ $t('have_enabled') }}</span>
+                        <span style="margin-left: 5px;" v-else>{{ $t('not_enable') }}</span>
                     </template>
                 </el-table-column>
                 <el-table-column :label="$t('operate')" width="300" align="right">
@@ -96,7 +96,7 @@
         <el-dialog :width="$root.DialogNormalWidth" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form class="app-form" ref="dialogRef" :model="dialogForm" size="medium" label-width="130px">
-                    <h4 class="app-form-subtitle">基本设置</h4>
+                    <h4 class="app-form-subtitle">{{ $t('base_setting') }}</h4>
                     <el-form-item 
                     :label="$t('project_name')"
                     prop="name"
@@ -277,10 +277,10 @@
 
                     <el-form-item :label="$t('deploy_mode')">
                         <span v-if="dialogViewForm.deploy_mode == 1">
-                            <i class="iconfont icon-branch"></i> - 分支上线 - <strong>{{ dialogViewForm.repo_branch }}</strong> 分支
+                            <i class="iconfont icon-branch"></i> - {{ $t('branch_deploy') }} - <strong>{{ dialogViewForm.repo_branch }}</strong> {{ $t('branch') }}
                         </span>
                         <span v-if="dialogViewForm.deploy_mode == 2">
-                            <i class="iconfont icon-branch"></i> TAG上线
+                            <i class="iconfont icon-branch"></i> {{ $t('tag_deploy') }}
                         </span>
                     </el-form-item>
 

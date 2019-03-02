@@ -14,6 +14,9 @@ const getters = {
     isLogin(state) {
         return state.user_id > 0
     },
+    getEmail(state) {
+        return state.email
+    },
     getUserName(state) {
         return state.username
     },
@@ -49,6 +52,12 @@ const actions = {
             truename: userInfo.truename,
         })
     },
+    userSetting({ commit }, userInfo) {
+        commit('userSetting', {
+            mobile: userInfo.mobile,
+            truename: userInfo.truename,
+        })
+    },
 }
 
 const mutations = {
@@ -58,6 +67,10 @@ const mutations = {
         state.email = userInfo.email
         state.privilege = userInfo.privilege
         state.role_name = userInfo.role_name
+        state.mobile = userInfo.mobile
+        state.truename = userInfo.truename
+    },
+    userSetting(state, userInfo) {
         state.mobile = userInfo.mobile
         state.truename = userInfo.truename
     },

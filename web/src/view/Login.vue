@@ -18,7 +18,7 @@
                 </el-card>
             </div>
             <div class="login-cpy">
-                © {{ new Date().getFullYear() }} <a href="https://github.com/dreamans/syncd" target="_blank">Syncd</a>. All Rights Reserved. MIT License.
+                ©️ {{ new Date().getFullYear() }} <a href="https://github.com/dreamans/syncd" target="_blank">Syncd</a>. All Rights Reserved. MIT License.
             </div>
         </div>
     </div>

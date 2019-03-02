@@ -29,8 +29,8 @@
                         </span>
                         <el-dropdown-menu slot="dropdown" class="app-header-dropdown">
                             <el-dropdown-item class="text"><i class="iconfont small left icon-user"></i>{{ $store.getters['account/getUserName'] }}</el-dropdown-item>
-                            <el-dropdown-item divided><i class="iconfont small left icon-setting"></i>{{ $t('personal_setting') }}</el-dropdown-item>
-                            <el-dropdown-item><i class="iconfont small left icon-key"></i>{{ $t('change_password') }}</el-dropdown-item>
+                            <el-dropdown-item command="setting" divided><i class="iconfont small left icon-setting"></i>{{ $t('personal_setting') }}</el-dropdown-item>
+                            <el-dropdown-item command="password"><i class="iconfont small left icon-key"></i>{{ $t('change_password') }}</el-dropdown-item>
                             <el-dropdown-item command="logout" divided><i class="iconfont small left icon-logout"></i>{{ $t('sign_out') }}</el-dropdown-item>
                         </el-dropdown-menu>
                     </el-dropdown>
@@ -70,21 +70,100 @@
                 </el-breadcrumb>
                 <div class="container">
                     <router-view/>
+                    <div class="app-cpy">
+                        <p>
+                        ©️ {{ new Date().getFullYear() }} <a href="https://github.com/dreamans/syncd" target="_blank">Syncd</a>. All Rights Reserved. MIT License.
+                        </p>
+                    </div>
                 </div>
             </main>
         </section>
+
+        <el-dialog :width="$root.DialogSmallWidth" title="个人设置" :visible.sync="settingDialogVisible" @close="closeUserSettingDialogHandler">
+            <el-form class="app-form" ref="settingDialogRef" :model="settingForm" size="medium" label-width="80px">
+                <el-form-item 
+                :label="$t('role')">
+                    {{ $store.getters['account/getRoleName'] }}
+                </el-form-item>
+                <el-form-item 
+                :label="$t('avatar')">
+                    <img :src="$store.getters['account/getAvatar']" class="app-avatar normal">
+                    &nbsp;<a class="app-link" href="http://cn.gravatar.com/support/activating-your-account/" target="_blank"><i class="iconfont small left icon-question"></i>如何修改头像</a>
+                </el-form-item>
+                <el-form-item 
+                :label="$t('username')">
+                    <el-input :value="$store.getters['account/getUserName']" :disabled="true"></el-input>
+                    <span class="app-input-help"><i class="el-icon-info"></i> 修改用户名请联系管理员</span>
+                </el-form-item>
+                <el-form-item 
+                :label="$t('email')">
+                    <el-input :value="$store.getters['account/getEmail']" :disabled="true"></el-input>
+                    <span class="app-input-help"><i class="el-icon-info"></i> 修改邮箱请联系管理员</span>
+                </el-form-item>
+                <el-form-item 
+                :label="$t('truename')"
+                prop="truename">
+                    <el-input v-model="settingForm.truename"></el-input>
+                </el-form-item>
+                <el-form-item 
+                :label="$t('mobile')"
+                prop="mobile">
+                    <el-input v-model="settingForm.mobile"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button size="small" @click="closeUserSettingDialogHandler">{{ $t('cancel')}}</el-button>
+                <el-button :loading="btnLoading" size="small" type="primary" @click="dialogUserSettingSubmitHandler">{{ $t('enter')}}</el-button>
+            </div>
+        </el-dialog>
+    
+        <el-dialog :width="$root.DialogSmallWidth" title="修改密码" :visible.sync="passwordDialogVisible" @close="closePasswordSettingDialogHandler">
+            <el-form class="app-form" ref="passwordDialogRef" :model="passwordForm" size="medium" label-width="80px">
+                <el-form-item 
+                :label="$t('current_password')"
+                prop="password"
+                :rules="[
+                    { min: 6, max: 20, message: this.$t('strlen_between', {min: 6, max: 20}), trigger: 'blur'},
+                    { required: true, message: this.$t('current_password_cannot_empty'), trigger: 'blur'},
+                ]">
+                    <el-input type="password" :placeholder="$t('please_input_password_length_limit')" v-model="passwordForm.password" autocomplete="off"></el-input>
+                </el-form-item>
+                <el-form-item 
+                :label="$t('new_password')"
+                prop="new_password"
+                :rules="[
+                    { min: 6, max: 20, message: this.$t('strlen_between', {min: 6, max: 20}), trigger: 'blur'},
+                    { required: true, message: this.$t('new_password_cannot_empty'), trigger: 'blur'},
+                ]">
+                    <el-input type="password" :placeholder="$t('please_input_password_length_limit')" v-model="passwordForm.new_password" autocomplete="off"></el-input>
+                </el-form-item>
+            </el-form>
+            <div slot="footer" class="dialog-footer">
+                <el-button size="small" @click="closePasswordSettingDialogHandler">{{ $t('cancel')}}</el-button>
+                <el-button :loading="btnLoading" size="small" type="primary" @click="dialogPasswordSettingSubmitHandler">{{ $t('enter')}}</el-button>
+            </div>
+        </el-dialog>
+
     </div>
 </template>
 
 <script>
 import ScrollBar from '@/component/ScrollBar';
 import { routerMap } from '@/router'
+import Code from '@/lib/code'
 import { loginStatusApi, logoutApi } from '@/api/login'
+import { userSettingApi, userPasswordApi } from '@/api/user'
 export default {
     data() {
         return {
             breadcrumb: [],
             activeMenu: '',
+
+            btnLoading: false,
+            settingDialogVisible: false,
+            settingForm: {},
+            passwordDialogVisible: false,
+            passwordForm: {},
         }
     },
     computed: {
@@ -119,9 +198,76 @@ export default {
                     logoutApi().then(res => {
                         this.$router.push({name: 'login'})
                     })
-                break;
+                    break
+                case 'setting':
+                    this.showUserSettingDialogHandler()
+                    break
+                case 'password':
+                    this.showPasswordSettingDialogHandler()
+                    break
             }
         },
+
+        showPasswordSettingDialogHandler() {
+            this.passwordDialogVisible = true
+        },
+        closePasswordSettingDialogHandler() {
+            this.passwordDialogVisible = false
+        },
+        dialogPasswordSettingSubmitHandler() {
+            let vm = this
+            this.$refs.passwordDialogRef.validate((valid) => {
+                if (!valid) {
+                    return false;
+                }
+                let postData = {
+                    password: this.$root.Md5Sum(vm.passwordForm.password),
+                    new_password: this.$root.Md5Sum(vm.passwordForm.new_password)
+                }
+                this.btnLoading = true
+                userPasswordApi(postData).then(res => {
+                    this.$root.MessageSuccess(() => {
+                        this.btnLoading = false
+                        this.closePasswordSettingDialogHandler()
+                    })
+                }).catch(err => {
+                    if (err.code == Code.CODE_ERR_USER_OR_PASS_WRONG) {
+                        this.$message({
+                            message: '当前密码错误，请重新输入',
+                            type: 'warning',
+                        });
+                    }
+                    this.btnLoading = false
+                })
+            })
+        },
+
+        showUserSettingDialogHandler() {
+            this.settingForm = {
+                truename: this.$store.getters['account/getTrueName'],
+                mobile: this.$store.getters['account/getMobile'],
+            }
+            this.settingDialogVisible = true
+        },
+        closeUserSettingDialogHandler() {
+            this.settingDialogVisible = false
+        },
+        dialogUserSettingSubmitHandler() {
+            this.btnLoading = true
+            userSettingApi(this.settingForm).then(res => {
+                this.$root.MessageSuccess(() => {
+                    this.btnLoading = false
+                    this.closeUserSettingDialogHandler()
+                })
+                this.$store.dispatch('account/userSetting', {
+                    mobile: this.settingForm.mobile,
+                    truename: this.settingForm.truename,
+                })
+            }).catch(err => {
+                this.btnLoading = false
+            })
+        },
+
         initActiveMenu() {
             this.activeMenu = this.$route.name
         },
@@ -169,85 +315,3 @@ export default {
     },
 }
 </script>
-
-<style lang="scss" scoped>
-.layer-global {
-    height: 100%;
-    .layer-header {
-        z-index: 1024;
-        position: fixed;
-        width: 100%;
-        height: 50px;
-        background: #3f51b5;
-        color: #fff;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        .header-left {
-            .logo {
-                height: 25px;
-                margin-left: 30px;
-            }
-        }
-        .header-right {
-            display: flex;
-            align-items: center;
-            .r-item {
-                margin-right: 25px;
-                font-size: 0;
-                .item {
-                    color: #fff;
-                    display: flex;
-                    align-items: center;
-                    height: 30px;
-                    &:focus {
-                        outline: none;
-                    }
-                    .icon-arrow-down {
-                        margin-left: 3px;
-                    }
-                }
-                .avatar {
-                    width: 26px;
-                    border-radius: 4px;
-                }
-            }
-        }
-    }
-    .layer-container {
-        margin-left: 200px;
-        overflow: hidden;
-        overflow-y: auto;
-        height: 100%;
-        background: #f0f2f5;
-        .layer-aside {
-            border-right: solid 1px #e6e6e6;
-            position: fixed;
-            left: 0;
-            top: 50px;
-            bottom: 0;
-            width: 200px;
-            .aside-menu {
-                border-right: none;
-                .iconfont {
-                    &.left {
-                        margin-right: 6px;
-                    }
-                }
-            }
-        }
-        .layer-main {
-            padding-top: 50px;
-            box-sizing: border-box;
-            height: 100%;
-            .bread-crumb {
-                background: #fff;
-                padding: 16px;
-            }
-            .container {
-                padding: 15px 20px;
-            }
-        }
-    }
-}
-</style>

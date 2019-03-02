@@ -21,6 +21,7 @@ type ApplyFormBind struct {
     BranchName      string  `form:"branch_name"`
     CommitVersion   string  `form:"commit_version"`
     Description     string  `form:"description"`
+    RollbackId      int     `form:"rollback_id"`
 }
 
 type ApplyQueryBind struct {
@@ -44,6 +45,50 @@ type ApplyUpdateFormBind struct {
     BranchName      string  `form:"branch_name" binding:"required"`
     CommitVersion   string  `form:"commit_version"`
     Description     string  `form:"description" binding:"required"`
+}
+
+func ApplyRollbackList(c *gin.Context) {
+    projId := gostring.Str2Int(c.Query("id"))
+    if projId == 0 {
+        render.ParamError(c, "id cannot be empty")
+        return
+    }
+
+    proj := &project.Project{
+        ID: projId,
+    }
+    if err := proj.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    m := &project.Member{
+        UserId: c.GetInt("user_id"),
+        SpaceId: proj.SpaceId,
+    }
+    if in := m.MemberInSpace(); !in {
+        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
+    apply := &deploy.Apply{
+        ProjectId: projId,
+    }
+    list, err := apply.RollbackList()
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    var restList []map[string]interface{}
+    for _, l := range list {
+        restList = append(restList, map[string]interface{}{
+            "id": l.ID,
+            "name": l.Name,
+        })
+    }
+
+    render.JSON(c, restList)
 }
 
 func ApplyDrop(c *gin.Context) {
@@ -195,6 +240,18 @@ func ApplyDetail(c *gin.Context) {
     }
     apply.Username = u.Username
     apply.Email = u.Email
+
+    // rollback apply status
+    if apply.RollbackApplyId > 0 {
+        rollbackApply := &deploy.Apply{
+            ID: apply.RollbackApplyId,
+        }
+        if err := rollbackApply.Detail(); err != nil {
+            render.AppError(c, err.Error())
+            return
+        }
+        apply.RollbackStatus = rollbackApply.Status
+    }
 
     render.JSON(c, apply)
 }
@@ -396,6 +453,7 @@ func ApplySubmit(c *gin.Context) {
         UserId: c.GetInt("user_id"),
         AuditStatus: deploy.AUDIT_STATUS_PENDING,
         Status: deploy.APPLY_STATUS_NONE,
+        RollbackId: form.RollbackId,
     }
 
     if proj.NeedAudit == 0 {

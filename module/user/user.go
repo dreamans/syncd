@@ -227,6 +227,28 @@ func (u *User) UserCheckExists() (bool, error) {
     return count > 0, nil
 }
 
+func (u *User) UpdatePassword() error {
+    user := &model.User{}
+    salt := gostring.StrRandom(10)
+    password := gostring.StrMd5(gostring.JoinStrings(u.Password, salt))
+    updateData := map[string]interface{}{
+        "password": password,
+        "salt": salt,
+    }
+    ok := user.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: u.ID,
+            },
+        },
+    })
+    if !ok {
+        return errors.New("user password update failed")
+    }
+    return nil
+}
+
 func (u *User) CreateOrUpdate() error {
     var salt, password string
     if u.Password != "" {
@@ -273,6 +295,26 @@ func (u *User) CreateOrUpdate() error {
         if !ok {
             return errors.New("user update failed")
         }
+    }
+    return nil
+}
+
+func (u *User) UserSettingUpdate() error {
+    user := &model.User{}
+    updateData := map[string]interface{}{
+        "truename": u.Truename,
+        "mobile": u.Mobile,
+    }
+    ok := user.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: u.ID,
+            },
+        },
+    })
+    if !ok {
+        return errors.New("user update failed")
     }
     return nil
 }

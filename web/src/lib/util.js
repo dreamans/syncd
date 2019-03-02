@@ -46,9 +46,9 @@ export default {
             type: 'warning'
         }).then(() => {
             cb()
-        }).catch(() => {
-      
-        });
+        }).catch((err) => {
+            console.log(err)
+        })
     },
 
     Md5Sum(str) {

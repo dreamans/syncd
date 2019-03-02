@@ -189,6 +189,7 @@ var privToApiMap = map[int][]string{
         reqApi.PROJECT_LIST,
         reqApi.DEPLOY_APPLY_PROJECT_DETAIL,
         reqApi.DEPLOY_APPLY_SUBMIT,
+        reqApi.DEPLOY_APPLY_ROLLBACK,
     },
     DEPLOY_VIEW: []string{
         reqApi.DEPLOY_APPLY_PROJECT_ALL,
@@ -217,6 +218,8 @@ var privToApiMap = map[int][]string{
         reqApi.DEPLOY_BUILD_STOP,
         reqApi.DEPLOY_DEPLOY_START,
         reqApi.DEPLOY_DEPLOY_STATUS,
+        reqApi.DEPLOY_DEPLOY_STOP,
+        reqApi.DEPLOY_DEPLOY_ROLLBACK,
     },
     /*
     DEPLOY_AUDIT_MY: []string{
