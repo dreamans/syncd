@@ -6,6 +6,7 @@ package deploy
 
 import (
     "fmt"
+    "path"
 
     "github.com/dreamans/syncd/util/command"
 )
@@ -15,61 +16,61 @@ const (
 )
 
 type Server struct {
-    ID          int
-    Addr        string
-    User        string
-    Port        int
-    Key         string
-    task        *command.Task
-    status      *ServerStatus
+    ID              int
+    Addr            string
+    User            string
+    Port            int
+    PreCmd          string
+    PostCmd         string
+    Key             string
+    PackFile        string
+    DeployTmpPath   string
+    DeployPath      string
+    task            *command.Task
+    result          *ServerResult
 }
 
-type ServerStatus struct {
+type ServerResult struct {
+    ID          int
     TaskResult  []*command.TaskResult
     Status      int
     Error       error
 }
 
-func NewServer(id, port int, addr, user, key string) *Server {
-    return &Server{
-        ID: id,
-        Addr: addr,
-        User: user,
-        Port: port,
-        Key: key,
-        status: &ServerStatus{
-            Status: STATUS_INIT,
-        },
+func NewServer(srv *Server) {
+    srv.result = &ServerResult{
+        ID: srv.ID,
+        Status: STATUS_INIT,
     }
-}
-
-func (srv *Server) Deploy(deploy *Deploy) {
-    srv.status.Status = STATUS_RUNNING
-    srv.task = command.TaskNew(
-        srv.deployCmd(deploy),
+    srv.task = command.NewTask(
+        srv.deployCmd(),
         COMMAND_TIMEOUT,
     )
+}
+
+func (srv *Server) Deploy() {
+    srv.result.Status = STATUS_ING
     srv.task.Run()
     if err := srv.task.GetError(); err != nil {
-        srv.status.Status = STATUS_FAILED
-        srv.status.Error = err
+        srv.result.Error = err
+        srv.result.Status = STATUS_FAILED
     } else {
-        srv.status.Status = STATUS_DONE
+        srv.result.Status = STATUS_DONE
     }
-    srv.status.TaskResult = srv.task.Result()
+    srv.result.TaskResult = srv.task.Result()
 }
 
 func (srv *Server) Terminate() {
-    if srv.status.Status == STATUS_RUNNING {
+    if srv.result.Status == STATUS_ING {
         srv.task.Terminate()
     }
 }
 
-func (srv *Server) Status() *ServerStatus {
-    return srv.status
+func (srv *Server) Result() *ServerResult {
+    return srv.result
 }
 
-func (srv *Server) deployCmd(deploy *Deploy) []string {
+func (srv *Server) deployCmd() []string {
     var (
         useCustomKey, useSshPort, useScpPort string
     )
@@ -88,20 +89,20 @@ func (srv *Server) deployCmd(deploy *Deploy) []string {
             useSshPort,
             srv.User,
             srv.Addr,
-            deploy.DeployTmpPath,
-            deploy.DeployPath,
+            srv.DeployTmpPath,
+            srv.DeployPath,
         ),
         fmt.Sprintf(
             "/usr/bin/env scp -o StrictHostKeyChecking=no -q %s %s %s %s@%s:%s/",
             useCustomKey,
             useScpPort,
-            deploy.PackFile,
+            srv.PackFile,
             srv.User,
             srv.Addr,
-            deploy.DeployTmpPath,
+            srv.DeployTmpPath,
         ),
     }
-    if deploy.PreCmd != "" {
+    if srv.PreCmd != "" {
         cmds = append(
             cmds,
             fmt.Sprintf(
@@ -110,10 +111,11 @@ func (srv *Server) deployCmd(deploy *Deploy) []string {
                 useSshPort,
                 srv.User,
                 srv.Addr,
-                deploy.PreCmd,
+                srv.PreCmd,
             ),
         )
     }
+    packFileName := path.Base(srv.PackFile)
     cmds = append(
         cmds,
         fmt.Sprintf(
@@ -122,24 +124,23 @@ func (srv *Server) deployCmd(deploy *Deploy) []string {
             useSshPort,
             srv.User,
             srv.Addr,
-            deploy.DeployTmpPath,
-            deploy.PackFileName,
-            deploy.DeployPath,
-            deploy.PackFileName,
+            srv.DeployTmpPath,
+            packFileName,
+            srv.DeployPath,
+            packFileName,
         ),
     )
-    if deploy.PostCmd != "" {
+    if srv.PostCmd != "" {
         cmds = append(
             cmds,
             fmt.Sprintf("/usr/bin/env ssh -o StrictHostKeyChecking=no %s %s %s@%s '%s'",
-            useCustomKey,
-            useSshPort,
-            srv.User,
-            srv.Addr,
-            deploy.PostCmd,
-        ),
-    )
+                useCustomKey,
+                useSshPort,
+                srv.User,
+                srv.Addr,
+                srv.PostCmd,
+            ),
+        )
+    }
+    return cmds
 }
-return cmds
-}
-

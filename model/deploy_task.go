@@ -12,12 +12,8 @@ type DeployTask struct {
     ID                  int     `gorm:"primary_key"`
     ApplyId             int     `gorm:"type:int(11);not null;default:0"`
     GroupId             int     `gorm:"type:int(11);not null;default:0"`
-    ServerId            int     `gorm:"type:int(11);not null;default:0"`
     Status              int     `gorm:"type:int(11);not null;default:0"`
-    Output              string  `gorm:"type:text;not null"`
-    Errmsg              string  `gorm:"type:varchar(1000);not null;default:''"`
-    StartTime           int     `gorm:"type:int(11);not null;default:0"`
-    FinishTime          int     `gorm:"type:int(11);not null;default:0"`
+    Content             string  `gorm:"type:text;not null"`
     Ctime               int     `gorm:"type:int(11);not null;default:0"`
 }
 

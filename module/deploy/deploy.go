@@ -14,12 +14,8 @@ type Deploy struct{
     ID          int     `json:"id"`
     ApplyId     int     `json:"apply_id"`
     GroupId     int     `json:"group_id"`
-    ServerId    int     `json:"server_id"`
     Status      int     `json:"status"`
-    Output      string  `json:"output"`
-    Errmsg      string  `json:"errmsg"`
-    StartTime   int     `json:"start_time"`
-    FinishTime  int     `json:"finish_time"`
+    Content     string  `json:"content"`
     Ctime       int     `json:"ctime"`
 }
 
@@ -33,7 +29,7 @@ const (
 func (d *Deploy) TaskList() ([]Deploy, error) {
     dt := &model.DeployTask{}
     list, ok := dt.List(model.QueryParam{
-        Fields: "id, apply_id, group_id, server_id, status, output, errmsg, ctime",
+        Fields: "id, apply_id, group_id, status, content, ctime",
         Where: []model.WhereParam{
             model.WhereParam{
                 Field: "apply_id",
@@ -44,7 +40,6 @@ func (d *Deploy) TaskList() ([]Deploy, error) {
     if !ok {
         return nil, errors.New("get deploy task list failed")
     }
-
     var (
         deployList []Deploy
     )
@@ -53,16 +48,11 @@ func (d *Deploy) TaskList() ([]Deploy, error) {
             ID: l.ID,
             ApplyId: l.ApplyId,
             GroupId: l.GroupId,
-            ServerId: l.ServerId,
             Status: l.Status,
-            Output: l.Output,
-            Errmsg: l.Errmsg,
-            StartTime: l.StartTime,
-            FinishTime: l.FinishTime,
+            Content: l.Content,
             Ctime: l.Ctime,
         })
     }
-
     return deployList, nil
 }
 
@@ -70,7 +60,6 @@ func (d *Deploy) Create() error {
     deploy := model.DeployTask{
         ApplyId: d.ApplyId,
         GroupId: d.GroupId,
-        ServerId: d.ServerId,
         Status: d.Status,
     }
     if ok := deploy.Create(); !ok {
@@ -79,11 +68,10 @@ func (d *Deploy) Create() error {
     return nil
 }
 
-func (d *Deploy) UpdateStart() error {
+func (d *Deploy) UpdateStatus() error {
     dt := &model.DeployTask{}
     updateData := map[string]interface{}{
         "status": d.Status,
-        "start_time": d.StartTime,
     }
     if ok := dt.UpdateByFields(updateData, model.QueryParam{
         Where: []model.WhereParam{
@@ -92,8 +80,8 @@ func (d *Deploy) UpdateStart() error {
                 Prepare: d.ApplyId,
             },
             model.WhereParam{
-                Field: "server_id",
-                Prepare: d.ServerId,
+                Field: "group_id",
+                Prepare: d.GroupId,
             },
         },
     }); !ok {
@@ -106,9 +94,7 @@ func (d *Deploy) UpdateResult() error {
     dt := &model.DeployTask{}
     updateData := map[string]interface{}{
         "status": d.Status,
-        "output": d.Output,
-        "errmsg": d.Errmsg,
-        "finish_time": d.FinishTime,
+        "content": d.Content,
     }
     if ok := dt.UpdateByFields(updateData, model.QueryParam{
         Where: []model.WhereParam{
@@ -117,8 +103,8 @@ func (d *Deploy) UpdateResult() error {
                 Prepare: d.ApplyId,
             },
             model.WhereParam{
-                Field: "server_id",
-                Prepare: d.ServerId,
+                Field: "group_id",
+                Prepare: d.GroupId,
             },
         },
     }); !ok {

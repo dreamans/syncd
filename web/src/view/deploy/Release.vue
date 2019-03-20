@@ -72,7 +72,7 @@
                 <el-row class="app-mt-20" :gutter="20">
                     <el-col :span="10">
                         <span class="sp-title">{{ $t('build_log') }}:</span>
-                        <span v-if="buildDetail.status == 2 || buildDetail.status == 3">
+                        <span>
                             <span @click="openDialogBuildHandler" class="app-link">{{ $t('view') }}</span>
                         </span>
                     </el-col>
@@ -141,8 +141,9 @@
         :title="$t('build_log')"
         :visible.sync="dialogBuildVisible"
         @close="closeDialogBuildHandler">
-            <div v-if="buildDetail.status == 3"><i class="app-color-error el-icon-warning"></i> {{ $t('build_failed') }}: <span v-if="buildDetail.errmsg" class="app-color-error">{{ buildDetail.errmsg }}</span></div>
-            <div v-if="buildDetail.status == 2"><i class="app-color-success el-icon-success"></i> {{ $t('build_finish') }}</div>
+            <div v-if="buildDetail.status == $root.BuildStatusFailed"><i class="app-color-error el-icon-warning"></i> {{ $t('build_failed') }}: <span v-if="buildDetail.errmsg" class="app-color-error">{{ buildDetail.errmsg }}</span></div>
+            <div v-if="buildDetail.status == $root.BuildStatusSuccess"><i class="app-color-success el-icon-success"></i> {{ $t('build_finish') }}</div>
+            <div v-if="buildDetail.status == $root.BuildStatusStart"><i class="app-color-info el-icon-info"></i> {{ $t('build_ing') }}</div>
             <div class="app-terminal-log">
                 <template v-for="(cmd, index) in buildDetail.output">
                     <div :key="index">
@@ -155,6 +156,7 @@
                         <div><pre>{{ cmd.stderr }}</pre></div>
                     </div>
                 </template>
+                <i v-if="buildDetail.status == $root.BuildStatusStart" class="el-icon-loading app-color-white"></i>
             </div>
         </el-dialog>
 

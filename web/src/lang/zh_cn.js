@@ -232,6 +232,7 @@ export default {
     'building': '构建中',
     'build_finish': '构建成功',
     'build_failed': '构建失败',
+    'build_ing': '构建中',
     'unbuild': '未构建',
     'uncreate': '未生成',
     'build_log': '构建日志',

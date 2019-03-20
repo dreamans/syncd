@@ -20,4 +20,3 @@ func TestTaskRun(t *testing.T) {
         t.Errorf("cmd task running error: %s", err.Error())
     }
 }
-

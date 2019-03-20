@@ -10,7 +10,7 @@ import (
     "github.com/dreamans/syncd/render"
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/module/deploy"
-    "github.com/dreamans/syncd/integrate"
+    buiTask "github.com/dreamans/syncd/build"
     "github.com/dreamans/syncd/util/command"
     "github.com/dreamans/syncd/util/gostring"
 )
@@ -36,7 +36,7 @@ func BuildStop(c *gin.Context) {
         render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
         return
     }
-    integrate.StopBuild(id)
+    buiTask.StopTask(id)
     render.JSON(c, nil)
 }
 
@@ -71,7 +71,11 @@ func BuildStatus(c *gin.Context) {
     }
 
     var output []*command.TaskResult
-    gostring.JsonDecode([]byte(build.Output), &output)
+    if build.Status == deploy.BUILD_STATUS_START {
+        _, output, _ = buiTask.StatusTask(id)
+    } else {
+        gostring.JsonDecode([]byte(build.Output), &output)
+    }
 
     render.JSON(c, map[string]interface{}{
         "apply_id": id,
@@ -107,7 +111,7 @@ func BuildStart(c *gin.Context) {
         return
     }
 
-    //apply must audit passed
+    // apply must audit passed
     if apply.AuditStatus != deploy.AUDIT_STATUS_OK {
         render.AppError(c, "apply audit_status must passed")
         return
@@ -142,6 +146,7 @@ func BuildStart(c *gin.Context) {
         }
     }
 
+    // create build task
     p := &project.Project{
         ID: apply.ProjectId,
     }
@@ -159,30 +164,38 @@ func BuildStart(c *gin.Context) {
     // build
     workSpace := gostring.JoinStrings(syncd.App.LocalTmpSpace, "/", gostring.Int2Str(build.ApplyId))
     packFile := gostring.JoinStrings(syncd.App.LocalTarSpace, "/", gostring.Int2Str(build.ApplyId), ".tgz")
-    repo := &integrate.Repo{
-        Url: p.RepoUrl,
-        Branch: apply.BranchName,
-        Commit: apply.CommitVersion,
-        Local: workSpace,
+
+    repo := buiTask.NewRepo(p.RepoUrl, workSpace)
+    if apply.BranchName != "" {
+        repo.SetBranch(apply.BranchName)
     }
-    integrate.NewBuild(build.ApplyId, workSpace, packFile, p.BuildScript, repo, func(applyId int, err error, tar string, output string) {
+    if apply.CommitVersion != "" {
+        repo.SetCommit(apply.CommitVersion)
+    }
+
+    bui, err := buiTask.NewBuild(repo, workSpace, syncd.App.LocalTmpSpace, packFile, p.BuildScript)
+    if err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    buiTask.NewTask(id, bui, func(id int, packFile string, result *buiTask.Result, taskResult []*command.TaskResult) {
         status := deploy.BUILD_STATUS_SUCCESS
         errmsg := ""
-        if err != nil {
+        if err := result.GetError(); err != nil {
             status = deploy.BUILD_STATUS_FAILED
             errmsg = err.Error()
+            packFile = ""
         }
+        output := string(gostring.JsonEncode(taskResult))
         b := deploy.Build{
-            ApplyId: applyId,
+            ApplyId: id,
             Status: status,
-            Tar: tar,
+            Tar: packFile,
             Output: output,
             Errmsg: errmsg,
         }
         b.Finish()
     })
-
     render.JSON(c, nil)
 }
-
-

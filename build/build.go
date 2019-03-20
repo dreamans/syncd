@@ -16,37 +16,44 @@ import (
 type Build struct {
     repo        *Repo
     local       string
+    tmp         string
     packFile    string
     scriptFile  string
     task        *command.Task
-    status      int
-    stime       int
-    etime       int
+    result      *Result
 }
 
 const (
     STATUS_INIT = 1
     STATUS_ING = 2
     STATUS_DONE = 3
+    STATUS_FAILED = 4
 )
 
-func NewBuild(repo *Repo, local, packFile, scripts string) (*Build, error) {
+const (
+    COMMAND_TIMEOUT = 86400
+)
+
+func NewBuild(repo *Repo, local, tmp, packFile, scripts string) (*Build, error) {
     build := &Build{
         repo: repo,
         local: local,
+        tmp: tmp,
         packFile: packFile,
-        status: STATUS_INIT,
+        result: &Result{
+            status: STATUS_INIT,
+        },
     }
     if err := build.createScriptFile(scripts); err != nil {
         return build, err
     }
-    b.initBuildTask()
+    build.initBuildTask()
 
     return build, nil
 }
 
 func (b *Build) createScriptFile(scripts string) error {
-    b.scriptFile := gostring.JoinStrings(b.local, "/", gostring.StrRandom(24), ".sh")
+    b.scriptFile = gostring.JoinStrings(b.tmp, "/", gostring.StrRandom(24), ".sh")
     s := gostring.JoinStrings(
         "#!/bin/bash\n\n",
         "#--------- build scripts env ---------\n",
@@ -68,14 +75,57 @@ func (b *Build) initBuildTask() {
         fmt.Sprintf("rm -f %s", b.packFile),
         fmt.Sprintf("/bin/bash -c %s", b.scriptFile),
         fmt.Sprintf("rm -fr %s", b.local),
+        "echo \"Compile completed\" `date`",
     }...)
-    b.task := command.NewTask(cmds, 86400)
+    b.task = command.NewTask(cmds, COMMAND_TIMEOUT)
 }
 
 func (b *Build) Run() {
-    b.status = STATUS_ING
-    b.stime = int(time.Now().Unix())
+    b.result.status = STATUS_ING
+    b.result.stime = int(time.Now().Unix())
     b.task.Run()
-    b.status = STATUS_DONE
-    b.stime = int(time.Now().Unix())
+    if err := b.task.GetError(); err != nil {
+        b.result.status = STATUS_FAILED
+        b.result.err = err
+    } else {
+        b.result.status = STATUS_DONE
+    }
+    b.result.etime = int(time.Now().Unix())
+}
+
+func (b *Build) Result() *Result {
+    return b.result
+}
+
+func (b *Build) Output() []*command.TaskResult{
+    return b.task.Result()
+}
+
+func (b *Build) PackFile() string {
+    return b.packFile
+}
+
+func (b *Build) Terminate() {
+    if b.task != nil {
+        b.task.Terminate()
+    }
+}
+
+type Result struct {
+    err     error
+    status  int
+    stime   int
+    etime   int
+}
+
+func (r *Result) During() int {
+    return r.etime - r.stime
+}
+
+func (r *Result) Status() int {
+    return r.status
+}
+
+func (r *Result) GetError() error {
+    return r.err
 }
