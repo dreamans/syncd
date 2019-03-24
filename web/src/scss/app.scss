@@ -170,12 +170,21 @@ html, body {
         font-size: 14px;
     }
 }
+.app-tag-info {
+    box-sizing: border-box;
+    padding: 0 8px;
+    border: 1px solid #d9d9d9;
+    background: #fafafa;
+    border-radius: 4px;
+    cursor: pointer;
+}
 .app-mt-line {
     border-top: 1px solid #eaeaea;
 }
 .app-form-explain {
     color: rgba(0,0,0,.45);
     line-height: 1.524;
+    margin-top: 2px;
 }
 .app-table-explain {
     padding: 10px 0;

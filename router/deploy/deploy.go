@@ -14,6 +14,7 @@ import (
     "github.com/dreamans/syncd/module/deploy"
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/module/server"
+    "github.com/dreamans/syncd/module/user"
     depTask "github.com/dreamans/syncd/deploy"
 )
 
@@ -36,6 +37,11 @@ func DeployRollback(c *gin.Context) {
     }
     if in := m.MemberInSpace(); !in {
         render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
+    if apply.RollbackId == 0 {
+        render.NoDataError(c, "rollback apply not exists")
         return
     }
 
@@ -72,6 +78,7 @@ func DeployRollback(c *gin.Context) {
         UserId: c.GetInt("user_id"),
         AuditStatus: deploy.AUDIT_STATUS_OK,
         IsRollbackApply: 1,
+        RollbackApplyId: apply.ID,
     }
     if err := rollbackApply.Create(); err != nil {
         render.AppError(c, err.Error())
@@ -128,7 +135,7 @@ func DeployStop(c *gin.Context) {
     if !depTask.ExistsTask(id) {
         apply := &deploy.Apply{
             ID: id,
-            Status: APPLY_STATUS_FAILED,
+            Status: deploy.APPLY_STATUS_FAILED,
         }
         apply.UpdateStatus()
     } else {
@@ -158,18 +165,67 @@ func DeployStatus(c *gin.Context) {
         render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
         return
     }
-    d := &deploy.Deploy{
-        ApplyId: id,
-    }
-    taskList, err := d.TaskList()
-    if err != nil {
-        render.AppError(c, err.Error())
-        return
-    }
 
+    taskRest := []map[string]interface{}{}
+    depResults := depTask.StatusTask(id)
+    if depResults != nil  {
+        for _, depResult := range depResults {
+            groupStatus := deploy.DEPLOY_STATUS_NONE
+            switch depResult.Status {
+            case depTask.STATUS_INIT:
+                groupStatus = deploy.DEPLOY_STATUS_NONE
+            case depTask.STATUS_ING:
+                groupStatus = deploy.DEPLOY_STATUS_START
+            case depTask.STATUS_DONE:
+                groupStatus = deploy.DEPLOY_STATUS_SUCCESS
+            case depTask.STATUS_FAILED:
+                groupStatus = deploy.DEPLOY_STATUS_FAILED
+            }
+
+            srvRest := []map[string]interface{}{}
+            for _, r := range depResult.ServerRest {
+                var err string
+                if e := r.Error; e != nil {
+                    err = e.Error()
+                }
+                srvRest = append(srvRest, map[string]interface{}{
+                    "id": r.ID,
+                    "task": r.TaskResult,
+                    "status": r.Status,
+                    "error": err, 
+                })
+            }
+            groupRest := map[string]interface{}{
+                "group_id": depResult.ID,
+                "status": groupStatus,
+                "content": srvRest,
+            }
+            taskRest = append(taskRest, groupRest)
+        }
+    } else {
+        d := &deploy.Deploy{
+            ApplyId: id,
+        }
+        taskList, err := d.TaskList()
+        if err != nil {
+            render.AppError(c, err.Error())
+            return
+        }
+        for _, l := range taskList {
+            var obj interface{}
+            gostring.JsonDecode([]byte(l.Content), &obj)
+
+            groupRest := map[string]interface{}{
+                "group_id": l.GroupId,
+                "status": l.Status,
+                "content": obj,
+            }
+            taskRest = append(taskRest, groupRest)
+        }
+    }
     render.JSON(c, map[string]interface{}{
         "status": apply.Status,
-        "task_list": taskList,
+        "task_list": taskRest,
     })
 }
 
@@ -339,12 +395,40 @@ func DeployStart(c *gin.Context) {
         apply := &deploy.Apply{
             ID: id,
         }
+        var deployStatus int
         if status == depTask.STATUS_FAILED {
             apply.Status = deploy.APPLY_STATUS_FAILED
+            deployStatus = MAIL_STATUS_FAILED
         } else {
             apply.Status = deploy.APPLY_STATUS_SUCCESS
+            deployStatus = MAIL_STATUS_SUCCESS
         }
         apply.UpdateStatus()
+
+        //send deploy email
+        if err := apply.Detail(); err != nil {
+            return
+        }
+        u := &user.User{
+            ID: apply.UserId,
+        }
+        if err := u.Detail(); err != nil {
+            return
+        }
+        proj := &project.Project{
+            ID: apply.ProjectId,
+        }
+        if err := proj.Detail(); err != nil {
+            return
+        }
+        mails := gostring.JoinStrings(proj.DeployNotice, ",", u.Email)
+        MailSend(&MailMessage{
+            Mail: mails,
+            ApplyId: id,
+            Mode: MAIL_MODE_DEPLOY,
+            Status: deployStatus,
+            Title: apply.Name,
+        })
     }
     if err := depTask.NewTask(
         id, 

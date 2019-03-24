@@ -26,7 +26,7 @@
             <div class="app-divider"></div>
             <el-row class="app-btn-group">
                 <el-col :span="4">
-                    <el-button @click="openAddDialogHandler" icon="iconfont left small icon-add" size="medium" type="primary">{{ $t('add_project') }}</el-button>
+                    <el-button v-if="$root.CheckPriv($root.Priv.PROJECT_NEW)" @click="openAddDialogHandler" icon="iconfont left small icon-add" size="medium" type="primary">{{ $t('add_project') }}</el-button>&nbsp;
                 </el-col>
                 <el-col :span="6" :offset="14">
                     <el-input @keyup.enter.native="searchHandler" v-model="searchInput" size="medium" :placeholder="$t('please_input_keyword')">
@@ -50,6 +50,7 @@
                 <el-table-column prop="status" width="180" :label="$t('project_enable')">
                     <template slot-scope="scope">
                         <el-switch
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_AUDIT)"
                         @change="enableSwitchHandler($event, scope.row)"
                         v-model="scope.row.status"
                         :active-value="1"
@@ -63,18 +64,22 @@
                 <el-table-column :label="$t('operate')" width="300" align="right">
                     <template slot-scope="scope">
                         <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_BUILD)"
                         icon="iconfont small left icon-build"
                         type="text"
                         @click="openBuildDialogHandler(scope.row)">{{ $t('build_setting') }}</el-button>
                         <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_VIEW)"
                         icon="el-icon-view"
                         type="text"
                         @click="openViewDialogHandler(scope.row)">{{ $t('view') }}</el-button>
                         <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_EDIT)"
                         icon="el-icon-edit"
                         type="text"
                         @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
                         <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_DEL)"
                         type="text"
                         icon="el-icon-delete"
                         class="app-danger"
@@ -93,7 +98,7 @@
             </el-pagination>
         </el-card>
 
-        <el-dialog :width="$root.DialogNormalWidth" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
+        <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogLargeWidth" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
             <div class="app-dialog" v-loading="dialogLoading">
                 <el-form class="app-form" ref="dialogRef" :model="dialogForm" size="medium" label-width="130px">
                     <h4 class="app-form-subtitle">{{ $t('base_setting') }}</h4>
@@ -153,7 +158,7 @@
                             <el-radio :label="1">{{ $t('branch_deploy') }}</el-radio>
                             <el-radio :label="2">{{ $t('tag_deploy') }}</el-radio>
                         </el-radio-group>
-                        <div>{{ $t('deploy_mode_tips') }}</div>
+                        <div class="app-form-explain">{{ $t('deploy_mode_tips') }}</div>
                     </el-form-item>
 
                     <el-form-item 
@@ -229,13 +234,19 @@
                         <el-input :placeholder="$t('after_deploy_cmd_tips')" type="textarea" :rows="3" v-model="dialogForm.after_deploy_cmd" autocomplete="off"></el-input>
                     </el-form-item>
 
+                    <div class="app-divider"></div>
+                    <h4 class="app-form-subtitle">{{ $t('email_setting') }}</h4>
                     <el-form-item 
-                    :label="$t('deploy_timeout')"
-                    prop="deploy_timeout"
-                    :rules="[
-                        { required: true, message: $t('deploy_timeout_tips'), trigger: 'blur'},
-                    ]">
-                        <el-input class="app-input-mini" :placeholder="$t('deploy_timeout')" v-model="dialogForm.deploy_timeout" autocomplete="off"></el-input>
+                    :label="$t('audit_notice')"
+                    prop="audit_notice">
+                        <el-input :placeholder="$t('audit_notice_tips')" v-model="dialogForm.audit_notice" autocomplete="off"></el-input>
+                        <div class="app-form-explain" v-html="$t('audit_notice_explain')"></div>
+                    </el-form-item>
+                    <el-form-item 
+                    :label="$t('deploy_notice')"
+                    prop="deploy_notice">
+                        <el-input :placeholder="$t('deploy_notice_tips')" v-model="dialogForm.deploy_notice" autocomplete="off"></el-input>
+                        <div class="app-form-explain" v-html="$t('deploy_notice_explain')"></div>
                     </el-form-item>
 
                 </el-form>
@@ -246,7 +257,7 @@
             </div>
         </el-dialog>
 
-        <el-dialog :width="$root.DialogNormalWidth" :title="$t('view_project_info')" :visible.sync="dialogViewVisible" @close="dialogViewVisible = false">
+        <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogLargeWidth" :title="$t('view_project_info')" :visible.sync="dialogViewVisible" @close="dialogViewVisible = false">
             <div class="app-dialog" v-loading="dialogViewLoading">
                 <el-form size="medium" label-width="130px">
                     <h4 class="app-form-subtitle">{{ $t('base_setting') }}</h4>
@@ -317,15 +328,19 @@
                         <el-input type="textarea" :rows="3" :value="dialogViewForm.after_deploy_cmd" readonly="readonly"></el-input>
                     </el-form-item>
 
-                    <el-form-item :label="$t('deploy_timeout')">
-                        {{ dialogViewForm.deploy_timeout }}
+                    <el-form-item :label="$t('audit_notice')">
+                        {{ dialogViewForm.audit_notice }}
+                    </el-form-item>
+
+                    <el-form-item :label="$t('deploy_notice')">
+                        {{ dialogViewForm.deploy_notice }}
                     </el-form-item>
 
                 </el-form>
             </div>
         </el-dialog>
 
-        <el-dialog :width="$root.DialogNormalWidth" :title="$t('edit_build_script')" :visible.sync="dialogBuildVisible" @close="dialogBuildVisible = false">
+        <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_build_script')" :visible.sync="dialogBuildVisible" @close="dialogBuildVisible = false">
             <div class="app-dialog" v-loading="dialogBuildLoading">
                 <div class="app-shell-editor">
                     <textarea id="editor-textarea"></textarea>
@@ -409,7 +424,8 @@ export default {
                 deploy_path: '',
                 pre_deploy_cmd: '',
                 after_deploy_cmd: '',
-                deploy_timeout: 120,
+                audit_notice: '',
+                deploy_notice: '',
                 status: 0,
             },
             btnLoading: false,
@@ -617,6 +633,7 @@ export default {
                 if (res.list) {
                     this.spaceList = res.list
                 }
+                this.initSpaceId()
             })
         },
         loadClusterList() {
@@ -625,6 +642,11 @@ export default {
                     this.clusterList = res.list
                 }
             })
+        },
+        initSpaceId() {
+            if (this.spaceList.length && !this.spaceId) {
+                this.spaceId = this.spaceList[0].id
+            }
         },
     },
     mounted() {

@@ -32,11 +32,13 @@ type syncd struct {
     Gin             *gin.Engine
     DB              *DB
     Logger          *golog.Logger
+    Mail            *SendMail
     LocalSpace      string
     LocalTmpSpace   string
     LocalTarSpace   string
     RemoteSpace     string
     CipherKey       []byte
+    AppHost         string
     config          *Config
 }
 
@@ -52,13 +54,12 @@ func (s *syncd) Init(cfg *Config) error {
     if err := s.registerOrm(); err != nil {
         return err
     }
-
+    s.registerMail()
     s.registerLog()
 
     if err := s.initEnv(); err != nil {
         return err
     }
-
     return nil
 }
 
@@ -86,7 +87,19 @@ func (s *syncd) registerLog() {
     s.Logger = golog.New(loggerHandler)
 }
 
+func (s *syncd) registerMail() {
+    sendmail := &SendMail{
+        Enable: s.config.Mail.Enable,
+        Smtp: s.config.Mail.Smtp,
+        Port: s.config.Mail.Port,
+        User: s.config.Mail.User,
+        Pass: s.config.Mail.Pass,
+    }
+    s.Mail = NewSendMail(sendmail)
+}
+
 func (s *syncd) initEnv() error {
+    s.AppHost = s.config.Syncd.AppHost
     s.LocalSpace = s.config.Syncd.LocalSpace
     s.LocalTmpSpace = s.LocalSpace + "/tmp"
     s.LocalTarSpace = s.LocalSpace + "/tar"

@@ -28,7 +28,8 @@ type Project struct {
     BuildScript         string  `json:"build_script"`
     PreDeployCmd        string  `json:"pre_deploy_cmd"`
     AfterDeployCmd      string  `json:"after_deploy_cmd"`
-    DeployTimeout       int     `json:"deploy_timeout"`
+    AuditNotice         string  `json:"audit_notice"`
+    DeployNotice        string  `json:"deploy_notice"`
     Ctime               int     `json:"ctime"`
 }
 
@@ -128,9 +129,10 @@ func (p *Project) Detail() error {
     p.DeployPath = project.DeployPath
     p.PreDeployCmd = project.PreDeployCmd
     p.AfterDeployCmd = project.AfterDeployCmd
-    p.DeployTimeout = project.DeployTimeout
     p.Ctime = project.Ctime
     p.BuildScript = project.BuildScript
+    p.AuditNotice = project.AuditNotice
+    p.DeployNotice = project.DeployNotice
 
     return nil
 }
@@ -205,7 +207,8 @@ func (p *Project) CreateOrUpdate() error {
         DeployPath: p.DeployPath,
         PreDeployCmd: p.PreDeployCmd,
         AfterDeployCmd: p.AfterDeployCmd,
-        DeployTimeout: p.DeployTimeout,
+        AuditNotice: p.AuditNotice,
+        DeployNotice: p.DeployNotice,
     }
     if project.ID > 0 {
         updateData := map[string]interface{}{
@@ -220,7 +223,8 @@ func (p *Project) CreateOrUpdate() error {
             "deploy_path": p.DeployPath,
             "pre_deploy_cmd": p.PreDeployCmd,
             "after_deploy_cmd": p.AfterDeployCmd,
-            "deploy_timeout": p.DeployTimeout,
+            "audit_notice": p.AuditNotice,
+            "deploy_notice": p.DeployNotice,
         }
         if ok := project.UpdateByFields(updateData, model.QueryParam{
             Where: []model.WhereParam{

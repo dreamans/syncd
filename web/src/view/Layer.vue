@@ -42,7 +42,7 @@
                 <ScrollBar>
                     <el-menu class="aside-menu" :default-active="activeMenu" :router="true" :unique-opened="true">
                         <template v-for="menu in AppMenu">
-                            <el-submenu v-if="menu.children && menu.children.length > 1" :index="menu.name" :key="menu.name">
+                            <el-submenu v-if="menu.children && (menu.children.length > 1 || (menu.children.length == 1 && !menu.children[0].meta.single))" :index="menu.name" :key="menu.name">
                                 <template slot="title">
                                     <span v-if="menu.meta.icon" class="iconfont left" :class="menu.meta.icon"></span><span>{{ menu.meta.title }}</span>
                                 </template>
@@ -169,23 +169,29 @@ export default {
     computed: {
         AppMenu() {
             let menu = []
-            let currName = this.$route.name
             routerMap.forEach(first => {
                 let newSecond = []
                 let newFirst = Object.assign({}, first)
                 first.children.forEach(second => {
-                    newSecond.push(second)
+                    if (!second.meta.role || this.$root.CheckPrivs(second.meta.role)) {
+                        newSecond.push(second)
+                    }
                 })
-                newFirst.children = newSecond
-                menu.push(newFirst)
+                if (newSecond.length > 0) {
+                    newFirst.children = newSecond
+                    menu.push(newFirst)
+                }
             })
-            return routerMap
+            return menu
         }
     },
     watch: {
         '$route.name'() {
             this.breadcrumbItems()
             this.initActiveMenu()
+        },
+        AppMenu() {
+            this.breadcrumbItems()
         },
     },
     components: {
@@ -310,7 +316,6 @@ export default {
     },
     mounted() {
         this.initLoginStatus()
-        this.breadcrumbItems()
         this.initActiveMenu()
     },
 }

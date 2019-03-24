@@ -26,7 +26,8 @@ type ProjectFormBind struct {
     DeployPath          string  `form:"deploy_path" binding:"required"`
     PreDeployCmd        string  `form:"pre_deploy_cmd"`
     AfterDeployCmd      string  `form:"after_deploy_cmd"`
-    DeployTimeout       int     `form:"deploy_timeout" binding:"required"`
+    AuditNotice         string  `form:"audit_notice"`
+    DeployNotice        string  `form:"deploy_notice"`
 }
 
 type ProjectBuildScriptBind struct {
@@ -272,7 +273,8 @@ func projectCreateOrUpdate(c *gin.Context) {
         DeployPath: projectForm.DeployPath,
         PreDeployCmd: projectForm.PreDeployCmd,
         AfterDeployCmd: projectForm.AfterDeployCmd,
-        DeployTimeout: projectForm.DeployTimeout,
+        AuditNotice: projectForm.AuditNotice,
+        DeployNotice: projectForm.DeployNotice,
     }
     if err := proj.CreateOrUpdate(); err != nil {
         render.AppError(c, err.Error())

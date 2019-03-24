@@ -24,28 +24,30 @@
                 </div>
             </div>
             <div class="app-divider"></div>
-            <div class="app-btn-title">{{ $t('add_new_member') }}</div>
-            <el-row class="app-btn-group">
-                <el-col :span="10">
-                    <el-select 
-                    v-model="memberId"
-                    style="width: 100%;"
-                    size="small"
-                    clearable
-                    filterable
-                    remote
-                    :loading-text="$t('looking_for_users')"
-                    :no-match-text="$t('user_not_found')"
-                    :remote-method="searchMemberHandler"
-                    :loading="memberLoading"
-                    :placeholder="$t('search_for_users_by_username_and_email')">
-                        <el-option v-for="m in memberSearchList" :key="m.id" :value="m.id" :label="m.username + ' - ' + m.email +  ' - ' + m.role_name"></el-option>
-                    </el-select>
-                </el-col>
-                <el-col :span="8">
-                    <el-button style="margin-left: 10px;" size="small" type="primary" @click="addMemberHandler">{{ $t('add') }}</el-button>
-                </el-col>
-            </el-row>
+            <template v-if="$root.CheckPriv($root.Priv.PROJECT_USER_NEW)">
+                <div class="app-btn-title">{{ $t('add_new_member') }}</div>
+                <el-row class="app-btn-group">
+                    <el-col :span="10">
+                        <el-select 
+                        v-model="memberId"
+                        style="width: 100%;"
+                        size="small"
+                        clearable
+                        filterable
+                        remote
+                        :loading-text="$t('looking_for_users')"
+                        :no-match-text="$t('user_not_found')"
+                        :remote-method="searchMemberHandler"
+                        :loading="memberLoading"
+                        :placeholder="$t('search_for_users_by_username_and_email')">
+                            <el-option v-for="m in memberSearchList" :key="m.id" :value="m.id" :label="m.username + ' - ' + m.email +  ' - ' + m.role_name"></el-option>
+                        </el-select>
+                    </el-col>
+                    <el-col :span="8">
+                        <el-button style="margin-left: 10px;" size="small" type="primary" @click="addMemberHandler">{{ $t('add') }}</el-button>
+                    </el-col>
+                </el-row>
+            </template>
             <el-table
                 class="app-table"
                 size="medium"
@@ -72,6 +74,7 @@
                 <el-table-column :label="$t('operate')" width="100" align="right">
                     <template slot-scope="scope">
                         <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_USER_DEL)"
                         type="text"
                         icon="el-icon-delete"
                         class="app-danger"
@@ -206,7 +209,13 @@ export default {
                 if (res.list) {
                     this.spaceList = res.list
                 }
+                this.initSpaceId()
             })
+        },
+        initSpaceId() {
+            if (this.spaceList.length && !this.spaceId) {
+                this.spaceId = this.spaceList[0].id
+            }
         },
     },
     mounted() {

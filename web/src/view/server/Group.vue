@@ -3,7 +3,7 @@
         <el-card shadow="never">
             <el-row class="app-btn-group">
                 <el-col :span="4">
-                    <el-button @click="openAddDialogHandler" type="primary" size="medium" icon="iconfont left small icon-add">{{ $t('add_cluster') }}</el-button>
+                    <el-button v-if="$root.CheckPriv($root.Priv.SERVER_GROUP_NEW)" @click="openAddDialogHandler" type="primary" size="medium" icon="iconfont left small icon-add">{{ $t('add_cluster') }}</el-button>&nbsp;
                 </el-col>
                 <el-col :span="6" :offset="14">
                     <el-input @keyup.enter.native="searchHandler" v-model="searchInput" size="medium" :placeholder="$t('please_input_keyword_id_or_name')">
@@ -21,14 +21,16 @@
                 <el-table-column :label="$t('operate')" width="180" align="right">
                     <template slot-scope="scope">
                         <el-button
-                            icon="el-icon-edit"
-                            type="text"
-                            @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
+                        v-if="$root.CheckPriv($root.Priv.SERVER_GROUP_EDIT)"
+                        icon="el-icon-edit"
+                        type="text"
+                        @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
                         <el-button
-                            type="text"
-                            icon="el-icon-delete"
-                            class="app-danger"
-                            @click="deleteHandler(scope.row)">{{ $t('delete') }}</el-button>
+                        v-if="$root.CheckPriv($root.Priv.SERVER_GROUP_DEL)"
+                        type="text"
+                        icon="el-icon-delete"
+                        class="app-danger"
+                        @click="deleteHandler(scope.row)">{{ $t('delete') }}</el-button>
                     </template>
                 </el-table-column>
             </el-table>

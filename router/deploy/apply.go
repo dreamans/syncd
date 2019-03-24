@@ -195,14 +195,35 @@ func ApplyAudit(c *gin.Context) {
         return
     }
 
-    apply = &deploy.Apply{
+    applyAudit := &deploy.Apply{
         ID: form.ID,
         AuditStatus: form.AuditStatus,
         AuditRefusalReasion: form.AuditRefusalReasion,
     }
-    if err := apply.UpdateAuditStatus(); err != nil {
+    if err := applyAudit.UpdateAuditStatus(); err != nil {
         render.AppError(c, err.Error())
         return
+    }
+
+    if apply.UserId != c.GetInt("user_id") {
+        u := &user.User{
+            ID: apply.UserId,
+        }
+        if err := u.Detail(); err == nil {
+            var status int
+            if applyAudit.AuditStatus == deploy.AUDIT_STATUS_OK {
+                status = MAIL_STATUS_SUCCESS
+            } else {
+                status = MAIL_STATUS_FAILED
+            }
+            MailSend(&MailMessage{
+                Mail: u.Email,
+                ApplyId: apply.ID,
+                Mode: MAIL_MODE_AUDIT_RESULT,
+                Status: status,
+                Title: apply.Name,
+            })
+        }
     }
 
     render.JSON(c, nil)
@@ -242,7 +263,7 @@ func ApplyDetail(c *gin.Context) {
     apply.Email = u.Email
 
     // rollback apply status
-    if apply.RollbackApplyId > 0 {
+    if apply.RollbackApplyId > 0 && apply.IsRollbackApply == 0 {
         rollbackApply := &deploy.Apply{
             ID: apply.RollbackApplyId,
         }
@@ -276,6 +297,7 @@ func ApplyList(c *gin.Context) {
         AuditStatus: query.AuditStatus,
         Status: query.Status,
         ProjectId: query.ProjectId,
+        IsRollbackApply: 0,
     }
     list, err := apply.List(query.Keyword, spaceIds, query.Offset, query.Limit)
     if err != nil {
@@ -464,6 +486,16 @@ func ApplySubmit(c *gin.Context) {
         render.AppError(c, err.Error())
         return
     }
+
+    if proj.NeedAudit != 0 {
+        MailSend(&MailMessage{
+            Mail: proj.AuditNotice,
+            ApplyId: apply.ID,
+            Mode: MAIL_MODE_AUDIT_NOTICE,
+            Title: apply.Name,
+        })
+    }
+
     render.Success(c)
 }
 

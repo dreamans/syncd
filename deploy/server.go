@@ -57,7 +57,6 @@ func (srv *Server) Deploy() {
     } else {
         srv.result.Status = STATUS_DONE
     }
-    srv.result.TaskResult = srv.task.Result()
 }
 
 func (srv *Server) Terminate() {
@@ -67,6 +66,7 @@ func (srv *Server) Terminate() {
 }
 
 func (srv *Server) Result() *ServerResult {
+    srv.result.TaskResult = srv.task.Result()
     return srv.result
 }
 

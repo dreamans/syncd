@@ -1,6 +1,7 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 import i18n from '@/lang'
+import priv from '@/lib/priv'
 
 Vue.use(Router)
 
@@ -28,6 +29,7 @@ const routerMap = [
                 meta: {
                     title: i18n.t('dashboard'),
                     icon: 'icon-dashboard',
+                    single: true,
                 },
                 component: _import('Dashboard'),
             },
@@ -47,6 +49,7 @@ const routerMap = [
                 name: 'deployApply',
                 meta: {
                     title: i18n.t('submit_deploy_apply'),
+                    role: [priv.DEPLOY_APPLY],
                 },
                 component: _import('deploy/Apply'),
             },
@@ -55,6 +58,7 @@ const routerMap = [
                 name: 'deployDeploy',
                 meta: {
                     title: i18n.t('deploy_manage'),
+                    role: [priv.DEPLOY_VIEW],
                 },
                 component: _import('deploy/Deploy'),
             },
@@ -83,6 +87,7 @@ const routerMap = [
                 name: 'projectSpace',
                 meta: {
                     title: i18n.t('space_manage'),
+                    role: [priv.PROJECT_SPACE_VIEW],
                 },
                 component: _import('project/Space'),
             },
@@ -91,6 +96,7 @@ const routerMap = [
                 name: 'projectProject',
                 meta: {
                     title: i18n.t('project_manage'),
+                    role: [priv.PROJECT_VIEW],
                 },
                 component: _import('project/Project'),
             },
@@ -99,6 +105,7 @@ const routerMap = [
                 name: 'projectUser',
                 meta: {
                     title: i18n.t('member_manage'),
+                    role: [priv.PROJECT_USER_VIEW],
                 },
                 component: _import('project/Member'),
             },
@@ -118,6 +125,7 @@ const routerMap = [
                 name: 'userGroup',
                 meta: {
                     title: i18n.t('role_manage'),
+                    role: [priv.USER_ROLE_VIEW],
                 },
                 component: _import('user/Group'),
             },
@@ -126,6 +134,7 @@ const routerMap = [
                 name: 'userList',
                 meta: {
                     title: i18n.t('user_manage'),
+                    role: [priv.USER_VIEW],
                 },
                 component: _import('user/User'),
             },
@@ -145,6 +154,7 @@ const routerMap = [
                 name: 'serverGroup',
                 meta: {
                     title: i18n.t('cluster_manage'),
+                    role: [priv.SERVER_GROUP_VIEW],
                 },
                 component: _import('server/Group'),
             },
@@ -153,6 +163,7 @@ const routerMap = [
                 name: 'serverList',
                 meta: {
                     title: i18n.t('server_manage'),
+                    role: [priv.SERVER_VIEW],
                 },
                 component: _import('server/Server'),
             },
