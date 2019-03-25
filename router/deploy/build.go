@@ -8,6 +8,7 @@ import (
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd"
     "github.com/dreamans/syncd/render"
+    "github.com/dreamans/syncd/router/common"
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/module/deploy"
     buiTask "github.com/dreamans/syncd/build"
@@ -196,6 +197,9 @@ func BuildStart(c *gin.Context) {
             Errmsg: errmsg,
         }
         b.Finish()
+
+        // run hook script
+        common.HookBuild(id)
     })
     render.JSON(c, nil)
 }

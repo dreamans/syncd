@@ -74,6 +74,7 @@ func (b *Build) initBuildTask() {
         "echo \"Run user is\" `whoami`",
         fmt.Sprintf("rm -f %s", b.packFile),
         fmt.Sprintf("/bin/bash -c %s", b.scriptFile),
+        fmt.Sprintf("rm -f %s", b.scriptFile),
         fmt.Sprintf("rm -fr %s", b.local),
         "echo \"Compile completed\" `date`",
     }...)

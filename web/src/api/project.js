@@ -63,3 +63,7 @@ export function deleteProjectApi(data) {
 export function updateBuildScriptApi(data) {
     return post('/project/buildscript', data)
 }
+
+export function updateHookScriptApi(data) {
+    return post('/project/hookscript', data)
+}

@@ -10,6 +10,7 @@ import (
     "github.com/dreamans/syncd"
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/render"
+    "github.com/dreamans/syncd/router/common"
     "github.com/dreamans/syncd/util/gostring"
     "github.com/dreamans/syncd/module/deploy"
     "github.com/dreamans/syncd/module/project"
@@ -429,6 +430,9 @@ func DeployStart(c *gin.Context) {
             Status: deployStatus,
             Title: apply.Name,
         })
+
+        // run hook script
+        common.HookDeploy(id)
     }
     if err := depTask.NewTask(
         id, 

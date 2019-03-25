@@ -47,7 +47,7 @@
                         <span v-else>{{ $t('no') }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column prop="status" width="180" :label="$t('project_enable')">
+                <el-table-column prop="status" width="120" :label="$t('project_enable')">
                     <template slot-scope="scope">
                         <el-switch
                         v-if="$root.CheckPriv($root.Priv.PROJECT_AUDIT)"
@@ -61,8 +61,13 @@
                         <span style="margin-left: 5px;" v-else>{{ $t('not_enable') }}</span>
                     </template>
                 </el-table-column>
-                <el-table-column :label="$t('operate')" width="300" align="right">
+                <el-table-column :label="$t('operate')" width="380" align="right">
                     <template slot-scope="scope">
+                        <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_BUILD)"
+                        icon="iconfont small left icon-webhook"
+                        type="text"
+                        @click="openHookDialogHandler(scope.row)">{{ $t('hook') }}</el-button>
                         <el-button
                         v-if="$root.CheckPriv($root.Priv.PROJECT_BUILD)"
                         icon="iconfont small left icon-build"
@@ -365,6 +370,38 @@
             </div>
         </el-dialog>
 
+        <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_hook_script')" :visible.sync="dialogHookVisible" @close="dialogHookVisible = false">
+            <div class="app-dialog" v-loading="dialogHookLoading">
+                <el-form label-position="top" size="medium" label-width="130px">
+                    <el-form-item :label="$t('build_hook_script')">
+                        <el-input type="textarea" v-model="dialogHookForm.build_hook_script" :autosize="{ minRows: 3, maxRows: 10}"></el-input>
+                        <div class="app-form-explain">
+                            <p>{{ $t('build_hook_script_tips') }}:</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_apply_id}</span> - 申请单ID</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_apply_name}</span> - 申请单名称</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_pack_file}</span> - 打包的文件绝对路径</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_build_output}</span> - 构建脚本的原始输出 (JSON字符串)</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_build_errmsg}</span> - 构建错误信息</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_build_status}</span> - 构建结果状态，1 - 成功，0 - 失败</p>
+                        </div>
+                    </el-form-item>
+                    <el-form-item :label="$t('deploy_hook_script')">
+                        <el-input type="textarea" v-model="dialogHookForm.deploy_hook_script" :autosize="{ minRows: 3, maxRows: 10}"></el-input>
+                        <div class="app-form-explain">
+                            <p>{{ $t('deploy_hook_script_tips') }}:</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_apply_id}</span> - 申请单ID</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_apply_name}</span> - 申请单名称</p>
+                            <p><i class="iconfont icon-dot"></i><span class="code">${env_deploy_status}</span> - 部署状态</p>
+                        </div>
+                    </el-form-item>
+                </el-form>                
+                <div slot="footer" class="dialog-footer">
+                    <el-button size="small" @click="dialogHookVisible = false">{{ $t('cancel') }}</el-button>
+                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitHookHandler">{{ $t('enter') }}</el-button>
+                </div>
+            </div>
+        </el-dialog>
+
         <el-dialog 
         :width="$root.DialogSmallWidth"
         :visible.sync="dialogSpaceVisible"
@@ -380,7 +417,18 @@
 </template>
 
 <script>
-import { listSpaceApi, detailSpaceApi, newProjectApi, updateProjectApi, listProjectApi, switchStatusProjectApi, detailProjectApi, deleteProjectApi, updateBuildScriptApi } from '@/api/project'
+import { 
+    listSpaceApi, 
+    detailSpaceApi, 
+    newProjectApi, 
+    updateProjectApi, 
+    listProjectApi, 
+    switchStatusProjectApi, 
+    detailProjectApi, 
+    deleteProjectApi, 
+    updateBuildScriptApi,
+    updateHookScriptApi
+} from '@/api/project'
 import { listGroupApi } from '@/api/server' 
 import codeMirror from 'codemirror/lib/codemirror.js'
 import 'codemirror/lib/codemirror.css'
@@ -398,6 +446,14 @@ export default {
             dialogBuildForm: {
                 id: 0,
                 build_script: '',
+            },
+
+            dialogHookVisible: false,
+            dialogHookLoading: false,
+            dialogHookForm: {
+                id: 0,
+                build_hook_script: '',
+                deploy_hook_script: '',
             },
 
             searchInput: '',
@@ -456,6 +512,26 @@ export default {
         }
     },
     methods: {
+        openHookDialogHandler(row) {
+            this.dialogHookVisible = true
+            this.dialogHookLoading = true
+            detailProjectApi({id: row.id}).then(res => {
+                this.dialogHookForm = {
+                    id: res.id,
+                    build_hook_script: res.build_hook_script,
+                    deploy_hook_script: res.deploy_hook_script,
+                }
+                this.dialogHookLoading = false
+            })
+        },
+        dialogSubmitHookHandler() {
+            updateHookScriptApi(this.dialogHookForm).then(res => {
+                this.$root.MessageSuccess(() => {
+                    this.dialogHookVisible = false
+                })
+            })
+        },
+
         dialogSubmitBuildHandler() {
             this.dialogBuildForm.build_script = this.getBuildEditorValue()
             updateBuildScriptApi(this.dialogBuildForm).then(res => {

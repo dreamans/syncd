@@ -26,6 +26,8 @@ type Project struct {
     DeployUser          string  `json:"deploy_user"`
     DeployPath          string  `json:"deploy_path"`
     BuildScript         string  `json:"build_script"`
+    BuildHookScript     string  `json:"build_hook_script"`
+    DeployHookScript    string  `json:"deploy_hook_script"`
     PreDeployCmd        string  `json:"pre_deploy_cmd"`
     AfterDeployCmd      string  `json:"after_deploy_cmd"`
     AuditNotice         string  `json:"audit_notice"`
@@ -106,6 +108,25 @@ func (p *Project) UpdateBuildScript() error {
     return nil
 }
 
+func (p *Project) UpdateHookScript() error {
+    project := &model.Project{}
+    updateData := map[string]interface{}{
+        "build_hook_script": p.BuildHookScript,
+        "deploy_hook_script": p.DeployHookScript,
+    }
+    if ok := project.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: p.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("project hook script update failed")
+    }
+    return nil
+}
+
 func (p *Project) Detail() error {
     project := &model.Project{}
     if ok := project.Get(p.ID); !ok {
@@ -131,6 +152,8 @@ func (p *Project) Detail() error {
     p.AfterDeployCmd = project.AfterDeployCmd
     p.Ctime = project.Ctime
     p.BuildScript = project.BuildScript
+    p.BuildHookScript = project.BuildHookScript
+    p.DeployHookScript = project.DeployHookScript
     p.AuditNotice = project.AuditNotice
     p.DeployNotice = project.DeployNotice
 

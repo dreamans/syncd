@@ -2,7 +2,10 @@
     <div class="layer-global">
         <header class="layer-header">
             <div class="header-left">
-                <img class="logo" src="@/asset/logo.png" />
+                <div class="logo">
+                    <i class="iconfont icon-logo"></i>
+                    <span>Syncd</span>
+                </div>
             </div>
             <div class="header-right">
                 <span class="r-item">

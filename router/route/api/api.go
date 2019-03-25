@@ -52,6 +52,7 @@ const (
     PROJECT_DETAIL = "/project/detail"
     PROJECT_DELETE = "/project/delete"
     PROJECT_BUILDSCRIPT = "/project/buildscript"
+    PROJECT_HOOKSCRIPT = "/project/hookscript"
 
     DEPLOY_APPLY_PROJECT_DETAIL = "/deploy/apply/project/detail"
     DEPLOY_APPLY_SUBMIT = "/deploy/apply/submit"

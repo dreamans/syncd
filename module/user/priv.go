@@ -53,6 +53,7 @@ const (
     PROJECT_DEL   = 2204 // 删除项目
     PROJECT_AUDIT = 2205 // 启用项目
     PROJECT_BUILD = 2206 // 构建设置
+    PROJECT_HOOK  = 2207 // Hook设置
 
     USER_ROLE_VIEW = 3001 // 查看角色
     USER_ROLE_NEW  = 3002 // 新增角色
@@ -184,6 +185,10 @@ var privToApiMap = map[int][]string{
         reqApi.PROJECT_DETAIL,
         reqApi.PROJECT_BUILDSCRIPT,
     },
+    PROJECT_HOOK: []string{
+        reqApi.PROJECT_DETAIL,
+        reqApi.PROJECT_HOOKSCRIPT,
+    },
     DEPLOY_APPLY: []string{
         reqApi.PROJECT_SPACE_LIST,
         reqApi.PROJECT_LIST,
@@ -221,40 +226,6 @@ var privToApiMap = map[int][]string{
         reqApi.DEPLOY_DEPLOY_STOP,
         reqApi.DEPLOY_DEPLOY_ROLLBACK,
     },
-    /*
-    DEPLOY_AUDIT_MY: []string{
-        syncd.API_DEPLOY_APPLY_AUDIT,
-        syncd.API_DEPLOY_APPLY_UNAUDIT,
-    },
-    DEPLOY_AUDIT_ALL: []string{
-        syncd.API_DEPLOY_APPLY_AUDIT,
-        syncd.API_DEPLOY_APPLY_UNAUDIT,
-    },
-    DEPLOY_DROP_MY: []string{
-        syncd.API_DEPLOY_APPLY_DISCARD,
-    },
-    DEPLOY_DROP_ALL: []string{
-        syncd.API_DEPLOY_APPLY_DISCARD,
-    },
-    DEPLOY_EDIT_MY: []string{
-        syncd.API_DEPLOY_APPLY_PROJECT_DETAIL,
-        syncd.API_DEPLOY_APPLY_TAGLIST,
-        syncd.API_DEPLOY_APPLY_COMMITLIST,
-        syncd.API_DEPLOY_APPLY_UPDATE,
-    },
-    DEPLOY_DEPLOY_MY: []string{
-        syncd.API_DEPLOY_DEPLOY_START,
-        syncd.API_DEPLOY_APPLY_DETAIL,
-        syncd.API_DEPLOY_DEPLOY_STATUS,
-        syncd.API_DEPLOY_DEPLOY_STOP,
-    },
-    DEPLOY_DEPLOY_ALL: []string{
-        syncd.API_DEPLOY_DEPLOY_START,
-        syncd.API_DEPLOY_APPLY_DETAIL,
-        syncd.API_DEPLOY_DEPLOY_STATUS,
-        syncd.API_DEPLOY_DEPLOY_STOP,
-    },
-    */
 }
 
 type PrivItem struct {
@@ -325,6 +296,10 @@ var privProject = PrivGroup {
         PrivItem{
             Label: "项目-构建设置",
             Value: PROJECT_BUILD,
+        },
+        PrivItem{
+            Label: "项目-Hook设置",
+            Value: PROJECT_HOOK,
         },
     },
 }

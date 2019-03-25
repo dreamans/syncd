@@ -4,7 +4,7 @@ blockquote, body, dd, dl, dt, fieldset, figure, h1, h2, h3, h4, h5, h6, hr, html
     box-sizing: border-box;
 }
 body {
-    font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+    font-family: "PingFang SC","Helvetica Neue",Helvetica,"Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
     font-size: 14px;
 }
 html, body {
@@ -298,8 +298,14 @@ html, body {
         align-items: center;
         .header-left {
             .logo {
-                height: 25px;
-                margin-left: 30px;
+                margin-left: 25px;
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                .iconfont {
+                    font-size: 28px;
+                    margin-right: 8px;
+                }
             }
         }
         .header-right {

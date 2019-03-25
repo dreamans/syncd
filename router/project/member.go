@@ -6,6 +6,7 @@ package project
 
 import (
     "github.com/gin-gonic/gin"
+    "github.com/dreamans/syncd/router/common"
     "github.com/dreamans/syncd/module/user"
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/render"
@@ -38,12 +39,7 @@ func MemberRemove(c *gin.Context) {
         return
     }
 
-    m := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: member.SpaceId,
-    }
-    if in := m.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, member.SpaceId) {
         return
     }
 
@@ -61,12 +57,7 @@ func MemberList(c *gin.Context) {
         return
     }
 
-    mb := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: query.SpaceId,
-    }
-    if in := mb.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, query.SpaceId) {
         return
     }
 
@@ -116,12 +107,7 @@ func MemberAdd(c *gin.Context) {
         return
     }
 
-    mb := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: query.SpaceId,
-    }
-    if in := mb.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, query.SpaceId) {
         return
     }
 

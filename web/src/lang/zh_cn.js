@@ -279,4 +279,10 @@ export default {
     'deploy_notice': '上线通知',
     'deploy_notice_tips': '请输入接收上线通知的邮箱地址',
     'deploy_notice_explain': '接收上线通知的邮箱地址，多个邮箱地址请用 <span class="app-tag-info">,</span> 相隔',
+    'hook': 'Hook',
+    'edit_hook_script': '编辑Hook命令',
+    'build_hook_script': '构建完成后执行命令',
+    'deploy_hook_script': '部署完成后执行命令',
+    'build_hook_script_tips': '命令会在构建完成(成功或失败)后执行，支持的变量',
+    'deploy_hook_script_tips': '命令会在部署完成(成功或失败)后执行，支持的变量',
 }
