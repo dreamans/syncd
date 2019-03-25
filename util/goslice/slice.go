@@ -58,3 +58,12 @@ func SliceIntersectInt(slice1, slice2 []int) (diffslice []int) {
     }
     return
 }
+
+func SliceComplementaryInt(slice1, slice2 []int) (diffslice []int) {
+    for _, v := range slice1 {
+        if !InSliceInt(v, slice2) {
+            diffslice = append(diffslice, v)
+        }
+    }
+    return
+}

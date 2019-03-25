@@ -27,6 +27,10 @@ func StrSplit2IntSlice(str, sep string) []int {
     return StrSlice2IntSlice(StrFilterSliceEmpty(strings.Split(str, sep)))
 }
 
+func Str2StrSlice(str, sep string) []string {
+    return StrFilterSliceEmpty(strings.Split(str, sep))
+}
+
 func StrSlice2IntSlice(strSlice []string) []int {
     var intSlice []int
     for _, s := range strSlice {

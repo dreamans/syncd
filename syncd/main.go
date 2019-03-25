@@ -143,6 +143,7 @@ func main() {
             LocalSpace: configOrDefault("syncd", "local_space", "~/.syncd"),
             RemoteSpace: configOrDefault("syncd", "remote_space", "~/.syncd"),
             Cipher: configOrDefault("syncd", "cipher_key", ""),
+            AppHost: configOrDefault("syncd", "app_host", ""),
         },
         Mail: &syncd.MailConfig{
             Enable: configIntOrDefault("mail", "enable", 0),

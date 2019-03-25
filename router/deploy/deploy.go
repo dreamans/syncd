@@ -5,16 +5,18 @@
 package deploy
 
 import (
-    "time"
     "fmt"
 
+    "github.com/dreamans/syncd"
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/render"
+    "github.com/dreamans/syncd/router/common"
     "github.com/dreamans/syncd/util/gostring"
     "github.com/dreamans/syncd/module/deploy"
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/module/server"
-    dep "github.com/dreamans/syncd/deploy"
+    "github.com/dreamans/syncd/module/user"
+    depTask "github.com/dreamans/syncd/deploy"
 )
 
 func DeployRollback(c *gin.Context) {
@@ -36,6 +38,11 @@ func DeployRollback(c *gin.Context) {
     }
     if in := m.MemberInSpace(); !in {
         render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+        return
+    }
+
+    if apply.RollbackId == 0 {
+        render.NoDataError(c, "rollback apply not exists")
         return
     }
 
@@ -72,6 +79,7 @@ func DeployRollback(c *gin.Context) {
         UserId: c.GetInt("user_id"),
         AuditStatus: deploy.AUDIT_STATUS_OK,
         IsRollbackApply: 1,
+        RollbackApplyId: apply.ID,
     }
     if err := rollbackApply.Create(); err != nil {
         render.AppError(c, err.Error())
@@ -125,8 +133,15 @@ func DeployStop(c *gin.Context) {
         return
     }
 
-    dep.StopDeploy(id)
-
+    if !depTask.ExistsTask(id) {
+        apply := &deploy.Apply{
+            ID: id,
+            Status: deploy.APPLY_STATUS_FAILED,
+        }
+        apply.UpdateStatus()
+    } else {
+        depTask.StopTask(id)
+    }
     render.JSON(c, nil)
 }
 
@@ -151,25 +166,76 @@ func DeployStatus(c *gin.Context) {
         render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
         return
     }
-    d := &deploy.Deploy{
-        ApplyId: id,
-    }
-    taskList, err := d.TaskList()
-    if err != nil {
-        render.AppError(c, err.Error())
-        return
-    }
 
+    taskRest := []map[string]interface{}{}
+    depResults := depTask.StatusTask(id)
+    if depResults != nil  {
+        for _, depResult := range depResults {
+            groupStatus := deploy.DEPLOY_STATUS_NONE
+            switch depResult.Status {
+            case depTask.STATUS_INIT:
+                groupStatus = deploy.DEPLOY_STATUS_NONE
+            case depTask.STATUS_ING:
+                groupStatus = deploy.DEPLOY_STATUS_START
+            case depTask.STATUS_DONE:
+                groupStatus = deploy.DEPLOY_STATUS_SUCCESS
+            case depTask.STATUS_FAILED:
+                groupStatus = deploy.DEPLOY_STATUS_FAILED
+            }
+
+            srvRest := []map[string]interface{}{}
+            for _, r := range depResult.ServerRest {
+                var err string
+                if e := r.Error; e != nil {
+                    err = e.Error()
+                }
+                srvRest = append(srvRest, map[string]interface{}{
+                    "id": r.ID,
+                    "task": r.TaskResult,
+                    "status": r.Status,
+                    "error": err, 
+                })
+            }
+            groupRest := map[string]interface{}{
+                "group_id": depResult.ID,
+                "status": groupStatus,
+                "content": srvRest,
+            }
+            taskRest = append(taskRest, groupRest)
+        }
+    } else {
+        d := &deploy.Deploy{
+            ApplyId: id,
+        }
+        taskList, err := d.TaskList()
+        if err != nil {
+            render.AppError(c, err.Error())
+            return
+        }
+        for _, l := range taskList {
+            var obj interface{}
+            gostring.JsonDecode([]byte(l.Content), &obj)
+
+            groupRest := map[string]interface{}{
+                "group_id": l.GroupId,
+                "status": l.Status,
+                "content": obj,
+            }
+            taskRest = append(taskRest, groupRest)
+        }
+    }
     render.JSON(c, map[string]interface{}{
         "status": apply.Status,
-        "task_list": taskList,
+        "task_list": taskRest,
     })
 }
 
 func DeployStart(c *gin.Context) {
     id := gostring.Str2Int(c.PostForm("id"))
+    isParallel := gostring.Str2Int(c.PostForm("is_parallel"))
+
     if id == 0 {
-        render.ParamError(c, "id cannot be empty")
+        render.ParamError(c, "apply id cannot be empty")
         return
     }
     apply := &deploy.Apply{
@@ -189,7 +255,7 @@ func DeployStart(c *gin.Context) {
     }
 
     if apply.Status != deploy.APPLY_STATUS_NONE && apply.Status != deploy.APPLY_STATUS_FAILED {
-        render.AppError(c, "deploy apply status wrong")
+        render.AppError(c, "deploy apply have deployed success")
         return
     }
 
@@ -249,57 +315,35 @@ func DeployStart(c *gin.Context) {
         return
     }
 
-    deployGroups := []*dep.Deploy{}
+    groupSrvs := map[int][]server.Server{}
+    for _, srv := range serverList {
+        groupSrvs[srv.GroupId] = append(groupSrvs[srv.GroupId], srv)
+    }
+
+    deploys := []*depTask.Deploy{}
     for _, gid := range proj.OnlineCluster {
-        srvs := []*dep.Server{}
-        for _, srv := range serverList {
-            if srv.GroupId == gid {
-                srvs = append(srvs, dep.NewServer(srv.ID, srv.SSHPort, srv.Ip, proj.DeployUser, ""))
-            }
+        gsrv, exists := groupSrvs[gid]
+        if !exists {
+            continue
         }
-        depGroup, err := dep.NewDepoly(&dep.Deploy{
-            ID: id,
-            Srvs: srvs,
+        dep := &depTask.Deploy{
+            ID: gid,
+            User: proj.DeployUser,
             PreCmd: proj.PreDeployCmd,
             PostCmd: proj.AfterDeployCmd,
             DeployPath: proj.DeployPath,
+            DeployTmpPath: syncd.App.RemoteSpace,
             PackFile: build.Tar,
-            CallbackFn: func(id int, srvId int, srvStatus *dep.ServerStatus) {
-                d := &deploy.Deploy{
-                    ApplyId: id,
-                    ServerId: srvId,
-                    Status: srvStatus.Status,
-                    Output: string(gostring.JsonEncode(srvStatus.TaskResult)),
-                    FinishTime: int(time.Now().Unix()),
-                }
-                if srvStatus.Error != nil {
-                    d.Errmsg = srvStatus.Error.Error()
-                }
-                d.UpdateResult()
-            },
-            StartCallbackFn: func(id int, srvId int, srvStatus *dep.ServerStatus) {
-                d := &deploy.Deploy{
-                    ApplyId: id,
-                    ServerId: srvId,
-                    Status: deploy.DEPLOY_STATUS_START,
-                    StartTime: int(time.Now().Unix()),
-                }
-                d.UpdateResult()
-            },
-        })
-        if err != nil {
-            render.AppError(c, err.Error())
-            return 
         }
-        deployGroups = append(deployGroups, depGroup)
-    }
+        for _, srv := range gsrv {
+            dep.AddServer(srv.ID, srv.Ip, srv.SSHPort)
+        }
+        deploys = append(deploys, dep)
 
-    // Write task to DB
-    for _, s := range serverList {
+        // Write task init to DB
         d := &deploy.Deploy{
             ApplyId: id,
-            GroupId: s.GroupId,
-            ServerId: s.ID,
+            GroupId: gid,
             Status: deploy.DEPLOY_STATUS_NONE,
         }
         if err := d.Create(); err != nil {
@@ -314,18 +358,90 @@ func DeployStart(c *gin.Context) {
         return
     }
 
-    // deployGroups
-    if err := dep.DeployGroups(id, deployGroups, func(id int, haveError bool) {
+    startDeployFn := func(id, gid, status int, serverResult []*depTask.ServerResult) {
+        d := &deploy.Deploy{
+            ApplyId: id,
+            GroupId: gid,
+            Status: deploy.DEPLOY_STATUS_START,
+        }
+        d.UpdateStatus()
+    }
+    finishDeployFn := func(id, gid, status int, serverResult []*depTask.ServerResult) {
+        taskStatus := deploy.DEPLOY_STATUS_SUCCESS
+        if status == depTask.STATUS_FAILED {
+            taskStatus = deploy.DEPLOY_STATUS_FAILED
+        }
+        srvRest := []map[string]interface{}{}
+        for _, r := range serverResult {
+            err := ""
+            if e := r.Error; e != nil {
+                err = e.Error()
+            }
+            srvRest = append(srvRest, map[string]interface{}{
+                "id": r.ID,
+                "task": r.TaskResult,
+                "status": r.Status,
+                "error": err, 
+            })
+        }
+        d := &deploy.Deploy{
+            ApplyId: id,
+            GroupId: gid,
+            Status: taskStatus,
+            Content: string(gostring.JsonEncode(srvRest)),
+        }
+        d.UpdateResult()
+    }
+    taskFn := func(id, status int) {
         apply := &deploy.Apply{
             ID: id,
         }
-        if haveError {
+        var deployStatus int
+        if status == depTask.STATUS_FAILED {
             apply.Status = deploy.APPLY_STATUS_FAILED
+            deployStatus = MAIL_STATUS_FAILED
         } else {
             apply.Status = deploy.APPLY_STATUS_SUCCESS
+            deployStatus = MAIL_STATUS_SUCCESS
         }
         apply.UpdateStatus()
-    }); err != nil {
+
+        //send deploy email
+        if err := apply.Detail(); err != nil {
+            return
+        }
+        u := &user.User{
+            ID: apply.UserId,
+        }
+        if err := u.Detail(); err != nil {
+            return
+        }
+        proj := &project.Project{
+            ID: apply.ProjectId,
+        }
+        if err := proj.Detail(); err != nil {
+            return
+        }
+        mails := gostring.JoinStrings(proj.DeployNotice, ",", u.Email)
+        MailSend(&MailMessage{
+            Mail: mails,
+            ApplyId: id,
+            Mode: MAIL_MODE_DEPLOY,
+            Status: deployStatus,
+            Title: apply.Name,
+        })
+
+        // run hook script
+        common.HookDeploy(id)
+    }
+    if err := depTask.NewTask(
+        id, 
+        isParallel, 
+        deploys, 
+        startDeployFn, 
+        finishDeployFn, 
+        taskFn,
+    ); err != nil {
         render.AppError(c, err.Error())
         return
     }

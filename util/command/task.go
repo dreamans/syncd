@@ -25,7 +25,7 @@ type TaskResult struct {
     Success     bool        `json:"success"`
 }
 
-func TaskNew(cmds []string, timeout int) *Task {
+func NewTask(cmds []string, timeout int) *Task {
     return &Task{
         Commands: cmds,
         termChan:  make(chan int),
@@ -81,4 +81,3 @@ func (t *Task) Terminate() {
         t.termChan <- 1
     }
 }
-

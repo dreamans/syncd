@@ -7,6 +7,7 @@ package project
 import (
     "github.com/gin-gonic/gin"
     "github.com/dreamans/syncd/render"
+    "github.com/dreamans/syncd/router/common"
     "github.com/dreamans/syncd/module/project"
     "github.com/dreamans/syncd/util/gostring"
     "github.com/dreamans/syncd/util/goslice"
@@ -26,12 +27,19 @@ type ProjectFormBind struct {
     DeployPath          string  `form:"deploy_path" binding:"required"`
     PreDeployCmd        string  `form:"pre_deploy_cmd"`
     AfterDeployCmd      string  `form:"after_deploy_cmd"`
-    DeployTimeout       int     `form:"deploy_timeout" binding:"required"`
+    AuditNotice         string  `form:"audit_notice"`
+    DeployNotice        string  `form:"deploy_notice"`
 }
 
 type ProjectBuildScriptBind struct {
     ID                  int     `form:"id" binding:"required"`
     BuildScript         string  `form:"build_script" binding:"required"`
+}
+
+type ProjectHookScriptBind struct {
+    ID                      int     `form:"id" binding:"required"`
+    BuildHookScript         string  `form:"build_hook_script"`
+    DeployHookScript         string  `form:"deploy_hook_script"`
 }
 
 type QueryBind struct {
@@ -56,12 +64,7 @@ func ProjectBuildScript(c *gin.Context) {
         return
     }
 
-    member := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: p.SpaceId,
-    }
-    if in := member.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, p.SpaceId) {
         return
     }
 
@@ -70,6 +73,37 @@ func ProjectBuildScript(c *gin.Context) {
         BuildScript: form.BuildScript,
     }
     if err := proj.UpdateBuildScript(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    render.Success(c)
+}
+
+func ProjectHookScript(c *gin.Context) {
+    var form ProjectHookScriptBind
+    if err := c.ShouldBind(&form); err != nil {
+        render.ParamError(c, err.Error())
+        return
+    }
+
+    p := &project.Project{
+        ID: form.ID,
+    }
+    if err := p.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    if !common.InSpaceCheck(c, p.SpaceId) {
+        return
+    }
+
+    proj := &project.Project{
+        ID: form.ID,
+        BuildHookScript: form.BuildHookScript,
+        DeployHookScript: form.DeployHookScript,
+    }
+    if err := proj.UpdateHookScript(); err != nil {
         render.AppError(c, err.Error())
         return
     }
@@ -91,12 +125,7 @@ func ProjectDelete(c *gin.Context) {
         return
     }
 
-    member := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: proj.SpaceId,
-    }
-    if in := member.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, proj.SpaceId) {
         return
     }
 
@@ -121,12 +150,7 @@ func ProjectDetail(c *gin.Context) {
         return
     }
 
-    member := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: proj.SpaceId,
-    }
-    if in := member.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, proj.SpaceId) {
         return
     }
 
@@ -148,12 +172,7 @@ func ProjectSwitchStatus(c *gin.Context) {
         return
     }
 
-    member := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: p.SpaceId,
-    }
-    if in := member.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, p.SpaceId) {
         return
     }
 
@@ -182,12 +201,7 @@ func ProjectList(c *gin.Context) {
         return
     }
 
-    member := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: query.SpaceId,
-    }
-    if in := member.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, query.SpaceId) {
         return
     }
 
@@ -240,12 +254,7 @@ func projectCreateOrUpdate(c *gin.Context) {
         return
     }
 
-    member := &project.Member{
-        UserId: c.GetInt("user_id"),
-        SpaceId: projectForm.SpaceId,
-    }
-    if in := member.MemberInSpace(); !in {
-        render.CustomerError(c, render.CODE_ERR_NO_PRIV, "user is not in the project space")
+    if !common.InSpaceCheck(c, projectForm.SpaceId) {
         return
     }
 
@@ -272,7 +281,8 @@ func projectCreateOrUpdate(c *gin.Context) {
         DeployPath: projectForm.DeployPath,
         PreDeployCmd: projectForm.PreDeployCmd,
         AfterDeployCmd: projectForm.AfterDeployCmd,
-        DeployTimeout: projectForm.DeployTimeout,
+        AuditNotice: projectForm.AuditNotice,
+        DeployNotice: projectForm.DeployNotice,
     }
     if err := proj.CreateOrUpdate(); err != nil {
         render.AppError(c, err.Error())

@@ -10,6 +10,7 @@ import (
     "fmt"
 
     "github.com/dreamans/syncd/model"
+    "github.com/dreamans/syncd/util/gois"
 )
 
 type Apply struct {
@@ -66,6 +67,10 @@ func (a *Apply) RollbackList() ([]Apply, error) {
             model.WhereParam{
                 Field: "status",
                 Prepare: APPLY_STATUS_SUCCESS,
+            },
+            model.WhereParam{
+                Field: "is_rollback_apply",
+                Prepare: 0,
             },
         },
     })
@@ -290,6 +295,7 @@ func (a *Apply) Create() error {
         AuditStatus: a.AuditStatus,
         RollbackId: a.RollbackId,
         IsRollbackApply: a.IsRollbackApply,
+        RollbackApplyId: a.RollbackApplyId,
     }
     if ok := apply.Create(); !ok {
         return errors.New("create deploy apply failed")
@@ -304,6 +310,10 @@ func (a *Apply) parseWhereConds(keyword string, spaceIds []int) []model.WherePar
         Field: "space_id",
         Tag: "IN",
         Prepare:  spaceIds,
+    })
+    where = append(where, model.WhereParam{
+        Field: "is_rollback_apply",
+        Prepare:  a.IsRollbackApply,
     })
     if a.Ctime != 0 {
         where = append(where, model.WhereParam{
@@ -331,11 +341,18 @@ func (a *Apply) parseWhereConds(keyword string, spaceIds []int) []model.WherePar
         })
     }
     if keyword != "" {
-        where = append(where, model.WhereParam{
-            Field: "name",
-            Tag: "LIKE",
-            Prepare: fmt.Sprintf("%%%s%%", keyword),
-        })
+        if gois.IsInteger(keyword) {
+            where = append(where, model.WhereParam{
+                Field: "id",
+                Prepare: keyword,
+            })
+        } else {
+            where = append(where, model.WhereParam{
+                Field: "name",
+                Tag: "LIKE",
+                Prepare: fmt.Sprintf("%%%s%%", keyword),
+            })
+        }
     }
     return where
 }

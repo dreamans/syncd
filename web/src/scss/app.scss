@@ -4,7 +4,7 @@ blockquote, body, dd, dl, dt, fieldset, figure, h1, h2, h3, h4, h5, h6, hr, html
     box-sizing: border-box;
 }
 body {
-    font-family: "Helvetica Neue",Helvetica,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
+    font-family: "PingFang SC","Helvetica Neue",Helvetica,"Hiragino Sans GB","Microsoft YaHei","微软雅黑",Arial,sans-serif;
     font-size: 14px;
 }
 html, body {
@@ -145,6 +145,9 @@ html, body {
 .app-color-success {
     color: #52c41a;
 }
+.app-color-white {
+    color: #fff;
+}
 .app-color-error {
     color: #f5222d;
 }
@@ -167,12 +170,21 @@ html, body {
         font-size: 14px;
     }
 }
+.app-tag-info {
+    box-sizing: border-box;
+    padding: 0 8px;
+    border: 1px solid #d9d9d9;
+    background: #fafafa;
+    border-radius: 4px;
+    cursor: pointer;
+}
 .app-mt-line {
     border-top: 1px solid #eaeaea;
 }
 .app-form-explain {
     color: rgba(0,0,0,.45);
     line-height: 1.524;
+    margin-top: 2px;
 }
 .app-table-explain {
     padding: 10px 0;
@@ -286,8 +298,14 @@ html, body {
         align-items: center;
         .header-left {
             .logo {
-                height: 25px;
-                margin-left: 30px;
+                margin-left: 25px;
+                font-size: 24px;
+                display: flex;
+                align-items: center;
+                .iconfont {
+                    font-size: 28px;
+                    margin-right: 8px;
+                }
             }
         }
         .header-right {

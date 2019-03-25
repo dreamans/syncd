@@ -98,4 +98,21 @@ export default {
     DeleteLoginToken() {
         return Cookies.remove(loginTokenKey)
     },
+
+    CheckPriv(code) {
+        return this.$store.getters['account/getPriv'].indexOf(code) > -1
+    },
+
+    CheckPrivs(codeArr) {
+        if (!codeArr || !codeArr.length) {
+            return false
+        }
+        let checked = false
+        codeArr.forEach(code => {
+            if (this.CheckPriv(code)) {
+                checked = true
+            }
+        })
+        return checked
+    },
 }

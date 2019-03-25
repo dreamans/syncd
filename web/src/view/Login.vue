@@ -4,8 +4,8 @@
             <div class="login-container">
                 <el-card class="login-box">
                     <div class="login-title">{{ $t('welcome_to_login_syncd') }}</div>
-                    <el-form ref="loginFormRef" :model="loginForm" :rules="loginRules" size="medium" class="login-form">
-                        <el-form-item  prop="username">
+                    <el-form @keyup.enter.native="loginHandler" ref="loginFormRef" :model="loginForm" :rules="loginRules" size="medium" class="login-form">
+                        <el-form-item prop="username">
                             <el-input :placeholder="$t('username_or_email')" prefix-icon="iconfont icon-user" v-model="loginForm.username" autocomplete="off"></el-input>
                         </el-form-item>
                         <el-form-item prop="password">

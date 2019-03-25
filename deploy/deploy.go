@@ -5,172 +5,106 @@
 package deploy
 
 import (
-    "errors"
-    "path"
     "sync"
 )
 
 const (
     STATUS_INIT = 0
-    STATUS_RUNNING = 1
+    STATUS_ING = 1
     STATUS_DONE = 2
     STATUS_FAILED = 3
-    STATUS_TERMINATE = 4
+)
+
+const (
+    DEPLOY_PARALLEL = 1
+    DEPLOY_SERIAL = 2
 )
 
 type Deploy struct {
     ID              int
-    Srvs            []*Server
+    User            string
     PreCmd          string
     PostCmd         string
     DeployPath      string
     DeployTmpPath   string
     PackFile        string
-    PackFileName    string
-    CallbackFn      deployCallbackFn
-    StartCallbackFn	deployCallbackFn
+    srvs            []*Server
     status          int
     wg              sync.WaitGroup
 }
 
-type taskCallbackFn func(int, bool)
-
-type deployCallbackFn func(int, int, *ServerStatus)
-
-var deployTaskList = &deployTask{
-    deployList: make(map[int][]*Deploy),
+type DeployResult struct {
+    ID          int
+    Status      int
+    ServerRest  []*ServerResult
 }
 
-func NewDepoly(deploy *Deploy) (*Deploy, error) {
-    if deploy.PackFile== "" {
-        return nil, errors.New("new deploy failed, deploy.PackFile can not be empty")
+func (d *Deploy) AddServer(id int, addr string, port int) {
+    srv := &Server{
+        ID: id,
+        Addr: addr,
+        User: d.User,
+        Port: port,
+        PreCmd: d.PreCmd,
+        PostCmd: d.PostCmd,
+        PackFile: d.PackFile,
+        DeployTmpPath: d.DeployTmpPath,
+        DeployPath: d.DeployPath,
     }
-    if deploy.DeployPath == "" {
-        return nil, errors.New("new deploy failed, deploy.DeployPath can not be empty")
-    }
-    if deploy.DeployTmpPath == "" {
-        deploy.DeployTmpPath = "~/.syncd"
-    }
-    if deploy.PackFileName == "" {
-        deploy.PackFileName = path.Base(deploy.PackFile)
-    }
-
-    return deploy, nil
+    NewServer(srv)
+    d.srvs = append(d.srvs, srv)
 }
 
-func DeployGroups (id int, deployGroups []*Deploy, callbackFn taskCallbackFn) error {
-    if err := deployTaskList.append(id, deployGroups); err != nil {
-        return err
+func (d *Deploy) Parallel() {
+    if d.status == STATUS_FAILED {
+        return
     }
-    go func() {
-        haveError := false
-        for _, dep := range deployGroups {
-            dep.deploy()
-            if dep.status == STATUS_FAILED {
-                haveError = true
-            }
-        }
-        deployTaskList.remove(id)
-        callbackFn(id, haveError)
-    }()
-    return nil
-}
-
-func StopDeploy(id int) {
-    deployTaskList.stop(id)
-    deployTaskList.remove(id)
-}
-
-func (deploy *Deploy) deploy() {
-    deploy.status = STATUS_RUNNING
-    var srvError error
-    for _, srv := range deploy.Srvs {
-        if deploy.StartCallbackFn != nil {
-            deploy.StartCallbackFn(deploy.ID, srv.ID, nil)
-        }
-        // check task exists
-        var srvStatus *ServerStatus
-        if exists := deployTaskList.exists(deploy.ID); exists {
-            srv.Deploy(deploy)
-            srvStatus = srv.Status()
-        } else {
-            srvStatus = &ServerStatus{
-                Status: STATUS_TERMINATE, 
-                Error: errors.New("deploy task run failed, cmd is terminated"),
-            }
-        }
-
-        if deploy.CallbackFn != nil {
-            deploy.CallbackFn(deploy.ID, srv.ID, srvStatus)
-        }
-        if srvStatus.Error != nil {
-            srvError = srvStatus.Error
-        }
-    }
-    if srvError == nil {
-        deploy.status = STATUS_DONE
-    } else {
-        deploy.status = STATUS_FAILED
-    }
-}
-
-func (deploy *Deploy) ParalDeploy() func() {
-    deploy.status = STATUS_RUNNING
-    for _, srv := range deploy.Srvs {
-        deploy.wg.Add(1)
+    d.status = STATUS_ING
+    status := STATUS_DONE
+    for _, srv := range d.srvs {
+        d.wg.Add(1)
         go func() {
-            srv.Deploy(deploy)
-            defer deploy.wg.Done()
+            if d.status == STATUS_ING {
+                srv.Deploy()
+                if srv.Result().Status == STATUS_FAILED {
+                    status = STATUS_FAILED
+                }
+            }
+            defer d.wg.Done()
         }()
     }
-
-    return func() {
-        deploy.wg.Wait()
-        deploy.status = STATUS_DONE
-    }
+    d.wg.Wait()
+    d.status = status
 }
 
-func (deploy *Deploy) Terminate() {
-    if deploy.status == STATUS_RUNNING {
-        for _, srv := range deploy.Srvs {
-            srv.Terminate()
+func (d *Deploy) Serial() {
+    if d.status == STATUS_FAILED {
+        return
+    }
+    d.status = STATUS_ING
+    status := STATUS_DONE
+    for _, srv := range d.srvs {
+        if d.status == STATUS_ING {
+            srv.Deploy()
+            if srv.Result().Status == STATUS_FAILED {
+                status = STATUS_FAILED
+            }
         }
     }
+    d.status = status
 }
 
-type deployTask struct {
-    deployList  map[int][]*Deploy
-    mu          sync.Mutex
-}
-
-func (dt *deployTask) exists(id int) bool {
-    dt.mu.Lock()
-    defer dt.mu.Unlock()
-    _, exists := dt.deployList[id]
-    return exists
-}
-
-func (dt *deployTask) append(id int, deploy []*Deploy) error {
-    if dt.exists(id) {
-        return errors.New("deploy task have exists")
+func (d *Deploy) Result() ([]*ServerResult, int) {
+    var rest []*ServerResult
+    for _, srv := range d.srvs {
+        rest = append(rest, srv.Result())
     }
-    dt.mu.Lock()
-    defer dt.mu.Unlock()
-    dt.deployList[id] = deploy
-    return nil
+    return rest, d.status
 }
 
-func (dt *deployTask) remove(id int) {
-    dt.mu.Lock()
-    defer dt.mu.Unlock()
-    delete(dt.deployList, id)
-}
-
-func (dt *deployTask) stop(id int) {
-    deploy, exists := dt.deployList[id]
-    if exists {
-        for _, d := range deploy {
-            d.Terminate()
-        }
+func (d *Deploy) Terminate() {
+    d.status = STATUS_FAILED
+    for _, srv := range d.srvs {
+        srv.Terminate()
     }
 }

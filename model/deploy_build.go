@@ -14,9 +14,9 @@ type DeployBuild struct {
     StartTime           int     `gorm:"type:int(11);not null;default:0"`
     FinishTime          int     `gorm:"type:int(11);not null;default:0"`
     Status              int     `gorm:"type:int(11);not null;default:0"`
-    Tar                 string  `gorm:"type:varchar(500);not null;default:''"`
+    Tar                 string  `gorm:"type:varchar(2000);not null;default:''"`
     Output              string  `gorm:"type:text;not null"`
-    Errmsg              string  `gorm:"type:varchar(1000);not null;default:''"`
+    Errmsg              string  `gorm:"type:text;not null"`
     Ctime               int     `gorm:"type:int(11);not null;default:0"`
 }
 

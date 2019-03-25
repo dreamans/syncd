@@ -89,4 +89,3 @@ func (c *Command) terminate() error {
         return syscall.Kill(c.command.Process.Pid, syscall.SIGKILL)
     }
 }
-

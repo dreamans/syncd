@@ -64,6 +64,7 @@ func RegisterRoute() {
         api.GET(reqApi.PROJECT_DETAIL, project.ProjectDetail)
         api.POST(reqApi.PROJECT_DELETE, project.ProjectDelete)
         api.POST(reqApi.PROJECT_BUILDSCRIPT, project.ProjectBuildScript)
+        api.POST(reqApi.PROJECT_HOOKSCRIPT, project.ProjectHookScript)
 
         api.GET(reqApi.DEPLOY_APPLY_PROJECT_DETAIL, deploy.ApplyProjectDetail)
         api.POST(reqApi.DEPLOY_APPLY_SUBMIT, deploy.ApplySubmit)

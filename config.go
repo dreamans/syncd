@@ -17,6 +17,7 @@ type (
         LocalSpace      string
         RemoteSpace     string
         Cipher          string
+        AppHost         string
     }
 
     LogConfig struct {

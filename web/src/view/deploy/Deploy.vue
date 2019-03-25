@@ -99,20 +99,20 @@
                 </el-table-column>
                 <el-table-column prop="audit_status" width="100" :label="$t('audit')">
                     <template slot-scope="scope">
-                        <span class="app-color-warning" v-if="scope.row.audit_status == 1">{{ $t('unaudit') }}</span>
-                        <span class="app-color-success" v-else-if="scope.row.audit_status == 2">{{ $t('pass') }}</span>
-                        <span class="app-color-error" v-else-if="scope.row.audit_status == 3">{{ $t('denied') }}</span>
+                        <span class="app-color-warning" v-if="scope.row.audit_status == $root.AuditStatusPending">{{ $t('unaudit') }}</span>
+                        <span class="app-color-success" v-else-if="scope.row.audit_status == $root.AuditStatusOk">{{ $t('pass') }}</span>
+                        <span class="app-color-error" v-else-if="scope.row.audit_status == $root.AuditStatusRefuse">{{ $t('denied') }}</span>
                         <span v-else>--</span>
                     </template>
                 </el-table-column>
                 <el-table-column prop="ssh_port" width="100" :label="$t('status')">
                     <template slot-scope="scope">
-                        <span v-if="scope.row.status == 1"><i class="iconfont small left icon-wait"></i>{{ $t('wait_online') }}</span>
-                        <span v-else-if="scope.row.status == 2"><i class="iconfont small left icon-coffee"></i>{{ $t('onlineing') }}</span>
-                        <span class="app-color-success" v-else-if="scope.row.status == 3"><i class="iconfont small left icon-success"></i>{{ $t('success') }}</span>
-                        <span class="app-color-error" v-else-if="scope.row.status == 4"><i class="iconfont small left icon-failed"></i>{{ $t('failed') }}</span>
-                        <span class="app-color-gray" v-else-if="scope.row.status == 5"><i class="iconfont small left icon-drop"></i>{{ $t('drop') }}</span>
-                        <span class="app-color-error" v-else-if="scope.row.status == 6"><i class="iconfont small left icon-rollback"></i>{{ $t('rollback') }}</span>
+                        <span v-if="scope.row.status == $root.ApplyStatusNone"><i class="iconfont small left icon-wait"></i>{{ $t('wait_online') }}</span>
+                        <span v-else-if="scope.row.status == $root.ApplyStatusIng"><i class="iconfont small left icon-coffee"></i>{{ $t('onlineing') }}</span>
+                        <span class="app-color-success" v-else-if="scope.row.status == $root.ApplyStatusSuccess"><i class="iconfont small left icon-success"></i>{{ $t('success') }}</span>
+                        <span class="app-color-error" v-else-if="scope.row.status == $root.ApplyStatusFailed"><i class="iconfont small left icon-failed"></i>{{ $t('failed') }}</span>
+                        <span class="app-color-gray" v-else-if="scope.row.status == $root.ApplyStatusDrop"><i class="iconfont small left icon-drop"></i>{{ $t('drop') }}</span>
+                        <span class="app-color-error" v-else-if="scope.row.status == $root.ApplyStatusRollback"><i class="iconfont small left icon-rollback"></i>{{ $t('rollback') }}</span>
                         <span v-else>--</span>
                     </template>
                 </el-table-column>
@@ -123,23 +123,23 @@
                                 {{ $t('operate') }}<i class="el-icon-arrow-down el-icon--right"></i>
                             </el-button>
                             <el-dropdown-menu class="app-op-dropdown" slot="dropdown">
-                                <el-dropdown-item command="view">
+                                <el-dropdown-item command="view" v-if="$root.CheckPriv($root.Priv.DEPLOY_VIEW)">
                                     <i class="iconfont left small icon-view"></i>{{ $t('view') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item command="edit" 
-                                v-if="scope.row.status == 1 && (scope.row.audit_status == 1 || scope.row.audit_status == 3)">
+                                v-if="scope.row.status == $root.ApplyStatusNone && (scope.row.audit_status == $root.AuditStatusPending || scope.row.audit_status == $root.AuditStatusRefuse) && $root.CheckPriv($root.Priv.DEPLOY_EDIT)">
                                     <i class="iconfont left small icon-edit"></i>{{ $t('edit') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item command="audit"
-                                v-if="scope.row.audit_status == 1 && scope.row.status == 1">
+                                v-if="scope.row.audit_status == $root.AuditStatusPending && scope.row.status == $root.ApplyStatusNone && $root.CheckPriv($root.Priv.DEPLOY_AUDIT)">
                                     <i class="iconfont left small icon-audit"></i>{{ $t('audit') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item command="deploy"
-                                v-if="scope.row.audit_status == 2 && (scope.row.status == 1 || scope.row.status == 2 || scope.row.status == 3 || scope.row.status == 4 || scope.row.status == 6)">
+                                v-if="scope.row.audit_status == $root.AuditStatusOk && (scope.row.status == $root.ApplyStatusNone || scope.row.status == $root.ApplyStatusIng || scope.row.status == $root.ApplyStatusSuccess || scope.row.status == $root.ApplyStatusFailed || scope.row.status == $root.ApplyStatusRollback) && $root.CheckPriv($root.Priv.DEPLOY_DEPLOY)">
                                     <i class="iconfont left small icon-coffee"></i>{{ $t('online') }}
                                 </el-dropdown-item>
                                 <el-dropdown-item command="drop"
-                                v-if="scope.row.status != 2 && scope.row.status != 5">
+                                v-if="scope.row.status != $root.ApplyStatusIng && scope.row.status != $root.ApplyStatusDrop && $root.CheckPriv($root.Priv.DEPLOY_DROP)">
                                     <i class="iconfont left small icon-drop"></i>{{ $t('drop') }}
                                 </el-dropdown-item>
                             </el-dropdown-menu>
@@ -195,13 +195,13 @@
                         {{ this.$root.FormatDateTime(dialogDetail.ctime) }}
                     </el-form-item>
                     <template v-if="dialogDetail.cmd == 'audit'">
-                        <el-form-item :label="$t('audit')" v-if="dialogDetail.status == 1 && dialogDetail.audit_status == 1">
+                        <el-form-item :label="$t('audit')" v-if="dialogDetail.status == $root.ApplyStatusNone && dialogDetail.audit_status == $root.AuditStatusPending">
                             <div>
-                                <el-radio v-model="auditStatus" :label="2"><span class="app-color-success">{{ $t('audit_pass') }}</span></el-radio>
-                                <el-radio v-model="auditStatus" :label="3"><span class="app-color-error">{{ $t('audit_denied') }}</span></el-radio>
+                                <el-radio v-model="auditStatus" :label="$root.AuditStatusOk"><span class="app-color-success">{{ $t('audit_pass') }}</span></el-radio>
+                                <el-radio v-model="auditStatus" :label="$root.AuditStatusRefuse"><span class="app-color-error">{{ $t('audit_denied') }}</span></el-radio>
                             </div>
                         </el-form-item>
-                        <el-form-item :label="$t('deined_reason')" v-if="dialogDetail.status == 1 && dialogDetail.audit_status == 1 && auditStatus == 3">
+                        <el-form-item :label="$t('deined_reason')" v-if="dialogDetail.status == $root.ApplyStatusNone && dialogDetail.audit_status == $root.AuditStatusPending && auditStatus == $root.AuditStatusRefuse">
                             <el-input type="textarea" :autosize="{ minRows: 2 }" v-model="auditRefusalReason"></el-input>
                         </el-form-item>
                         <el-form-item>
@@ -234,16 +234,16 @@
                         {{ dialogDetail.name}}
                     </el-form-item>
                     <el-form-item :label="$t('deploy_mode')">
-                        <span v-if="dialogDetail.deploy_mode == 1">
+                        <span v-if="dialogDetail.deploy_mode == $root.DeployModeBranch">
                             <i class="iconfont icon-branch"></i> - {{ $t('branch_deploy') }}<template v-if="dialogDetail.repo_branch"> - <strong>{{ dialogDetail.repo_branch }}</strong> {{ $t('branch') }}</template>
                         </span>
-                        <span v-if="dialogDetail.deploy_mode == 2">
+                        <span v-if="dialogDetail.deploy_mode == $root.DeployModelTag">
                             <i class="iconfont icon-tag"></i> {{ $t('tag_deploy') }}
                         </span>
                     </el-form-item>
 
                     <el-form-item 
-                    v-if="dialogDetail.deploy_mode == 2"
+                    v-if="dialogDetail.deploy_mode == $root.DeployModelTag"
                     :label="$t('tag_name')"
                     prop="branch_name"
                     :rules="[
@@ -253,7 +253,7 @@
                     </el-form-item>
 
                     <el-form-item 
-                    v-if="dialogDetail.deploy_mode == 1 && dialogDetail.repo_branch == ''"
+                    v-if="dialogDetail.deploy_mode == $root.DeployModeBranch && dialogDetail.repo_branch == ''"
                     :label="$t('branch_name')"
                     prop="branch_name"
                     :rules="[
@@ -263,7 +263,7 @@
                     </el-form-item>
 
                     <el-form-item 
-                    v-if="dialogDetail.deploy_mode == 1"
+                    v-if="dialogDetail.deploy_mode == $root.DeployModeBranch"
                     :label="$t('commit_version')"
                     prop="commit_version">
                         <el-input class="app-input-normal" :placeholder="$t('please_input_commit_version')" v-model="dialogForm.commit_version" autocomplete="off"></el-input>
@@ -310,16 +310,16 @@ export default {
                 {time: 0, label: this.$t('any_time')},
             ],
             statusList: [
-                {status: 1, label: this.$t('not_online')},
-                {status: 2, label: this.$t('onlineing')},
-                {status: 3, label: this.$t('online_success')},
-                {status: 4, label: this.$t('online_failed')},
-                {status: 5, label: this.$t('deprecated')},
+                {status: this.$root.ApplyStatusNone, label: this.$t('not_online')},
+                {status: this.$root.ApplyStatusIng, label: this.$t('onlineing')},
+                {status: this.$root.ApplyStatusSuccess, label: this.$t('online_success')},
+                {status: this.$root.ApplyStatusFailed, label: this.$t('online_failed')},
+                {status: this.$root.ApplyStatusDrop, label: this.$t('deprecated')},
             ],
             auditStatusList: [
-                {status: 1, label: this.$t('unaudit')},
-                {status: 2, label: this.$t('audit_pass')},
-                {status: 3, label: this.$t('audit_denied')},
+                {status: this.$root.AuditStatusPending, label: this.$t('unaudit')},
+                {status: this.$root.AuditStatusOk, label: this.$t('audit_pass')},
+                {status: this.$root.AuditStatusRefuse, label: this.$t('audit_denied')},
             ],
             projectList: [],
 
@@ -539,6 +539,9 @@ export default {
         },
     },
     mounted() {
+        if (this.$route.query.id) {
+            this.searchInput = this.$route.query.id
+        }
         this.$root.PageInit()
         this.loadTableData()
         this.loadProjectAll()

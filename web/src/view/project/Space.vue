@@ -3,7 +3,7 @@
         <el-card shadow="never">
             <el-row class="app-btn-group">
                 <el-col :span="4">
-                    <el-button @click="openAddDialogHandler" type="primary" size="medium" icon="iconfont left small icon-add">{{ $t('add_project_space') }}</el-button>
+                    <el-button v-if="$root.CheckPriv($root.Priv.PROJECT_SPACE_NEW)" @click="openAddDialogHandler" type="primary" size="medium" icon="iconfont left small icon-add">{{ $t('add_project_space') }}</el-button>&nbsp;
                 </el-col>
                 <el-col :span="6" :offset="14">
                     <el-input @keyup.enter.native="searchHandler" v-model="searchInput" size="medium" :placeholder="$t('input_name_to_search')">
@@ -25,10 +25,12 @@
                 <el-table-column :label="$t('operate')" width="180" align="right">
                     <template slot-scope="scope">
                         <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_SPACE_EDIT)"
                         icon="el-icon-edit"
                         type="text"
                         @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
                         <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_SPACE_DEL)"
                         type="text"
                         icon="el-icon-delete"
                         class="app-danger"
