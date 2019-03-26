@@ -5,30 +5,26 @@
 package gopath
 
 import (
-    "errors"
     "os"
-    "os/exec"
     "path/filepath"
     "strings"
 )
 
 func CurrentPath() (string, error) {
-    file, err := exec.LookPath(os.Args[0])
-    if err != nil {
-        return "", err
-    }
-    path, err := filepath.Abs(file)
-    if err != nil {
-        return "", err
-    }
-    i := strings.LastIndex(path, "/")
-    if i < 0 {
-        i = strings.LastIndex(path, "\\")
-    }
-    if i < 0 {
-        return "", errors.New(`error: Can't find "/" or "\".`)
-    }
-    return string(path[0 : i]), nil
+    dir, err := filepath.Abs(filepath.Dir(os.Args[0]))
+	if err != nil {
+		return "", err
+	}
+	return dir, nil
+}
+
+func CurrentParentPath() (string, error) {
+    path := strings.Join([]string{filepath.Dir(os.Args[0]), "/../"}, "")
+    realPath, err := filepath.Abs(path)
+	if err != nil {
+		return "", err
+	}
+	return realPath, nil
 }
 
 func CreatePath(path string) error {
