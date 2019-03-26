@@ -64,7 +64,7 @@
                 <el-table-column :label="$t('operate')" width="380" align="right">
                     <template slot-scope="scope">
                         <el-button
-                        v-if="$root.CheckPriv($root.Priv.PROJECT_BUILD)"
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_HOOK)"
                         icon="iconfont small left icon-webhook"
                         type="text"
                         @click="openHookDialogHandler(scope.row)">{{ $t('hook') }}</el-button>
@@ -115,7 +115,7 @@
                     ]">
                         <el-input :placeholder="$t('please_input_project_name')" v-model="dialogForm.name" autocomplete="off"></el-input>
                     </el-form-item>
-            
+
                     <el-form-item
                     :label="$t('description')"
                     prop="description">

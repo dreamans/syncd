@@ -71,10 +71,12 @@ func findSyncdIniFile() string {
         return syncdIniFlag
     }
     currPath, _ := gopath.CurrentPath()
+    parentPath, _ := gopath.CurrentParentPath()
     scanPath := []string{
         "/etc",
         currPath,
         fmt.Sprintf("%s/etc", currPath),
+        fmt.Sprintf("%s/etc", parentPath),
     }
 
     for _, path := range scanPath {
@@ -120,6 +122,7 @@ func main() {
     cfg := &syncd.Config{
         Serve: &syncd.ServeConfig{
             Addr: configOrDefault("serve", "addr", "8868"),
+            FeServeEnable: configIntOrDefault("serve", "fe_serve_enable", 1),
             ReadTimeout: configIntOrDefault("serve", "read_timeout", 300),
             WriteTimeout: configIntOrDefault("serve", "write_timeout", 300),
             IdleTimeout: configIntOrDefault("serve", "idle_timeout", 300),

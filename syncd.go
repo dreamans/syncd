@@ -39,6 +39,7 @@ type syncd struct {
     RemoteSpace     string
     CipherKey       []byte
     AppHost         string
+    FeServeEnable   int
     config          *Config
 }
 
@@ -100,6 +101,7 @@ func (s *syncd) registerMail() {
 
 func (s *syncd) initEnv() error {
     s.AppHost = s.config.Syncd.AppHost
+    s.FeServeEnable = s.config.Serve.FeServeEnable
     s.LocalSpace = s.config.Syncd.LocalSpace
     s.LocalTmpSpace = s.LocalSpace + "/tmp"
     s.LocalTarSpace = s.LocalSpace + "/tar"

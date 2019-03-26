@@ -6,5 +6,6 @@ module.exports = {
                 changeOrigin: true,
             }
         }
-    }
+    },
+    publicPath: '/static/'
 }

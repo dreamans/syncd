@@ -299,12 +299,9 @@ html, body {
         .header-left {
             .logo {
                 margin-left: 25px;
-                font-size: 24px;
-                display: flex;
-                align-items: center;
-                .iconfont {
-                    font-size: 28px;
-                    margin-right: 8px;
+                .svg-logo {
+                    height: 30px;
+                    color: #fff;
                 }
             }
         }

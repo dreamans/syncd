@@ -5,6 +5,11 @@
 package route
 
 import (
+    "net/http"
+
+    "github.com/gin-gonic/gin"
+    "github.com/dreamans/syncd/util/gopath"
+    "github.com/dreamans/syncd/util/gostring"
     reqApi "github.com/dreamans/syncd/router/route/api"
     "github.com/dreamans/syncd"
     "github.com/dreamans/syncd/router/user"
@@ -83,4 +88,26 @@ func RegisterRoute() {
         api.GET(reqApi.DEPLOY_APPLY_ROLLBACK, deploy.ApplyRollbackList)
         api.POST(reqApi.DEPLOY_DEPLOY_ROLLBACK, deploy.DeployRollback)
     }
+
+    if syncd.App.FeServeEnable == 1 {
+        RegisterFeResource()
+    }
+}
+
+func RegisterFeResource() {
+    parentPath, err := gopath.CurrentParentPath()
+    if err != nil {
+        syncd.App.Logger.Error("get current path failed, err[%s]", err.Error())
+        return
+    }
+    indexFile := gostring.JoinStrings(parentPath, "/public/index.html")
+    staticPath := gostring.JoinStrings(parentPath, "/public")
+
+    syncd.App.Gin.StaticFile("/", indexFile)
+    syncd.App.Gin.Static("/static", staticPath)
+
+    syncd.App.Gin.LoadHTMLFiles(indexFile)
+    syncd.App.Gin.NoRoute(func(c *gin.Context) {
+        c.HTML(http.StatusOK, "index.html", nil)
+    })
 }

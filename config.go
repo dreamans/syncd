@@ -34,6 +34,7 @@ type (
 
     ServeConfig struct {
         Addr            string
+        FeServeEnable   int
         ReadTimeout     int
         WriteTimeout    int
         IdleTimeout     int
