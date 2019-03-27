@@ -1,16 +1,16 @@
-<img src="docs/assets/img/logo-blue.svg" width="260px" />
-
-# Syncd - 自动化部署工具
-
-<a href="https://travis-ci.org/dreamans/syncd"><img src="https://img.shields.io/travis/dreamans/syncd/master.svg" /></a>
-<a href="https://github.com/dreamans/syncd/blob/master/LICENSE"><img src="https://img.shields.io/github/license/dreamans/syncd.svg" /></a>
-<a href="https://github.com/dreamans/syncd/releases"><img src="https://img.shields.io/github/release/dreamans/syncd.svg" /></a>
-<a href="https://github.com/dreamans/syncd/stargazers"><img src="https://img.shields.io/github/stars/dreamans/syncd.svg" /></a>
-<a href="https://github.com/dreamans/syncd/network/members"><img src="https://img.shields.io/github/forks/dreamans/syncd.svg" /></a>
-<a href='https://gitee.com/dreamans/syncd/stargazers'><img src='https://gitee.com/dreamans/syncd/badge/star.svg?theme=dark' /></a>
-<a href='https://gitee.com/dreamans/syncd/members'><img src='https://gitee.com/dreamans/syncd/badge/fork.svg?theme=dark' /></a>
-
-## 什么是 Syncd?
+<p align="center">
+    <img align="center" src="docs/assets/img/logo-blue.svg" width="350px" />
+</p>
+<h3 align="center">Syncd - 自动化部署工具</h3>
+<p align="center">
+    <a href="https://travis-ci.org/dreamans/syncd"><img src="https://img.shields.io/travis/dreamans/syncd/master.svg" /></a>
+    <a href="https://github.com/dreamans/syncd/blob/master/LICENSE"><img src="https://img.shields.io/github/license/dreamans/syncd.svg" /></a>
+    <a href="https://github.com/dreamans/syncd/releases"><img src="https://img.shields.io/github/release/dreamans/syncd.svg" /></a>
+    <a href="https://github.com/dreamans/syncd/stargazers"><img src="https://img.shields.io/github/stars/dreamans/syncd.svg" /></a>
+    <a href="https://github.com/dreamans/syncd/network/members"><img src="https://img.shields.io/github/forks/dreamans/syncd.svg" /></a>
+    <a href='https://gitee.com/dreamans/syncd/stargazers'><img src='https://gitee.com/dreamans/syncd/badge/star.svg?theme=dark' /></a>
+    <a href='https://gitee.com/dreamans/syncd/members'><img src='https://gitee.com/dreamans/syncd/badge/fork.svg?theme=dark' /></a>
+</p>
 
 Syncd是一款开源的代码部署工具，它具有简单、高效、易用等特点，可以提高团队的工作效率。
 
