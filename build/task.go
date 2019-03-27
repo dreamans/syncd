@@ -32,7 +32,7 @@ func NewTask(id int, build *Build, fn CallbackFn) error {
         build.Run()
         task.remove(id)
         if fn != nil {
-            fn(id, build.PackFile(), build.Result(), build.Output())
+            fn(id, build.PackRealFile(), build.Result(), build.Output())
         }
     }()
     return nil

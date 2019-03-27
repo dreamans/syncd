@@ -81,8 +81,12 @@ func (srv *Server) deployCmd() []string {
         useSshPort = fmt.Sprintf("-p %d", srv.Port)
         useScpPort = fmt.Sprintf(" -P %d", srv.Port)
     }
+    var cmds []string
+    if srv.PackFile == "" {
+        cmds = append(cmds, "echo 'packfile empty' && exit 1")
+    }
 
-    cmds := []string{
+    cmds = append(cmds, []string{
         fmt.Sprintf(
             "/usr/bin/env ssh -o StrictHostKeyChecking=no %s %s %s@%s 'mkdir -p %s; mkdir -p %s'",
             useCustomKey,
@@ -101,7 +105,7 @@ func (srv *Server) deployCmd() []string {
             srv.Addr,
             srv.DeployTmpPath,
         ),
-    }
+    }...)
     if srv.PreCmd != "" {
         cmds = append(
             cmds,

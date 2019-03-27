@@ -11,6 +11,7 @@ import (
     "github.com/dreamans/syncd/util/gostring"
     "github.com/dreamans/syncd/util/command"
     "github.com/dreamans/syncd/util/gofile"
+    "github.com/dreamans/syncd/util/gopath"
 )
 
 type Build struct {
@@ -104,6 +105,13 @@ func (b *Build) Output() []*command.TaskResult{
 
 func (b *Build) PackFile() string {
     return b.packFile
+}
+
+func (b *Build) PackRealFile() string {
+    if gopath.Exists(b.packFile) {
+        return b.packFile
+    }
+    return ""
 }
 
 func (b *Build) Terminate() {
