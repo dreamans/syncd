@@ -11,12 +11,9 @@
     <a href='https://gitee.com/dreamans/syncd/stargazers'><img src='https://gitee.com/dreamans/syncd/badge/star.svg?theme=dark' /></a>
     <a href='https://gitee.com/dreamans/syncd/members'><img src='https://gitee.com/dreamans/syncd/badge/fork.svg?theme=dark' /></a>
 </p>
-
-Syncd是一款开源的代码部署工具，它具有简单、高效、易用等特点，可以提高团队的工作效率。
-
-码云GVP项目
-
-[![Fork me on Gitee](https://gitee.com/logo-black.svg)](https://gitee.com/dreamans/syncd)
+<p align="center">Syncd是一款开源的代码部署工具，它具有简单、高效、易用等特点，可以提高团队的工作效率。</p>
+<p align="center">码云GVP项目</p>
+<p align="center"><a href="https://gitee.com/dreamans/syncd"><img width="130px" align="center" src="docs/assets/img/gitee-logo-black.svg" /></a></p>
 
 ## 特性
 
