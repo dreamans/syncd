@@ -1,100 +1,79 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
 package syncd
 
 import (
-    "time"
-    "io"
-    "os"
     "errors"
     "encoding/base64"
+    "fmt"
+    "os"
+    "io"
 
-    "github.com/tinystack/goutil/gopath"
-    "github.com/tinystack/goweb"
-    "github.com/tinystack/golog"
-    "github.com/jinzhu/gorm"
+    "github.com/gin-gonic/gin"
+    "github.com/dreamans/syncd/util/golog"
+    "github.com/dreamans/syncd/util/gopath"
 )
 
-type Syncd struct {
-    config  *Config
-    serve   *goweb.Serve
-}
-
-type ServeHandler struct {
-    BeforeHandler           goweb.HandlerFunc
-    AfterHandler            goweb.HandlerFunc
-    ServerErrorHandler      func(error, *goweb.Context, int)
-    NotFoundHandler         goweb.HandlerFunc
-    MethodNotAllowHandler   goweb.HandlerFunc
-}
-
 var (
-    Logger          *golog.Logger
-    Orm             *gorm.DB
-    DbInstance      *DB
-    Mail            *SendMail
-    DataDir         string
-    TmpDir          string
-    RemoteTmpDir    string
-    CipherKey       []byte
-    Version         string
+    App	*syncd
 )
 
 const (
-    VERSION = "1.1.2"
+    Version = "v2.0.0"
 )
 
-func NewSyncd(cfg *Config) *Syncd {
-    syncd := &Syncd{
-        config: cfg,
-        serve: goweb.New(cfg.Serve.Addr),
+func init() {
+    App = newSyncd()
+}
+
+type syncd struct {
+    Gin             *gin.Engine
+    DB              *DB
+    Logger          *golog.Logger
+    Mail            *SendMail
+    LocalSpace      string
+    LocalTmpSpace   string
+    LocalTarSpace   string
+    RemoteSpace     string
+    CipherKey       []byte
+    AppHost         string
+    FeServeEnable   int
+    config          *Config
+}
+
+func newSyncd() *syncd {
+    return &syncd{
+        Gin: gin.New(),
     }
-    syncd.serve.ReadTimeout = time.Second * time.Duration(cfg.Serve.ReadTimeout)
-    syncd.serve.WriteTimeout = time.Second * time.Duration(cfg.Serve.WriteTimeout)
-    syncd.serve.IdleTimeout = time.Second * time.Duration(cfg.Serve.IdleTimeout)
-    return syncd
 }
 
-func (s *Syncd) Start() error {
-    return s.serve.Start()
-}
+func (s *syncd) Init(cfg *Config) error {
+    s.config = cfg
 
-func (s *Syncd) RegisterRoute(method, path string, handler goweb.HandlerFunc) {
-    s.serve.Handler(method, path, handler)
-}
-
-func (s *Syncd) RegisterServeHandler(h ServeHandler) {
-    s.serve.BeforeHandler = h.BeforeHandler
-    s.serve.AfterHandler = h.AfterHandler
-    s.serve.ServerErrorHandler = h.ServerErrorHandler
-    s.serve.NotFoundHandler = h.NotFoundHandler
-    s.serve.MethodNotAllowHandler = h.MethodNotAllowHandler
-}
-
-func (s *Syncd) UnRegisterRoute() {}
-
-func (s *Syncd) RegisterOrm() {
-    DbInstance = NewDatabase(s.config.Db)
-    if err := DbInstance.Open(); err != nil {
-        panic(err)
+    if err := s.registerOrm(); err != nil {
+        return err
     }
-    Orm = DbInstance.DbHandler
-}
+    s.registerMail()
+    s.registerLog()
 
-func (s *Syncd) RegisterMail() {
-    sendmail := &SendMail{
-        Enable: s.config.Mail.Enable,
-        Smtp: s.config.Mail.Smtp,
-        Port: s.config.Mail.Port,
-        User: s.config.Mail.User,
-        Pass: s.config.Mail.Pass,
+    if err := s.initEnv(); err != nil {
+        return err
     }
-    Mail = SendMailNew(sendmail)
+    return nil
 }
 
-func (s *Syncd) RegisterLog() {
+func (s *syncd) Start() error {
+    return s.Gin.Run(s.config.Serve.Addr)
+}
+
+func  (s *syncd) registerOrm() error {
+    s.DB = NewDatabase(s.config.Db)
+    return s.DB.Open()
+}
+
+func (s *syncd) registerLog() {
     var loggerHandler io.Writer
     switch s.config.Log.Path {
     case "stdout":
@@ -106,37 +85,46 @@ func (s *Syncd) RegisterLog() {
     default:
         loggerHandler = golog.NewFileHandler(s.config.Log.Path)
     }
-    Logger = golog.New(loggerHandler)
+    s.Logger = golog.New(loggerHandler)
 }
 
-func (s *Syncd) InitEnv() {
-    DataDir = s.config.Syncd.Dir
-    if s.config.Syncd.Dir == "" {
-        path, err := gopath.CurrentPath()
-        if err != nil {
-            panic(err)
-        }
-        DataDir = path + "/data"
+func (s *syncd) registerMail() {
+    sendmail := &SendMail{
+        Enable: s.config.Mail.Enable,
+        Smtp: s.config.Mail.Smtp,
+        Port: s.config.Mail.Port,
+        User: s.config.Mail.User,
+        Pass: s.config.Mail.Pass,
     }
-    if err := gopath.CreatePath(DataDir); err != nil {
-        panic(err)
+    s.Mail = NewSendMail(sendmail)
+}
+
+func (s *syncd) initEnv() error {
+    s.AppHost = s.config.Syncd.AppHost
+    s.FeServeEnable = s.config.Serve.FeServeEnable
+    s.LocalSpace = s.config.Syncd.LocalSpace
+    s.LocalTmpSpace = s.LocalSpace + "/tmp"
+    s.LocalTarSpace = s.LocalSpace + "/tar"
+
+    if err := gopath.CreatePath(s.LocalSpace); err != nil {
+        return err
+    }
+    if err := gopath.CreatePath(s.LocalTmpSpace); err != nil {
+        return err
+    }
+    if err := gopath.CreatePath(s.LocalTarSpace); err != nil {
+        return err
     }
 
-    TmpDir = DataDir + "/tmp"
-    if err := gopath.CreatePath(TmpDir); err != nil {
-        panic(err)
-    }
-
+    s.RemoteSpace = s.config.Syncd.RemoteSpace
     if s.config.Syncd.Cipher == "" {
-        panic(errors.New("syncd config 'Cipher' not setting"))
+        return errors.New("syncd config 'Cipher' not setting")
     }
-
     dec, err := base64.StdEncoding.DecodeString(s.config.Syncd.Cipher)
     if err != nil {
-        panic(err)
+        return errors.New(fmt.Sprintf("decode Cipher failed, %s", err.Error()))
     }
-    CipherKey = dec
+    s.CipherKey = dec
 
-    RemoteTmpDir = "~/.syncd"
+    return nil
 }
-

@@ -1,10 +1,12 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
 package syncd
 
 import (
+    "strings"
+
     "gopkg.in/gomail.v2"
 )
 
@@ -17,22 +19,12 @@ type SendMail struct {
     dialer  *gomail.Dialer
 }
 
-type SendMailMessage struct {
-    From    string
-    To      []string
-    Cc      []string
-    Subject string
-    Body    string
-    Attach  string
-    mail    *SendMail
-}
-
-func SendMailNew(mail *SendMail) *SendMail {
+func NewSendMail(mail *SendMail) *SendMail {
     mail.dialer = gomail.NewPlainDialer(mail.Smtp, mail.Port, mail.User, mail.Pass)
     return mail
 }
 
-func (mail *SendMail) Send(msg *SendMailMessage) error {
+func (mail *SendMail) send(msg *SendMailMessage) error {
     if mail.Enable == 0 {
         return nil
     }
@@ -42,6 +34,31 @@ func (mail *SendMail) Send(msg *SendMailMessage) error {
         return err
     }
     return nil
+}
+
+func (mail *SendMail) Send(msg *SendMailMessage) {
+    if err := mail.send(msg); err != nil {
+        App.Logger.Error(
+            "send mail failed, to[%s], cc[%s], subject[%s]", 
+            strings.Join(msg.To, ","),
+            strings.Join(msg.Cc, ","),
+            msg.Subject,
+        )
+    }
+}
+
+func (mail *SendMail) AsyncSend(msg *SendMailMessage) {
+    go mail.Send(msg)
+}
+
+type SendMailMessage struct {
+    From    string
+    To      []string
+    Cc      []string
+    Subject string
+    Body    string
+    Attach  string
+    mail    *SendMail
 }
 
 func (m *SendMailMessage) NewMessage() *gomail.Message {
@@ -62,4 +79,3 @@ func (m *SendMailMessage) NewMessage() *gomail.Message {
     }
     return mailMsg
 }
-

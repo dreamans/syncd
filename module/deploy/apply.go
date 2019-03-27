@@ -1,606 +1,358 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
 package deploy
 
 import (
-    "strings"
+    "errors"
     "time"
+    "fmt"
 
-    "github.com/tinystack/govalidate"
-    "github.com/tinystack/goutil/gostring"
-    "github.com/tinystack/goutil/goslice"
-    "github.com/tinystack/goweb"
-    "github.com/dreamans/syncd"
-    projectService "github.com/dreamans/syncd/service/project"
-    deployService "github.com/dreamans/syncd/service/deploy"
-    repoService "github.com/dreamans/syncd/service/repo"
-    taskService "github.com/dreamans/syncd/service/task"
-    userService "github.com/dreamans/syncd/service/user"
-    logService "github.com/dreamans/syncd/service/operate_log"
-    mailService "github.com/dreamans/syncd/service/mail"
+    "github.com/dreamans/syncd/model"
+    "github.com/dreamans/syncd/util/gois"
 )
 
-type ApplyParamValid struct {
-    ProjectId   int     `valid:"int_min=1" errmsg:"required=project_id cannot be empty"`
-    Name        string  `valid:"required" errmsg:"required=name cannot be empty"`
-    Description string  `valid:"required" errmsg:"required=name cannot be empty"`
+type Apply struct {
+    ID                  int     `json:"id"`
+    SpaceId             int     `json:"space_id"`
+    ProjectId           int     `json:"project_id"`
+    Name                string  `json:"name"`
+    Description         string  `json:"description"`
+    BranchName          string  `json:"branch_name"`
+    CommitVersion       string  `json:"commit_version"`
+    AuditStatus         int     `json:"audit_status"`
+    AuditRefusalReasion string  `json:"audit_refusal_reasion"`
+    RollbackId          int     `json:"rollback_id"`
+    RollbackApplyId     int     `json:"rollback_apply_id"`
+    IsRollbackApply     int     `json:"is_rollback_apply"`
+    Status              int     `json:"status"`
+    UserId              int     `json:"user_id"`
+    Username            string  `json:"username"`
+    Email               string  `json:"email"`
+    RollbackStatus      int     `json:"rollback_status"`
+    Ctime               int     `json:"ctime"`
 }
 
-func ApplySpaceList(c *goweb.Context) error {
-    userId := c.GetInt("user_id")
-    list, err := projectService.SpaceGetListByUserId(userId)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": list,
-    })
-}
+const (
+    AUDIT_STATUS_PENDING = 1
+    AUDIT_STATUS_OK = 2
+    AUDIT_STATUS_REFUSE = 3
+)
 
-func ApplyProjectList(c *goweb.Context) error {
-    spaceId, userId := c.QueryInt("space_id"), c.GetInt("user_id")
-    projectUser := &projectService.User{
-        SpaceId: spaceId,
-        UserId: userId,
-    }
-    if exists, err := projectUser.CheckUserInSpace(); err != nil || !exists {
-        return syncd.RenderAppError("user have no privilege to access space")
-    }
-    list, err := projectService.ProjectGetListBySpaceId(spaceId)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": list,
-    })
-}
+const (
+    APPLY_STATUS_NONE = 1
+    APPLY_STATUS_ING = 2
+    APPLY_STATUS_SUCCESS = 3
+    APPLY_STATUS_FAILED = 4
+    APPLY_STATUS_DROP = 5
+    APPLY_STATUS_ROLLBACK = 6
+)
 
-func ApplyProjectAll(c *goweb.Context) error {
-    userId := c.GetInt("user_id")
-    spaceList, err := projectService.SpaceGetListByUserId(userId)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-
-    spaceIds := []int{}
-    spaceNameMap := map[int]string{}
-    for _, l := range spaceList {
-        spaceIds = append(spaceIds, l.ID)
-        spaceNameMap[l.ID] = l.Name
-    }
-    projectList, err := projectService.ProjectGetListBySpaceIds(spaceIds)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-
-    projList := []map[string]interface{}{}
-    for _, pjl := range projectList {
-        var spaceName string
-        vv, exists := spaceNameMap[pjl.SpaceId]
-        if exists {
-            spaceName = vv
-        }
-        projList = append(projList, map[string]interface{}{
-            "id": pjl.ID,
-            "name": pjl.Name,
-            "space_name": spaceName,
-            "status": pjl.Status,
-        })
-    }
-
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": projList,
-    })
-}
-
-func ApplyProjectDetail(c *goweb.Context) error {
-    project, err := applyCheckAndGetProjectDetail(c.QueryInt("id"), c.GetInt("user_id"))
-    if err != nil {
-        return err
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "id": project.ID,
-        "name": project.Name,
-        "repo_mode": project.RepoMode,
-        "repo_branch": project.RepoBranch,
-    })
-}
-
-func ApplyRepoTagList(c *goweb.Context) error {
-    project, err := applyCheckAndGetProjectDetail(c.QueryInt("id"), c.GetInt("user_id"))
-    if err != nil {
-        return err
-    }
-    repo := &repoService.Repo{
-        ID: project.ID,
-        Url: project.RepoUrl,
-    }
-    if repo, err = repoService.RepoNew(repo); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-
-    updateRepoCmd, err := repo.UpdateRepo("")
-    if err != nil {
-        return syncd.RenderTaskError(err.Error())
-    }
-
-    taskTimeout := 60
-    taskUpdateRepo := taskService.TaskCreate(taskService.TASK_REPO_UPDATE, []string{
-        updateRepoCmd,
-    }, taskTimeout)
-
-    taskTagListRepo := taskService.TaskCreate(taskService.TASK_REPO_TAG_LIST, []string{
-        repo.TagListRepo(),
-    }, taskTimeout)
-
-    c.CloseCallback(func() {
-        taskUpdateRepo.Terminate()
-        taskTagListRepo.Terminate()
-    }, taskTimeout)
-
-    taskUpdateRepo.TaskRun()
-    if taskUpdateRepo.LastError() != nil {
-        return syncd.RenderTaskError(taskUpdateRepo.Stdout() + taskUpdateRepo.Stderr())
-    }
-
-    taskTagListRepo.TaskRun()
-    if taskTagListRepo.LastError() != nil {
-        return syncd.RenderTaskError(taskTagListRepo.Stdout() + taskTagListRepo.Stderr())
-    }
-
-    tagList := gostring.StrFilterSliceEmpty(strings.Split(taskTagListRepo.Stdout(), "\n"))
-    tagList = gostring.StringSliceRsort(tagList)
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": tagList,
-    })
-}
-
-func ApplyRepoCommitList(c *goweb.Context) error {
-    project, err := applyCheckAndGetProjectDetail(c.QueryInt("id"), c.GetInt("user_id"))
-    if err != nil {
-        return err
-    }
-    repo := &repoService.Repo{
-        ID: project.ID,
-        Url: project.RepoUrl,
-    }
-    if repo, err = repoService.RepoNew(repo); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-
-    updateRepoCmd, err := repo.UpdateRepo(project.RepoBranch)
-    if err != nil {
-        return syncd.RenderTaskError(err.Error())
-    }
-
-    taskTimeout := 60
-    taskUpdateRepo := taskService.TaskCreate(taskService.TASK_REPO_UPDATE, []string{
-        updateRepoCmd,
-    }, taskTimeout)
-
-    taskCommitListRepo := taskService.TaskCreate(taskService.TASK_REPO_COMMIT_LIST, []string{
-        repo.CommitListRepo(),
-    }, taskTimeout)
-
-    c.CloseCallback(func() {
-        taskUpdateRepo.Terminate()
-        taskCommitListRepo.Terminate()
-    }, taskTimeout)
-
-    taskUpdateRepo.TaskRun()
-    if taskUpdateRepo.LastError() != nil {
-        return syncd.RenderTaskError(taskUpdateRepo.Stdout() + taskUpdateRepo.Stderr())
-    }
-
-    taskCommitListRepo.TaskRun()
-    if taskCommitListRepo.LastError() != nil {
-        return syncd.RenderTaskError(taskCommitListRepo.Stdout() + taskCommitListRepo.Stderr())
-    }
-    commitList := gostring.StrFilterSliceEmpty(strings.Split(taskCommitListRepo.Stdout(), "\n"))
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": commitList,
-    })
-}
-
-func ApplySubmit(c *goweb.Context) error {
-    params := ApplyParamValid{
-        ProjectId: c.PostFormInt("project_id"),
-        Name: c.PostForm("name"),
-        Description: c.PostForm("description"),
-    }
-    if valid := govalidate.NewValidate(&params); !valid.Pass() {
-        return syncd.RenderParamError(valid.LastFailed().Msg)
-    }
-    tag, commit := c.PostForm("tag"), c.PostForm("commit")
-
-    project, err := applyCheckAndGetProjectDetail(c.PostFormInt("project_id"), c.GetInt("user_id"))
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if project.Status != 1 {
-        return syncd.RenderParamError("project not enabled")
-    }
-    if project.RepoMode == 1 && commit == "" {
-        return syncd.RenderParamError("commit can not be empty")
-    }
-    if project.RepoMode == 2 && tag == "" {
-        return syncd.RenderParamError("tag can not be empty")
-    }
-    status := deployService.APPLY_STATUS_AUDIT_PENDING
-    if project.NeedAudit == 0 {
-        status = deployService.APPLY_STATUS_AUDIT_PASS
-    }
-
-    apply := &deployService.Apply{
-        ProjectId: project.ID,
-        SpaceId: project.SpaceId,
-        Name: params.Name,
-        Description: params.Description,
-        Status: status,
-        UserId: c.GetInt("user_id"),
-        RepoData: deployService.ApplyRepoData{
-            RepoUrl: project.RepoUrl,
-            RepoMode: project.RepoMode,
-            RepoBranch: project.RepoBranch,
-            Tag: tag,
-            Commit: commit,
+func (a *Apply) RollbackList() ([]Apply, error) {
+    apply := &model.DeployApply{}
+    list, ok := apply.List(model.QueryParam{
+        Fields: "id, name",
+        Limit: 10,
+        Order: "ctime DESC",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "project_id",
+                Prepare: a.ProjectId,
+            },
+            model.WhereParam{
+                Field: "audit_status",
+                Prepare: AUDIT_STATUS_OK,
+            },
+            model.WhereParam{
+                Field: "status",
+                Prepare: APPLY_STATUS_SUCCESS,
+            },
+            model.WhereParam{
+                Field: "is_rollback_apply",
+                Prepare: 0,
+            },
         },
-    }
-    pkId, err := apply.Create()
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-
-    if apply.Status == deployService.APPLY_STATUS_AUDIT_PENDING {
-        emailList := gostring.StrFilterSliceEmpty(strings.Split(project.AuditNoticeEmail, ","))
-        if len(emailList) > 0 {
-            userId, userName, userEmail := c.GetInt("user_id"), c.GetString("user_name"), c.GetString("email")
-            mailService.AuditSend(emailList, apply, project, userId, userName, userEmail)
-        }
-    }
-
-    logService.Record(&logService.OperateLog{
-        DataId: pkId,
-        OpType: logService.OP_TYPE_APPLY,
-        OpName: logService.OP_NAME_APPLY_CREATE,
-        UserId: c.GetInt("user_id"),
-        UserName: c.GetString("user_name"),
     })
-
-    return syncd.RenderJson(c, nil)
-}
-
-func ApplyUpdate(c *goweb.Context) error {
-    id, tag, commit, name, description := c.PostFormInt("id"), c.PostForm("tag"), c.PostForm("commit"), c.PostForm("name"), c.PostForm("description")
-    if id == 0 {
-        return syncd.RenderParamError("id can not be empty")
+    if !ok {
+        return nil, errors.New("get apply list failed")
     }
-    if name == "" {
-        return syncd.RenderParamError("name can not be empty")
-    }
-    if description == "" {
-        return syncd.RenderParamError("description can not be empty")
-    }
-
-    apply, err := deployService.ApplyGetByPk(id)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if apply.UserId != c.GetInt("user_id") {
-        return syncd.RenderAppError("no priv update apply")
-    }
-
-    project, err := applyCheckAndGetProjectDetail(apply.ProjectId, c.GetInt("user_id"))
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if project.Status != 1 {
-        return syncd.RenderParamError("project not enabled")
-    }
-    if project.RepoMode == 1 && commit == "" {
-        return syncd.RenderParamError("commit can not be empty")
-    }
-    if project.RepoMode == 2 && tag == "" {
-        return syncd.RenderParamError("tag can not be empty")
-    }
-    if apply.Status == 2 {
-        apply.Status = 1
-    }
-    apply.Name = name
-    apply.Description = description
-    apply.RepoData.Tag = tag
-    apply.RepoData.Commit = commit
-
-    if err := apply.Update(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-
-    logService.Record(&logService.OperateLog{
-        DataId: id,
-        OpType: logService.OP_TYPE_APPLY,
-        OpName: logService.OP_NAME_APPLY_UPDATE,
-        UserId: c.GetInt("user_id"),
-        UserName: c.GetString("user_name"),
-    })
-
-    return syncd.RenderJson(c, nil)
-}
-
-func ApplyList(c *goweb.Context) error {
-    offset, limit, keyword, userId := c.QueryInt("offset"), c.GetInt("limit"), c.Query("keyword"), c.GetInt("user_id")
-    searchTimeDuring, searchProjectId, searchStatus := c.QueryInt("time"), c.QueryInt("project_id"), c.QueryInt("status")
-
-    apply := deployService.Apply{
-        ProjectId: searchProjectId,
-        Status: searchStatus,
-    }
-    if searchTimeDuring > 0 {
-        apply.Ctime = int(time.Now().Unix()) - searchTimeDuring * 86400
-    }
-    if havePriv := userService.PrivIn(userService.DEPLOY_VIEW_ALL, c.GetIntSlice("priv")); !havePriv {
-        apply.UserId = userId
-    }
-    userSpaceIds, err := projectService.SpaceGetIdListByUserId(userId)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    list, total, err := apply.List(keyword, userSpaceIds, offset, limit)
-
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    var projectIds, spaceIds, userIds []int
+    var applyList []Apply
     for _, l := range list {
-        projectIds = append(projectIds, l.ProjectId)
-        spaceIds = append(spaceIds, l.SpaceId)
-        userIds = append(userIds, l.UserId)
-    }
-    projMaps, err := projectService.ProjectGetMapByIds(projectIds)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    spaceMaps, err := projectService.SpaceGetMapByIds(spaceIds)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    userMaps, err := userService.UserGetMapByIds(userIds)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-
-    var newList []map[string]interface{}
-    for _, l := range list {
-        var (
-            projectName, spaceName, userName, userEmail string
-            userId int
-        )
-        if proj, exists := projMaps[l.ProjectId]; exists {
-            projectName = proj.Name
-        }
-        if space, exists := spaceMaps[l.SpaceId]; exists {
-            spaceName = space.Name
-        }
-        if user, exists := userMaps[l.UserId]; exists {
-            userId = user.ID
-            userName = user.Name
-            userEmail = user.Email
-        }
-        newList = append(newList, map[string]interface{}{
-            "id": l.ID,
-            "name": l.Name,
-            "project_name": projectName,
-            "space_name": spaceName,
-            "status": l.Status,
-            "user_id": userId,
-            "user_name": userName,
-            "user_email": userEmail,
-            "ctime": l.Ctime,
+        applyList = append(applyList, Apply{
+            ID: l.ID,
+            Name: l.Name,
         })
     }
-
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": newList,
-        "total": total,
-    })
+    return applyList, nil
 }
 
-func ApplyDetail(c *goweb.Context) error {
-    apply := &deployService.Apply{
-        ID: c.QueryInt("id"),
+func (a *Apply) DropStatus() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "status": APPLY_STATUS_DROP,
     }
-    if err := apply.Detail(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if havePriv := userService.PrivIn(userService.DEPLOY_VIEW_ALL, c.GetIntSlice("priv")); !havePriv {
-        if apply.UserId != c.GetInt("user_id") {
-            return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
-        }
-    }
-    var spaceName, projectName, userName, userEmail string
-    if space, err := projectService.SpaceGetByPk(apply.SpaceId); err == nil {
-        spaceName = space.Name
-    }
-    if project, err := projectService.ProjectGetByPk(apply.ProjectId); err == nil {
-        projectName = project.Name
-    }
-    if user, err := userService.UserGetByPk(apply.UserId); err == nil {
-        userName, userEmail = user.Name, user.Email
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update deploy apply status failed")
     }
 
-    return syncd.RenderJson(c, goweb.JSON{
-        "id": apply.ID,
-        "name": apply.Name,
-        "description": apply.Description,
-        "space_name": spaceName,
-        "project_name": projectName,
-        "project_id": apply.ProjectId,
-        "user_name": userName,
-        "user_email": userEmail,
-        "repo_branch": apply.RepoData.RepoBranch,
-        "repo_commit": apply.RepoData.Commit,
-        "repo_tag": apply.RepoData.Tag,
-        "repo_mode": apply.RepoData.RepoMode,
-        "status": apply.Status,
-        "ctime": apply.Ctime,
-    })
-}
-
-func ApplyAudit(c *goweb.Context) error {
-    audit, id, status := c.PostFormInt("audit"), c.PostFormInt("id"), 0
-    var opContent string
-
-    if audit == 1 {
-        status = 3
-        opContent = "审核通过"
-    } else {
-        status = 2
-        opContent = "审核拒绝, "
-    }
-    apply, err := deployService.ApplyGetByPk(id)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    tmpApply := &deployService.Apply{
-        ID: apply.ID,
-        SpaceId: apply.SpaceId,
-        UserId: apply.UserId,
-        Status: apply.Status,
-    }
-
-    logService.Record(&logService.OperateLog{
-        DataId: id,
-        OpType: logService.OP_TYPE_APPLY,
-        OpName: logService.OP_NAME_APPLY_AUDIT,
-        OpContent: gostring.JoinStrings(opContent, c.PostForm("reject_reason")),
-        UserId: c.GetInt("user_id"),
-        UserName: c.GetString("user_name"),
-    })
-
-    return applyUpdateStatus(c, tmpApply, userService.DEPLOY_AUDIT_ALL, status, []int{1})
-}
-
-func ApplyUnAudit(c *goweb.Context) error {
-    id := c.PostFormInt("id")
-    apply, err := deployService.ApplyGetByPk(id)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    tmpApply := &deployService.Apply{
-        ID: apply.ID,
-        Status: apply.Status,
-        UserId: apply.UserId,
-        SpaceId: apply.SpaceId,
-    }
-
-    logService.Record(&logService.OperateLog{
-        DataId: id,
-        OpType: logService.OP_TYPE_APPLY,
-        OpName: logService.OP_NAME_APPLY_UNAUDIT,
-        UserId: c.GetInt("user_id"),
-        UserName: c.GetString("user_name"),
-    })
-
-    return applyUpdateStatus(c, tmpApply, userService.DEPLOY_AUDIT_ALL, 1, []int{3})
-}
-
-func ApplyDiscard(c *goweb.Context) error {
-    id := c.PostFormInt("id")
-    apply, err := deployService.ApplyGetByPk(id)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    tmpApply := &deployService.Apply{
-        ID: apply.ID,
-        SpaceId: apply.SpaceId,
-        UserId: apply.UserId,
-        Status: apply.Status,
-    }
-
-    logService.Record(&logService.OperateLog{
-        DataId: id,
-        OpType: logService.OP_TYPE_APPLY,
-        OpName: logService.OP_NAME_APPLY_DISCARD,
-        UserId: c.GetInt("user_id"),
-        UserName: c.GetString("user_name"),
-    })
-
-    return applyUpdateStatus(c, tmpApply, userService.DEPLOY_DROP_ALL, 7, []int{1, 2, 3, 6})
-}
-
-func ApplyLog(c *goweb.Context) error {
-    id := c.QueryInt("id")
-    apply, err := deployService.ApplyGetByPk(id)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if havePriv := userService.PrivIn(userService.DEPLOY_VIEW_ALL, c.GetIntSlice("priv")); !havePriv {
-        if apply.UserId != c.GetInt("user_id") {
-            return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
-        }
-    }
-    if err := applyCheckUserInSpace(apply.SpaceId, c.GetInt("user_id")); err != nil {
-        return err
-    }
-
-    log := &logService.OperateLog{
-        DataId: id,
-        OpType: logService.OP_TYPE_APPLY,
-    }
-    list, err := log.List()
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": list,
-    })
-}
-
-func applyUpdateStatus(c *goweb.Context, apply *deployService.Apply, privCode int, status int, allowStatus []int) error {
-    if havePriv := userService.PrivIn(privCode, c.GetIntSlice("priv")); !havePriv {
-        if apply.UserId != c.GetInt("user_id") {
-            return syncd.RenderCustomerError(syncd.CODE_ERR_NO_PRIV, "no priv")
-        }
-    }
-    if err := applyCheckUserInSpace(apply.SpaceId, c.GetInt("user_id")); err != nil {
-        return err
-    }
-    if !goslice.InSliceInt(apply.Status, allowStatus)  {
-        return syncd.RenderAppError("apply status wrong")
-    }
-    apply.Status = status
-    if err := apply.UpdateStatus(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, nil)
-}
-
-func applyCheckAndGetProjectDetail(id, userId int) (*projectService.Project, error) {
-    if id == 0 {
-        return nil, syncd.RenderParamError("id can not empty")
-    }
-    project, err := projectService.ProjectGetByPk(id)
-    if err != nil {
-        return nil, syncd.RenderAppError(err.Error())
-    }
-    user := &projectService.User{
-        UserId: userId,
-        SpaceId: project.SpaceId,
-    }
-    if exists, err := user.CheckUserInSpace(); err != nil || !exists {
-        return nil, syncd.RenderAppError("user have no privilege to access project")
-    }
-    return project, nil
-}
-
-func applyCheckUserInSpace(spaceId, userId int) error {
-    user := &projectService.User{
-        UserId: userId,
-        SpaceId: spaceId,
-    }
-    if exists, err := user.CheckUserInSpace(); err != nil || !exists {
-        return syncd.RenderAppError("user have no privilege to access project")
-    }
     return nil
+}
+
+func (a *Apply) Update() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "branch_name": a.BranchName,
+        "audit_status": a.AuditStatus,
+        "commit_version": a.CommitVersion,
+        "description": a.Description,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update deploy apply failed")
+    }
+
+    return nil
+}
+
+func (a *Apply) UpdateStatus() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "status": a.Status,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update deploy apply status failed")
+    }
+
+    return nil
+}
+
+func (a *Apply) UpdateRollback() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "rollback_apply_id": a.RollbackApplyId,
+        "status": APPLY_STATUS_ROLLBACK,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update deploy apply rollback_apply_id failed")
+    }
+
+    return nil
+}
+
+func (a *Apply) UpdateAuditStatus() error {
+    apply := &model.DeployApply{}
+    updateData := map[string]interface{}{
+        "audit_status": a.AuditStatus,
+        "audit_refusal_reasion": a.AuditRefusalReasion,
+    }
+    if ok := apply.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: a.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("update apply audit_status failed")
+    }
+
+    return nil
+}
+
+func (a *Apply) Detail() error {
+    apply := &model.DeployApply{}
+    if ok := apply.Get(a.ID); !ok {
+        return errors.New("get deploy apply detail failed")
+    }
+    if apply.ID == 0 {
+        return errors.New("deploy apply detail not exists")
+    }
+    a.SpaceId = apply.SpaceId
+    a.ProjectId = apply.ProjectId
+    a.Name = apply.Name
+    a.Description = apply.Description
+    a.BranchName = apply.BranchName
+    a.CommitVersion = apply.CommitVersion
+    a.AuditStatus = apply.AuditStatus
+    a.Status = apply.Status
+    a.UserId = apply.UserId
+    a.RollbackId = apply.RollbackId
+    a.RollbackApplyId = apply.RollbackApplyId
+    a.IsRollbackApply = apply.IsRollbackApply
+    a.RollbackStatus = APPLY_STATUS_NONE
+    a.Ctime = apply.Ctime
+    return nil
+}
+
+func (a *Apply) Total(keyword string, spaceIds []int) (int, error) {
+    apply := &model.DeployApply{}
+    total, ok := apply.Count(model.QueryParam{
+        Where: a.parseWhereConds(keyword, spaceIds),
+    })
+    if !ok {
+        return 0, errors.New("get apply count failed")
+    }
+    return total, nil
+}
+
+func (a *Apply) CheckHaveDeploying() (bool, error) {
+    apply := &model.DeployApply{}
+    count, ok := apply.Count(model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Tag: "!=",
+                Prepare: a.ID,
+            },
+            model.WhereParam{
+                Field: "project_id",
+                Prepare: a.ProjectId,
+            },
+            model.WhereParam{
+                Field: "status",
+                Prepare: APPLY_STATUS_ING,
+            },
+            model.WhereParam{
+                Field: "ctime",
+                Tag: ">=",
+                Prepare: int(time.Now().Unix()) - 86400,
+            },
+        },
+    })
+    if !ok {
+        return false, errors.New("get apply count failed")
+    }
+
+    return count == 0, nil
+}
+
+func (a *Apply) List(keyword string, spaceIds []int, offset, limit int) ([]Apply, error) {
+    apply := &model.DeployApply{}
+    list, ok := apply.List(model.QueryParam{
+        Fields: "id, space_id, project_id, name, user_id, audit_status, status, ctime",
+        Offset: offset,
+        Limit: limit,
+        Order: "id DESC",
+        Where: a.parseWhereConds(keyword, spaceIds),
+    })
+    if !ok {
+        return nil, errors.New("get apply list failed")
+    }
+    var applyList []Apply
+    for _, l := range list {
+        applyList = append(applyList, Apply{
+            ID: l.ID,
+            SpaceId: l.SpaceId,
+            ProjectId: l.ProjectId,
+            Name: l.Name,
+            UserId: l.UserId,
+            AuditStatus: l.AuditStatus,
+            Status: l.Status,
+            Ctime: l.Ctime,
+        })
+    }
+    return applyList, nil
+}
+
+func (a *Apply) Create() error {
+    apply := &model.DeployApply{
+        SpaceId: a.SpaceId,
+        ProjectId: a.ProjectId,
+        Name: a.Name,
+        Description: a.Description,
+        BranchName: a.BranchName,
+        CommitVersion: a.CommitVersion,
+        Status: a.Status,
+        UserId: a.UserId,
+        AuditStatus: a.AuditStatus,
+        RollbackId: a.RollbackId,
+        IsRollbackApply: a.IsRollbackApply,
+        RollbackApplyId: a.RollbackApplyId,
+    }
+    if ok := apply.Create(); !ok {
+        return errors.New("create deploy apply failed")
+    }
+    a.ID = apply.ID
+    return nil
+}
+
+func (a *Apply) parseWhereConds(keyword string, spaceIds []int) []model.WhereParam {
+    var where []model.WhereParam
+    where = append(where, model.WhereParam{
+        Field: "space_id",
+        Tag: "IN",
+        Prepare:  spaceIds,
+    })
+    where = append(where, model.WhereParam{
+        Field: "is_rollback_apply",
+        Prepare:  a.IsRollbackApply,
+    })
+    if a.Ctime != 0 {
+        where = append(where, model.WhereParam{
+            Field: "ctime",
+            Tag: ">=",
+            Prepare:  int(time.Now().Unix()) - a.Ctime * 86400,
+        })
+    }
+    if a.AuditStatus != 0 {
+        where = append(where, model.WhereParam{
+            Field: "audit_status",
+            Prepare:  a.AuditStatus,
+        })
+    }
+    if a.Status != 0 {
+        where = append(where, model.WhereParam{
+            Field: "status",
+            Prepare:  a.Status,
+        })
+    }
+    if a.ProjectId != 0 {
+        where = append(where, model.WhereParam{
+            Field: "project_id",
+            Prepare:  a.ProjectId,
+        })
+    }
+    if keyword != "" {
+        if gois.IsInteger(keyword) {
+            where = append(where, model.WhereParam{
+                Field: "id",
+                Prepare: keyword,
+            })
+        } else {
+            where = append(where, model.WhereParam{
+                Field: "name",
+                Tag: "LIKE",
+                Prepare: fmt.Sprintf("%%%s%%", keyword),
+            })
+        }
+    }
+    return where
 }

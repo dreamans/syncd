@@ -1,69 +1,65 @@
-import {get, post} from './fetch.js'
+import {get, post} from '@/lib/fetch.js'
 
-export function submitApplyApi(data) {
-    return post('/deploy/apply/submit', data)
-}
-
-export function getApplyListApi(params) {
-    return get('/deploy/apply/list', params)
-}
-
-export function getApplySpaceList(params) {
-    return get('/deploy/apply/space/list', params)
-}
-
-export function  getApplyProjectList(params) {
-    return get('/deploy/apply/project/list', params)
-}
-
-export function  getApplyProjectAll(params) {
-    return get('/deploy/apply/project/all', params)
-}
-
-export function getApplyProjectDetailApi(params) {
+export function applyProjectDetailApi(params) {
     return get('/deploy/apply/project/detail', params)
 }
 
-export function getRepoTagListApi(params) {
-    return get('/deploy/apply/repo/taglist', params)
+export function applySubmitApi(data) {
+    return post('/deploy/apply/submit', data)
 }
 
-export function getRepoCommitListApi(params) {
-    return get('/deploy/apply/repo/commitlist', params)
+export function applyProjectAllApi() {
+    return get('/deploy/apply/project/all')
 }
 
-export function getApplyDetailApi(params) {
+export function applyListApi(params) {
+    return get('/deploy/apply/list', params)
+}
+
+export function applyDetailApi(params) {
     return get('/deploy/apply/detail', params)
 }
 
-export function auditApplyApi(data) {
+export function applyAuditApi(data) {
     return post('/deploy/apply/audit', data)
 }
 
-export function unAuditApplyApi(data) {
-    return post('/deploy/apply/unaudit', data)
-}
-
-export function discardApplyApi(data) {
-    return post('/deploy/apply/discard', data)
-}
-
-export function updateApplyApi(data) {
+export function applyUpdateApi(data) {
     return post('/deploy/apply/update', data)
 }
 
-export function getOperateLogApi(params) {
-    return get('/deploy/apply/log', params)
+export function applyDropApi(data) {
+    return post('/deploy/apply/drop', data)
 }
 
-export function startDeployApi(data) {
+export function applyRollbackListApi(params) {
+    return get('/deploy/apply/rollbacklist', params)
+}
+
+export function buildStartApi(data) {
+    return post('/deploy/build/start', data)
+}
+
+export function buildStatusApi(params) {
+    return get('/deploy/build/status', params)
+}
+
+export function buildStopApi(data) {
+    return post('/deploy/build/stop', data)
+}
+
+export function deployStart(data) {
     return post('/deploy/deploy/start', data)
 }
 
-export function statusDeployApi(params) {
+export function deployStatusApi(params) {
     return get('/deploy/deploy/status', params)
 }
 
-export function stopDeployApi(data) {
+export function deployStopApi(data) {
     return post('/deploy/deploy/stop', data)
+}
+
+export function deployRollbackApi(data) {
+    return post('/deploy/deploy/rollback', data)
 }

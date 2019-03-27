@@ -1,4 +1,4 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -10,23 +10,26 @@ import (
     "fmt"
     "os"
 
-    "github.com/Unknwon/goconfig"
+    "github.com/gin-gonic/gin"
+    "github.com/dreamans/syncd/util/gopath"
     "github.com/dreamans/syncd"
-    "github.com/dreamans/syncd/route"
-    handlerModule "github.com/dreamans/syncd/module/handler"
+    "github.com/dreamans/syncd/router/route"
+    "github.com/Unknwon/goconfig"
 )
 
 var (
-    help bool
-    syncdIni string
-    version bool
-    configFile *goconfig.ConfigFile
+    helpFlag        bool
+    syncdIniFlag    string
+    versionFlag     bool
+    configFile      *goconfig.ConfigFile
 )
 
 func init() {
-    flag.BoolVar(&help, "h", false, "This help")
-    flag.StringVar(&syncdIni, "c", "./etc/syncd.ini", "Set configuration file `file`")
-    flag.BoolVar(&version, "v", false, "Version number")
+    gin.SetMode(gin.ReleaseMode)
+
+    flag.BoolVar(&helpFlag, "h", false, "This help")
+    flag.StringVar(&syncdIniFlag, "c", "", "Set configuration file `file`")
+    flag.BoolVar(&versionFlag, "v", false, "Version number")
 
     flag.Usage = usage
     flag.Parse()
@@ -39,12 +42,20 @@ func usage() {
 
 func initCfg() {
     var err error
+    syncdIni := findSyncdIniFile()
     configFile, err = goconfig.LoadConfigFile(syncdIni)
     if err != nil {
-        fmt.Printf("can not load config file '%s', %s\n", syncdIni, err.Error())
-        os.Exit(1)
+        log.Fatalf("load config file failed, %s\n", err.Error())
     }
     outputInfo("Config Loaded", syncdIni)
+}
+
+func configIntOrDefault(section, key string, useDefault int) int {
+    val, err := configFile.Int(section, key)
+    if err != nil {
+        return useDefault
+    }
+    return val
 }
 
 func configOrDefault(section, key, useDefault string) string {
@@ -55,12 +66,31 @@ func configOrDefault(section, key, useDefault string) string {
     return val
 }
 
-func configIntOrDefault(section, key string, useDefault int) int {
-    val, err := configFile.Int(section, key)
-    if err != nil {
-        return useDefault
+func findSyncdIniFile() string {
+    if syncdIniFlag != "" {
+        return syncdIniFlag
     }
-    return val
+    currPath, _ := gopath.CurrentPath()
+    parentPath, _ := gopath.CurrentParentPath()
+    scanPath := []string{
+        "/etc",
+        currPath,
+        fmt.Sprintf("%s/etc", currPath),
+        fmt.Sprintf("%s/etc", parentPath),
+    }
+
+    for _, path := range scanPath {
+        iniFile := path + "/syncd.ini"
+        if gopath.Exists(iniFile) && gopath.IsFile(iniFile) {
+            return iniFile
+        }
+    }
+
+    return "./syncd.ini"
+}
+
+func outputInfo(tag string, value interface{}) {
+    fmt.Printf("%-18s    %v\n", tag + ":", value)
 }
 
 func welcome() {
@@ -72,20 +102,16 @@ func welcome() {
     fmt.Println("        /____/                              ")
     fmt.Println("")
     outputInfo("Service", "syncd")
-    outputInfo("Version", syncd.VERSION)
+    outputInfo("Version", syncd.Version)
 }
 
-func outputInfo(tag string, value interface{}) {
-    fmt.Printf("%-18s    %v\n", tag + ":", value)
-}
-
-func run() {
-    if help {
+func main() {
+    if helpFlag {
         flag.Usage()
         os.Exit(0)
     }
-    if version {
-        fmt.Printf("syncd/%s\n", syncd.VERSION)
+    if versionFlag {
+        fmt.Printf("syncd/%s\n", syncd.Version)
         os.Exit(0)
     }
 
@@ -95,26 +121,32 @@ func run() {
 
     cfg := &syncd.Config{
         Serve: &syncd.ServeConfig{
-            Addr: configOrDefault("serve", "addr", ":8868"),
+            Addr: configOrDefault("serve", "addr", "8868"),
+            FeServeEnable: configIntOrDefault("serve", "fe_serve_enable", 1),
             ReadTimeout: configIntOrDefault("serve", "read_timeout", 300),
             WriteTimeout: configIntOrDefault("serve", "write_timeout", 300),
             IdleTimeout: configIntOrDefault("serve", "idle_timeout", 300),
         },
         Db: &syncd.DbConfig{
-            Host: configOrDefault("database", "host", "127.0.0.1"),
-            Port: configOrDefault("database", "port", "3306"),
+            Unix: configOrDefault("database", "unix", ""),
+            Host: configOrDefault("database", "host", ""),
+            Port: configIntOrDefault("database", "port", 3306),
             Charset: "utf8mb4",
             User: configOrDefault("database", "user", ""),
             Pass: configOrDefault("database", "password", ""),
             DbName: configOrDefault("database", "dbname", ""),
-            TablePrefix: "syd_",
+            MaxIdleConns: configIntOrDefault("database", "max_idle_conns", 100),
+            MaxOpenConns: configIntOrDefault("database", "max_open_conns", 200),
+            ConnMaxLifeTime: configIntOrDefault("database", "conn_max_life_time", 500),
         },
         Log: &syncd.LogConfig{
             Path: configOrDefault("log", "path", "stdout"),
         },
         Syncd: &syncd.SyncdConfig{
-            Dir: configOrDefault("syncd", "workspace", "/tmp/.syncd"),
-            Cipher: configOrDefault("syncd", "cipher_key", "pG1L62EM0cPIIOwusQsbcV8Cs6j/M1RxLoXIZylWUC4="),
+            LocalSpace: configOrDefault("syncd", "local_space", "~/.syncd"),
+            RemoteSpace: configOrDefault("syncd", "remote_space", "~/.syncd"),
+            Cipher: configOrDefault("syncd", "cipher_key", ""),
+            AppHost: configOrDefault("syncd", "app_host", ""),
         },
         Mail: &syncd.MailConfig{
             Enable: configIntOrDefault("mail", "enable", 0),
@@ -125,40 +157,14 @@ func run() {
         },
     }
 
-    syd := syncd.NewSyncd(cfg)
-
-    syd.InitEnv()
-    outputInfo("Workspace", syncd.DataDir)
-
-    syd.RegisterLog()
-    outputInfo("Log", cfg.Log.Path)
-
-    syd.RegisterOrm()
-    outputInfo("Database", cfg.Db.Host)
-
-    syd.RegisterMail()
-    outputInfo("Mail Enable", cfg.Mail.Enable)
-
-    routes := route.RouteGroup()
-    for _, r := range routes {
-        syd.RegisterRoute(r.Method, r.Path, r.Handler)
+    if err := syncd.App.Init(cfg); err != nil {
+        log.Fatal(err)
     }
-    syd.RegisterServeHandler(syncd.ServeHandler{
-        BeforeHandler: handlerModule.BeforeHandler,
-        AfterHandler: handlerModule.AfterHandler,
-        ServerErrorHandler: handlerModule.ServerErrorHandler,
-        NotFoundHandler: handlerModule.NotFoundHandler,
-        MethodNotAllowHandler: handlerModule.NotFoundHandler,
-    })
 
-    outputInfo("HTTP Service", cfg.Serve.Addr)
+    route.RegisterRoute()
 
     fmt.Println("Start Running...")
-    if err := syd.Start(); err != nil {
-        log.Fatalln(err.Error())
+    if err := syncd.App.Start(); err != nil {
+        log.Fatal(err)
     }
-}
-
-func main() {
-    run()
 }

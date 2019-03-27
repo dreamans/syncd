@@ -1,208 +1,294 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
 package project
 
 import (
-    "strings"
+    "errors"
+    "fmt"
 
-    "github.com/tinystack/goutil/gostring"
-    "github.com/tinystack/goweb"
-    "github.com/tinystack/govalidate"
-    "github.com/dreamans/syncd"
-    projectService "github.com/dreamans/syncd/service/project"
-    serverService "github.com/dreamans/syncd/service/server"
+    "github.com/dreamans/syncd/model"
+    "github.com/dreamans/syncd/util/gostring"
 )
 
-type ProjectParamValid struct {
-    Name            string      `valid:"required" errmsg:"required=project name cannot be empty"`
-    Description     string      `valid:"require" errmsg:"required=project description cannot be empty"`
-    SpaceId         int         `valid:"int_min=1" errmsg:"int_min=space_id cannot be empty"`
-    RepoMode        int         `valid:"int_min=1" errmsg:"int_min=repo_mode cannot be empty"`
-    RepoUrl         string      `valid:"require" errmsg:"required=repo remote addr cannot be empty"`
-    DeployServer    []string    `valid:"require" errmsg:"required=deploy server cannot be empty"`
-    DeployUser      string      `valid:"require" errmsg:"required=deploy user cannot be epmty"`
-    DeployPath      string      `valid:"require" errmsg:"required=deploy path cannot be epmty"`
-    DeployTimeout   int         `valid:"int_min=1" errmsg:"required=int_min cannot be empty"`
+type Project struct {
+    ID                  int     `json:"id"`
+    SpaceId             int     `json:"space_id"`
+    Name                string  `json:"name"`
+    Description         string  `json:"description"`
+    NeedAudit           int     `json:"need_audit"`
+    Status              int     `json:"status"`
+    RepoUrl             string  `json:"repo_url"`
+    RepoBranch          string  `json:"repo_branch"`
+    DeployMode          int     `json:"deploy_mode"`
+    OnlineCluster       []int   `json:"online_cluster"`
+    DeployUser          string  `json:"deploy_user"`
+    DeployPath          string  `json:"deploy_path"`
+    BuildScript         string  `json:"build_script"`
+    BuildHookScript     string  `json:"build_hook_script"`
+    DeployHookScript    string  `json:"deploy_hook_script"`
+    PreDeployCmd        string  `json:"pre_deploy_cmd"`
+    AfterDeployCmd      string  `json:"after_deploy_cmd"`
+    AuditNotice         string  `json:"audit_notice"`
+    DeployNotice        string  `json:"deploy_notice"`
+    Ctime               int     `json:"ctime"`
 }
 
-func ProjectNew(c *goweb.Context) error {
-    return projectUpdate(c, 0)
-}
-
-func ProjectEdit(c *goweb.Context) error {
-    id := c.PostFormInt("id")
-    if id == 0 {
-        return syncd.RenderParamError("id can not empty")
-    }
-    return projectUpdate(c, id)
-}
-
-func projectUpdate(c *goweb.Context, id int) error {
-    params := ProjectParamValid{
-        Name: c.PostForm("name"),
-        Description: c.PostForm("description"),
-        SpaceId: c.PostFormInt("space_id"),
-        RepoMode: c.PostFormInt("repo_mode"),
-        RepoUrl: c.PostForm("repo_url"),
-        DeployServer: c.PostFormArray("deploy_server"),
-        DeployUser: c.PostForm("deploy_user"),
-        DeployPath: c.PostForm("deploy_path"),
-        DeployTimeout: c.PostFormInt("deploy_timeout"),
-    }
-    if valid := govalidate.NewValidate(&params); !valid.Pass() {
-        return syncd.RenderParamError(valid.LastFailed().Msg)
-    }
-    repoBranch := c.PostForm("repo_branch")
-    if params.RepoMode == 1 && repoBranch == "" {
-        return syncd.RenderParamError("repo_branch can not be empty")
-    }
-    var (
-        needAudit int
-        exists bool
-        err error
-    )
-    projExists := &projectService.Project{
-        ID: id,
-        SpaceId: params.SpaceId,
-        Name: params.Name,
-    }
-    exists, err = projExists.CheckProjectExists()
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if exists {
-        return syncd.RenderAppError("project update failed, project name have exists")
-    }
-    deployServer := gostring.StrSlice2IntSlice(params.DeployServer)
-    if c.PostFormInt("need_audit") != 0 {
-        needAudit = 1
-    }
-
-    excludeFiles := c.PostForm("exclude_files")
-    if excludeFiles != "" {
-        exFileList := strings.Split(excludeFiles, "\n")
-        exFileList = gostring.StrFilterSliceEmpty(exFileList)
-        if len(exFileList) > 0 {
-            excludeFiles = gostring.JoinSepStrings("\n", exFileList...)
-        }
-    }
-
-    preDeployCmd, postDeployCmd := c.PostForm("pre_deploy_cmd"), c.PostForm("post_deploy_cmd")
-    preDeployCmd = gostring.JoinSepStrings("\n", gostring.StrFilterSliceEmpty(strings.Split(preDeployCmd, "\n"))...)
-    postDeployCmd = gostring.JoinSepStrings("\n", gostring.StrFilterSliceEmpty(strings.Split(postDeployCmd, "\n"))...)
-
-    auditEmail, deployEmail := c.PostForm("audit_notice_email"), c.PostForm("deploy_notice_email")
-    auditEmail = gostring.JoinSepStrings(",", gostring.StrFilterSliceEmpty(strings.Split(auditEmail, ","))...)
-    deployEmail = gostring.JoinSepStrings(",", gostring.StrFilterSliceEmpty(strings.Split(deployEmail, ","))...)
-
-    project := &projectService.Project{
-        ID: id,
-        Name: params.Name,
-        Description: params.Description,
-        SpaceId: params.SpaceId,
-        RepoUrl: params.RepoUrl,
-        RepoMode: params.RepoMode,
-        RepoBranch: repoBranch,
-        ExcludeFiles: excludeFiles,
-        DeployServer: deployServer,
-        DeployUser: params.DeployUser,
-        DeployPath: params.DeployPath,
-        DeployTimeout: params.DeployTimeout,
-        PreDeployCmd: preDeployCmd,
-        PostDeployCmd: postDeployCmd,
-        NeedAudit: needAudit,
-        AuditNoticeEmail: auditEmail,
-        DeployNoticeEmail: deployEmail,
-    }
-    if err = project.CreateOrUpdate(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, nil)
-}
-
-func ProjectList(c *goweb.Context) error {
-    offset, limit, keyword, spaceId, status := c.QueryInt("offset"), c.GetInt("limit"), c.Query("keyword"), c.QueryInt("space_id"), c.QueryInt("status")
-    project := &projectService.Project{
-        SpaceId: spaceId,
-        Status: status,
-    }
-    list, total, err := project.List(keyword, offset, limit)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "list": list,
-        "total": total,
+func ProjectListByIds(projectIds []int) ([]Project, error) {
+    project := &model.Project{}
+    list, ok := project.List(model.QueryParam{
+        Fields: "id, name",
+        Order: "id DESC",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Tag: "IN",
+                Prepare: projectIds,
+            },
+        },
     })
-}
+    if !ok {
+        return nil, errors.New("get project list failed")
+    }
 
-func ProjectDetail(c *goweb.Context) error {
-    project := &projectService.Project{
-        ID: c.QueryInt("id"),
-    }
-    if err := project.Detail(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    groupList, err := serverService.GroupListByIds(project.DeployServer)
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    var deploySers []map[string]interface{}
-    for _, l := range groupList {
-        deploySers = append(deploySers, map[string]interface{}{
-            "id": l.ID,
-            "name": l.Name,
+    var projList []Project
+    for _, l := range list {
+        projList = append(projList, Project{
+            ID: l.ID,
+            Name: l.Name,
         })
     }
-    project.DeployServers = deploySers
-    return syncd.RenderJson(c, project)
+    return projList, nil
 }
 
-func ProjectDelete(c *goweb.Context) error {
-    project := &projectService.Project{
-        ID: c.PostFormInt("id"),
-    }
-    if err := project.Detail(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    if project.Status != 0 {
-        return syncd.RenderAppError("project delete falied, project status must be unavailable")
-    }
-    if err := project.Delete(); err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, nil)
-}
-
-func ProjectExists(c *goweb.Context) error {
-    id, spaceId, keyword := c.QueryInt("id"), c.QueryInt("space_id"), c.Query("keyword")
-    if spaceId == 0 || keyword == "" {
-        return syncd.RenderParamError("params error")
-    }
-    project := &projectService.Project{
-        ID: id,
-        SpaceId: spaceId,
-        Name: keyword,
-    }
-    exists, err := project.CheckProjectExists()
-    if err != nil {
-        return syncd.RenderAppError(err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "exists": exists,
+func ProjectAllBySpaceIds(spaceIds []int) ([]Project, error) {
+    project := &model.Project{}
+    list, ok := project.List(model.QueryParam{
+        Fields: "id, name, space_id",
+        Order: "id DESC",
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "space_id",
+                Tag: "IN",
+                Prepare: spaceIds,
+            },
+        },
     })
+    if !ok {
+        return nil, errors.New("get project list failed")
+    }
+
+    var projList []Project
+    for _, l := range list {
+        projList = append(projList, Project{
+            ID: l.ID,
+            Name: l.Name,
+            SpaceId: l.SpaceId,
+        })
+    }
+    return projList, nil
 }
 
-func ProjectChangeStatus(c *goweb.Context) error {
-    id, status := c.PostFormInt("id"), c.PostFormInt("status")
-    project := &projectService.Project{
-        ID: id,
-        Status: status,
+func (p *Project) UpdateBuildScript() error {
+    project := &model.Project{}
+    updateData := map[string]interface{}{
+        "build_script": p.BuildScript,
     }
-    if err := project.ChangeStatus(); err != nil {
-        return syncd.RenderAppError(err.Error())
+    if ok := project.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: p.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("project build_script update failed")
     }
-    return syncd.RenderJson(c, nil)
+    return nil
+}
+
+func (p *Project) UpdateHookScript() error {
+    project := &model.Project{}
+    updateData := map[string]interface{}{
+        "build_hook_script": p.BuildHookScript,
+        "deploy_hook_script": p.DeployHookScript,
+    }
+    if ok := project.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: p.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("project hook script update failed")
+    }
+    return nil
+}
+
+func (p *Project) Detail() error {
+    project := &model.Project{}
+    if ok := project.Get(p.ID); !ok {
+        return errors.New("get project detail failed")
+    }
+    if project.ID == 0 {
+        return errors.New("project detail not exists")
+    }
+
+    p.ID = project.ID
+    p.SpaceId = project.SpaceId
+    p.Name = project.Name
+    p.Description = project.Description
+    p.NeedAudit = project.NeedAudit
+    p.Status = project.Status
+    p.RepoUrl = project.RepoUrl
+    p.DeployMode = project.DeployMode
+    p.RepoBranch = project.RepoBranch
+    p.OnlineCluster = gostring.StrSplit2IntSlice(project.OnlineCluster, ",")
+    p.DeployUser = project.DeployUser
+    p.DeployPath = project.DeployPath
+    p.PreDeployCmd = project.PreDeployCmd
+    p.AfterDeployCmd = project.AfterDeployCmd
+    p.Ctime = project.Ctime
+    p.BuildScript = project.BuildScript
+    p.BuildHookScript = project.BuildHookScript
+    p.DeployHookScript = project.DeployHookScript
+    p.AuditNotice = project.AuditNotice
+    p.DeployNotice = project.DeployNotice
+
+    return nil
+}
+
+func (p *Project) UpdateStatus() error {
+    project := &model.Project{}
+    updateData := map[string]interface{}{
+        "status": p.Status,
+    }
+    ok := project.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: p.ID,
+            },
+        },
+    })
+    if !ok {
+        return errors.New("project status update failed")
+    }
+    return nil
+}
+
+func (p *Project) Total(keyword string, spaceId int) (int, error) {
+    project := &model.Project{}
+    total, ok := project.Count(model.QueryParam{
+        Where: p.parseWhereConds(keyword, spaceId),
+    })
+    if !ok {
+        return 0, errors.New("get project count failed")
+    }
+    return total, nil
+}
+
+func (p *Project) List(keyword string, spaceId, offset, limit int) ([]Project, error) {
+    project := &model.Project{}
+    list, ok := project.List(model.QueryParam{
+        Fields: "id, name, need_audit, status",
+        Offset: offset,
+        Limit: limit,
+        Order: "id DESC",
+        Where: p.parseWhereConds(keyword, spaceId),
+    })
+    if !ok {
+        return nil, errors.New("get project list failed")
+    }
+
+    var projList []Project
+    for _, l := range list {
+        projList = append(projList, Project{
+            ID: l.ID,
+            Name: l.Name,
+            NeedAudit: l.NeedAudit,
+            Status: l.Status,
+        })
+    }
+    return projList, nil
+}
+
+func (p *Project) CreateOrUpdate() error {
+    project := &model.Project{
+        ID: p.ID,
+        SpaceId: p.SpaceId,
+        Name: p.Name,
+        Description: p.Description,
+        NeedAudit: p.NeedAudit,
+        RepoUrl: p.RepoUrl,
+        DeployMode: p.DeployMode,
+        RepoBranch: p.RepoBranch,
+        OnlineCluster: gostring.JoinIntSlice2String(p.OnlineCluster, ","),
+        DeployUser: p.DeployUser,
+        DeployPath: p.DeployPath,
+        PreDeployCmd: p.PreDeployCmd,
+        AfterDeployCmd: p.AfterDeployCmd,
+        AuditNotice: p.AuditNotice,
+        DeployNotice: p.DeployNotice,
+    }
+    if project.ID > 0 {
+        updateData := map[string]interface{}{
+            "name": p.Name,
+            "description": p.Description,
+            "need_audit": p.NeedAudit,
+            "repo_url": p.RepoUrl,
+            "deploy_mode": p.DeployMode,
+            "repo_branch": p.RepoBranch,
+            "online_cluster": gostring.JoinIntSlice2String(p.OnlineCluster, ","),
+            "deploy_user": p.DeployUser,
+            "deploy_path": p.DeployPath,
+            "pre_deploy_cmd": p.PreDeployCmd,
+            "after_deploy_cmd": p.AfterDeployCmd,
+            "audit_notice": p.AuditNotice,
+            "deploy_notice": p.DeployNotice,
+        }
+        if ok := project.UpdateByFields(updateData, model.QueryParam{
+            Where: []model.WhereParam{
+                model.WhereParam{
+                    Field: "id",
+                    Prepare: project.ID,
+                },
+            },
+        }); !ok {
+            return errors.New("project update failed")
+        }
+    } else {
+        if ok := project.Create(); !ok {
+            return errors.New("project create failed")
+        }
+    }
+    return nil
+}
+
+func (p *Project) Delete() error {
+    project := &model.Project{
+        ID: p.ID,
+    }
+    if ok := project.Delete(); !ok {
+        return errors.New("project detail failed")
+    }
+    return nil
+}
+
+func (p *Project) parseWhereConds(keyword string, spaceId int) []model.WhereParam {
+    var where []model.WhereParam
+    where = append(where, model.WhereParam{
+        Field: "space_id",
+        Prepare: spaceId,
+    })
+    if keyword != "" {
+        where = append(where, model.WhereParam{
+            Field: "name",
+            Tag: "LIKE",
+            Prepare: fmt.Sprintf("%%%s%%", keyword),
+        })
+    }
+    return where
 }

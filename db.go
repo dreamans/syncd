@@ -1,4 +1,4 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -7,6 +7,7 @@ package syncd
 import (
     "fmt"
     "time"
+    "errors"
 
     "github.com/jinzhu/gorm"
     _ "github.com/go-sql-driver/mysql"
@@ -26,10 +27,10 @@ func NewDatabase(cfg *DbConfig) *DB {
 func (db *DB) Open() error {
     c, err := gorm.Open("mysql", db.parseConnConfig())
     if err != nil {
-        return err
+        return errors.New(fmt.Sprintf("mysql connect failed, %s", err.Error()))
     }
 
-    //c.LogMode(true)
+    c.LogMode(false)
     c.DB().SetMaxIdleConns(db.cfg.MaxIdleConns)
     c.DB().SetMaxOpenConns(db.cfg.MaxOpenConns)
     c.DB().SetConnMaxLifetime(time.Second * time.Duration(db.cfg.ConnMaxLifeTime))
@@ -47,13 +48,8 @@ func (db *DB) parseConnConfig() string {
     if db.cfg.Unix != "" {
         connHost = fmt.Sprintf("unix(%s)", db.cfg.Unix)
     } else {
-        connHost = fmt.Sprintf("tcp(%s:%s)", db.cfg.Host, db.cfg.Port)
+        connHost = fmt.Sprintf("tcp(%s:%d)", db.cfg.Host, db.cfg.Port)
     }
     s := fmt.Sprintf("%s:%s@%s/%s?charset=%s&parseTime=True&loc=Local", db.cfg.User, db.cfg.Pass, connHost, db.cfg.DbName, db.cfg.Charset)
-
     return s
-}
-
-func (db *DB) GetTablePrefix() string {
-    return db.cfg.TablePrefix
 }

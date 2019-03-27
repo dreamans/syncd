@@ -1,10 +1,11 @@
 import Vue from 'vue'
 import Router from 'vue-router'
-import Priv from '@/util/priv.js'
+import i18n from '@/lang'
+import priv from '@/lib/priv'
 
 Vue.use(Router)
 
-const _import = file => () => import('../views/' + file + '.vue')
+const _import = file => () => import('../view/' + file + '.vue')
 
 const appMap = [
     {
@@ -18,17 +19,17 @@ const routerMap = [
     {
         path: '/',
         component: _import('Layer'),
-        meta: {
-            single: true,
-        },
+        name: 'main',
+        meta: {},
         redirect: { name: 'dashboard' },
         children: [
             {
                 path: 'dashboard',
                 name: 'dashboard',
                 meta: {
-                    title: '控制台',
+                    title: i18n.t('dashboard'),
                     icon: 'icon-dashboard',
+                    single: true,
                 },
                 component: _import('Dashboard'),
             },
@@ -39,7 +40,7 @@ const routerMap = [
         name: 'deploy',
         component: _import('Layer'),
         meta: {
-            title: '发布',
+            title: i18n.t('deploy'),
             icon: 'icon-send',
         },
         children: [
@@ -47,8 +48,8 @@ const routerMap = [
                 path: 'apply',
                 name: 'deployApply',
                 meta: {
-                    title: '提交上线申请',
-                    role: [Priv.DEPLOY_APPLY],
+                    title: i18n.t('submit_deploy_apply'),
+                    role: [priv.DEPLOY_APPLY],
                 },
                 component: _import('deploy/Apply'),
             },
@@ -56,8 +57,8 @@ const routerMap = [
                 path: 'deploy',
                 name: 'deployDeploy',
                 meta: {
-                    title: '上线单管理',
-                    role: [Priv.DEPLOY_VIEW_MY, Priv.DEPLOY_VIEW_ALL],
+                    title: i18n.t('deploy_manage'),
+                    role: [priv.DEPLOY_VIEW],
                 },
                 component: _import('deploy/Deploy'),
             },
@@ -65,9 +66,8 @@ const routerMap = [
                 path: 'release',
                 name: 'deployRelease',
                 meta: {
-                    title: '部署上线单',
+                    title: i18n.t('deploying_deploy'),
                     hide: true,
-                    role: [Priv.DEPLOY_DEPLOY_MY, Priv.DEPLOY_DEPLOY_ALL],
                 },
                 component: _import('deploy/Release'),
             },
@@ -78,7 +78,7 @@ const routerMap = [
         name: 'project',
         component: _import('Layer'),
         meta: {
-            title: '项目',
+            title: i18n.t('project'),
             icon: 'icon-project',
         },
         children: [
@@ -86,8 +86,8 @@ const routerMap = [
                 path: 'space',
                 name: 'projectSpace',
                 meta: {
-                    title: '项目空间',
-                    role: [Priv.PROJECT_SPACE_VIEW],
+                    title: i18n.t('space_manage'),
+                    role: [priv.PROJECT_SPACE_VIEW],
                 },
                 component: _import('project/Space'),
             },
@@ -95,9 +95,8 @@ const routerMap = [
                 path: 'project',
                 name: 'projectProject',
                 meta: {
-                    title: '项目管理',
-                    hide: true,
-                    role: [Priv.PROJECT_VIEW],
+                    title: i18n.t('project_manage'),
+                    role: [priv.PROJECT_VIEW],
                 },
                 component: _import('project/Project'),
             },
@@ -105,11 +104,10 @@ const routerMap = [
                 path: 'user',
                 name: 'projectUser',
                 meta: {
-                    title: '成员管理',
-                    hide: true,
-                    role: [Priv.PROJECT_USER_VIEW],
+                    title: i18n.t('member_manage'),
+                    role: [priv.PROJECT_USER_VIEW],
                 },
-                component: _import('project/User'),
+                component: _import('project/Member'),
             },
         ],
     },
@@ -118,16 +116,16 @@ const routerMap = [
         name: 'user',
         component: _import('Layer'),
         meta: {
-            title: '用户',
-            icon: 'icon-team',
+            title: i18n.t('user'),
+            icon: 'icon-group',
         },
         children: [
             {
                 path: 'group',
                 name: 'userGroup',
                 meta: {
-                    title: '角色管理',
-                    role: [Priv.USER_ROLE_VIEW],
+                    title: i18n.t('role_manage'),
+                    role: [priv.USER_ROLE_VIEW],
                 },
                 component: _import('user/Group'),
             },
@@ -135,8 +133,8 @@ const routerMap = [
                 path: 'list',
                 name: 'userList',
                 meta: {
-                    title: '用户管理',
-                    role: [Priv.USER_VIEW],
+                    title: i18n.t('user_manage'),
+                    role: [priv.USER_VIEW],
                 },
                 component: _import('user/User'),
             },
@@ -147,7 +145,7 @@ const routerMap = [
         name: 'server',
         component: _import('Layer'),
         meta: {
-            title: '服务器',
+            title: i18n.t('server'),
             icon: 'icon-server',
         },
         children: [
@@ -155,8 +153,8 @@ const routerMap = [
                 path: 'group',
                 name: 'serverGroup',
                 meta: {
-                    title: '集群管理',
-                    role: [Priv.SERVER_GROUP_VIEW],
+                    title: i18n.t('cluster_manage'),
+                    role: [priv.SERVER_GROUP_VIEW],
                 },
                 component: _import('server/Group'),
             },
@@ -164,34 +162,13 @@ const routerMap = [
                 path: 'list',
                 name: 'serverList',
                 meta: {
-                    title: '服务器管理',
-                    role: [Priv.SERVER_VIEW],
+                    title: i18n.t('server_manage'),
+                    role: [priv.SERVER_VIEW],
                 },
                 component: _import('server/Server'),
             },
         ],
     },
-    /*
-    {
-        path: '/ops',
-        name: 'ops',
-        component: _import('Layer'),
-        meta: {
-            title: '运维',
-            icon: 'icon-shell',
-        },
-        children: [
-            {
-                path: 'shell',
-                name: 'opsShell',
-                meta: {
-                    title: '远程Shell',
-                    icon: 'icon-shell',
-                },
-                component: _import('ops/shell'),
-            },
-        ],
-    },*/
 ]
 
 const router = new Router({

@@ -1,32 +1,34 @@
 import Vue from 'vue'
+import ElementUI from 'element-ui'
+import 'element-ui/lib/theme-chalk/index.css'
+import moment from 'moment'
 import App from './App.vue'
 import router from './router'
 import store from './store'
-import jQuery from 'jquery'
-import moment from 'moment'
-import AntDesignVue from 'ant-design-vue'
-import util from './util/index.js'
-import data from './util/data.js'
-
-import 'ant-design-vue/dist/antd.css'
-import './scss/antd.scss'
+import i18n from './lang'
+import util from './lib/util.js'
+import data from './lib/data.js'
 import './scss/app.scss'
 
-import Icon from './icons'
-import './icons/style.scss'
 
-Vue.use(Icon)
-Vue.use(AntDesignVue)
-
-moment.locale('zh-CN')
+let localeLang
+if (global.navigator.language) {
+    localeLang = global.navigator.language
+    localeLang = localeLang.toLowerCase()
+}
+if (localeLang.indexOf('en') != 0) {
+    localeLang = 'zh-cn'
+}
+moment.locale(localeLang)
 
 Vue.config.productionTip = false
-Vue.prototype.$jQuery = jQuery
+Vue.use(ElementUI);
 
 new Vue({
-  router,
-  store,
-  methods: util,
-  data: data,
-  render: h => h(App)
+    i18n,
+    router,
+    store,
+    methods: util,
+    data: data,
+    render: h => h(App)
 }).$mount('#app')

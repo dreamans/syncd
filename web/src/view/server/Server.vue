@@ -1,0 +1,219 @@
+<template>
+    <div>
+        <el-card shadow="never">
+            <el-row class="app-btn-group">
+                <el-col :span="4">
+                    <el-button v-if="$root.CheckPriv($root.Priv.SERVER_NEW)" @click="openAddDialogHandler" type="primary" size="medium" icon="iconfont left small icon-add">{{ $t('add_server') }}</el-button>&nbsp;
+                </el-col>
+                <el-col :span="6" :offset="14">
+                    <el-input @keyup.enter.native="searchHandler" v-model="searchInput" size="medium" :placeholder="$t('please_input_keyword_id_or_name')">
+                        <el-button @click="searchHandler" slot="append" icon="el-icon-search"></el-button>
+                    </el-input>
+                </el-col>
+            </el-row>
+            <el-table
+                class="app-table"
+                size="medium"
+                v-loading="tableLoading"
+                :data="tableData">
+                <el-table-column prop="id" label="ID" width="80"></el-table-column>
+                <el-table-column prop="name" :label="$t('name')"></el-table-column>
+                <el-table-column prop="group_name" width="200" :label="$t('cluster')">
+                    <template slot-scope="scope">
+                        <span class="app-line-through" v-if="!scope.row.group_name">{{ $t('deleted') }}</span>
+                        <span v-else>{{ scope.row.group_name }}</span>
+                    </template>
+                </el-table-column>
+                <el-table-column prop="ip" width="200" label="IP/HOST"></el-table-column>
+                <el-table-column prop="ssh_port" width="100" label="SSH Port"></el-table-column>
+                <el-table-column :label="$t('operate')" width="180" align="right">
+                    <template slot-scope="scope">
+                        <el-button
+                        v-if="$root.CheckPriv($root.Priv.SERVER_EDIT)"
+                        icon="el-icon-edit"
+                        type="text"
+                        @click="openEditDialogHandler(scope.row)">{{ $t('edit') }}</el-button>
+                        
+                        <el-button
+                        v-if="$root.CheckPriv($root.Priv.SERVER_DEL)"
+                        type="text"
+                        icon="el-icon-delete"
+                        class="app-danger"
+                        @click="deleteHandler(scope.row)">{{ $t('delete') }}</el-button>
+                    </template>
+                </el-table-column>
+            </el-table>
+            <el-pagination
+                background
+                layout="prev, pager, next"
+                class="app-pagination"
+                @current-change="currentChangeHandler"
+                :current-page.sync="$root.Page"
+                :page-size="$root.PageSize"
+                :total="$root.Total">
+            </el-pagination>
+        </el-card>
+
+        <el-dialog :width="$root.DialogSmallWidth" :title="dialogTitle" :visible.sync="dialogVisible" @close="dialogCloseHandler">
+            <div class="app-dialog" v-loading="dialogLoading">
+                <el-form class="app-form" ref="dialogRef" :model="dialogForm" size="medium" label-width="120px">
+                    <el-form-item 
+                        :label="$t('belong_cluster')"
+                        prop="group_id"
+                        :rules="[
+                            { required: true, message: this.$t('belong_cluster_cannot_empty'), trigger: 'blur'},
+                        ]">
+                        <el-select filterable :placeholder="$t('keyword_search')" style="width: 100%" v-model="dialogForm.group_id">
+                            <el-option
+                                v-for="g in serverGroupList"
+                                :key="g.id"
+                                :label="g.name"
+                                :value="g.id">
+                            </el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item 
+                        :label="$t('server_name')"
+                        prop="name"
+                        :rules="[
+                            { required: true, message: this.$t('name_cannot_empty'), trigger: 'blur'},
+                        ]">
+                        <el-input :placeholder="$t('please_input_server_name')" v-model="dialogForm.name" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item 
+                        label="IP/HOST"
+                        prop="ip"
+                        :rules="[
+                            { required: true, message: this.$t('IP_HOST_cannot_empty'), trigger: 'blur'},
+                        ]">
+                        <el-input :placeholder="$t('please_input_server_IP_HOST')" v-model="dialogForm.ip" autocomplete="off"></el-input>
+                    </el-form-item>
+                    <el-form-item 
+                        :label="$t('SSH_port')"
+                        prop="ssh_port"
+                        :rules="[
+                            { required: true, message: this.$t('SSH_port_cannot_empty'), trigger: 'blur'},
+                        ]">
+                        <el-input maxlength=5 class="app-input-mini" v-model="dialogForm.ssh_port" autocomplete="off"></el-input>
+                    </el-form-item>
+                </el-form>
+                <div slot="footer" class="dialog-footer">
+                    <el-button size="small" @click="dialogCloseHandler">{{ $t('cancel')}}</el-button>
+                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitHandler">{{ $t('enter')}}</el-button>
+                </div>
+            </div>
+        </el-dialog>
+
+    </div>
+</template>
+
+<script>
+import { listGroupApi, newServerApi, updateServerApi, listServerApi, deleteServerApi, detailServerApi } from '@/api/server'
+export default {
+    data() {
+        return {
+            searchInput: '',
+            dialogVisible: false,
+            dialogTitle: '',
+            dialogForm: {},
+            dialogLoading: false,
+            btnLoading: false,
+
+            tableData: [],
+            tableLoading: false,
+
+            serverGroupList: [],
+        }
+    },
+    methods: {
+        searchHandler() {
+            this.$root.PageInit()
+            this.loadTableData()
+        },
+        openAddDialogHandler() {
+            this.dialogVisible = true
+            this.dialogTitle = this.$t('add_server')
+            this.loadServerGroupList()
+        },
+        openEditDialogHandler(row) {
+            this.dialogVisible = true
+            this.dialogTitle = this.$t('edit_server_info')
+            this.dialogLoading = true
+            this.loadServerGroupList()
+            detailServerApi({id: row.id}).then(res => {
+                this.dialogLoading = false
+
+                this.dialogForm = res
+            }).catch(err => {
+                this.dialogCloseHandler()
+            })
+        },
+        dialogCloseHandler() {
+            this.dialogVisible = false
+            this.dialogLoading = false
+            this.btnLoading = false
+            this.$refs.dialogRef.resetFields();
+            this.dialogForm = {
+                ssh_port: 22,
+            }
+        },
+        deleteHandler(row) {
+            this.$root.ConfirmDelete(() => {
+                deleteServerApi({id: row.id}).then(res => {
+                    this.$root.MessageSuccess()
+                    this.$root.PageReset()
+                    this.loadTableData()
+                })
+            })
+        },
+        currentChangeHandler() {
+            this.loadTableData()
+        },
+        dialogSubmitHandler() {
+            let vm = this
+            this.$refs.dialogRef.validate((valid) => {
+                if (!valid) {
+                    return false;
+                }
+                this.btnLoading = true
+                let opFn
+                if (this.dialogForm.id) {
+                    opFn = updateServerApi
+                } else {
+                    opFn = newServerApi
+                }
+                opFn(this.dialogForm).then(res => {
+                    this.$root.MessageSuccess(() => {
+                        this.dialogCloseHandler()
+                        this.btnLoading = false
+                        this.loadTableData()
+                    })
+                }).catch(err => {
+                    this.btnLoading = false
+                })
+            });
+        },
+        loadTableData() {
+            this.tableLoading = true
+            listServerApi({keyword: this.searchInput, offset: this.$root.PageOffset(), limit: this.$root.PageSize}).then(res => {
+                this.tableData = res.list
+                this.$root.Total = res.total
+                this.tableLoading = false
+            }).catch(err => {
+                this.tableLoading = false
+            })
+        },
+        loadServerGroupList() {
+            listGroupApi({offset: 0, limit: 999}).then(res => {
+                if (res.list && res.list.length > 0) {
+                    this.serverGroupList = res.list
+                }
+            })
+        },
+    },
+    mounted() {
+        this.$root.PageInit()
+        this.loadTableData()
+    }
+}
+</script>

@@ -1,77 +1,57 @@
-import {get, post} from './fetch.js'
+import {get, post} from '@/lib/fetch.js'
 
-export function checkGroupExistsApi(data) {
-    return get('/user/group/checkexists', data)
+export function privListApi() {
+    return get('/user/role/privlist')
 }
 
-export function newGroupApi(data) {
-    return post('/user/group/new', data)
+export function newRoleApi(data) {
+    return post('/user/role/add', data)
 }
 
-export function updateGroupApi(data) {
-    return post('/user/group/update', data)
+export function listRoleApi(params) {
+    return get('/user/role/list', params)
 }
 
-export function getGroupListApi(params) {
-    return get('/user/group/list', params)
+export function detailRoleApi(params) {
+    return get('/user/role/detail', params)
 }
 
-export function getGroupDetailApi(params) {
-    return get('/user/group/detail', params)
+export function updateRoleApi(data) {
+    return post('/user/role/update', data)
 }
 
-export function deleteGroupApi(data) {
-    return post('/user/group/delete', data)
-}
-
-export function getPrivListApi() {
-    return get('/user/group/priv')
+export function deleteRoleApi(data) {
+    return post('/user/role/delete', data)
 }
 
 export function newUserApi(data) {
-    return post('/user/new', data)
+    return post('/user/add', data)
 }
 
 export function updateUserApi(data) {
     return post('/user/update', data)
 }
 
-export function getUserListApi(params) {
+export function listUserApi(params) {
     return get('/user/list', params)
 }
 
-export function getUserDetailApi(params) {
-    return get('/user/detail', params)
+export function existsUserApi(params) {
+    return get('/user/exists', params)
 }
 
-export function checkUserExistsApi(params) {
-    return get('/user/checkexists', params)
+export function detailUserApi(params) {
+    return get('/user/detail', params)
 }
 
 export function deleteUserApi(data) {
     return post('/user/delete', data)
 }
 
-export function searchUserApi(params) {
-    return get('/user/search', params)
+export function userSettingApi(data) {
+    return post('/user/my/setting', data)
 }
 
-export function loginApi(data) {
-    return post('/user/login', data)
-}
-
-export function logoutApi() {
-    return post('/user/logout')
-}
-
-export function loginStatusApi() {
-    return get('/user/login/status')
-}
-
-export function updateMyApi(data) {
-    return post('/user/my/update', data)
-}
-
-export function updatePasswordApi(data) {
+export function userPasswordApi(data) {
     return post('/user/my/password', data)
 }

@@ -1,5 +1,4 @@
-
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
@@ -9,8 +8,8 @@ import (
     "fmt"
     "strings"
 
-    "github.com/dreamans/syncd"
     "github.com/jinzhu/gorm"
+    "github.com/dreamans/syncd"
 )
 
 type WhereParam struct {
@@ -27,17 +26,17 @@ type QueryParam struct {
     Where      []WhereParam
 }
 
-func Create(tableName string, data interface{}) bool {
-    db := syncd.Orm.Table(setTableName(tableName)).Create(data)
+func Create(model interface{}) bool {
+    db := syncd.App.DB.DbHandler.Create(model)
     if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        syncd.App.Logger.Warning("mysql execute error: %s, sql [%v]", err.Error(), db.QueryExpr())
         return false
     }
     return true
 }
 
-func GetMulti(tableName string, data interface{}, query QueryParam) bool {
-    db := syncd.Orm.Table(setTableName(tableName)).Offset(query.Offset)
+func GetMulti(model interface{}, query QueryParam) bool {
+    db := syncd.App.DB.DbHandler.Offset(query.Offset)
     if query.Limit > 0 {
         db = db.Limit(query.Limit)
     }
@@ -48,80 +47,90 @@ func GetMulti(tableName string, data interface{}, query QueryParam) bool {
         db = db.Order(query.Order)
     }
     db = parseWhereParam(db, query.Where)
-    db.Find(data)
+    db.Find(model)
     if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        syncd.App.Logger.Warning("mysql query error: %s, sql[%v]", err.Error(), db.QueryExpr())
         return false
     }
     return true
 }
 
-func Count(tableName string, count *int, query QueryParam) bool {
-    db := syncd.Orm.Table(setTableName(tableName))
+func Count(model interface{}, count *int, query QueryParam) bool {
+    db := syncd.App.DB.DbHandler.Model(model)
     db = parseWhereParam(db, query.Where)
     db = db.Count(count)
     if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        syncd.App.Logger.Warning("mysql query error: %s, sql[%v]", err.Error(), db.QueryExpr())
         return false
     }
     return true
 }
 
-func GetOne(tableName string, data interface{}, query QueryParam) bool {
-    db := syncd.Orm.Table(setTableName(tableName))
+func Delete(model interface{}, query QueryParam) bool {
+    if len(query.Where) == 0 {
+        syncd.App.Logger.Warning("mysql query error: delete failed, where conditions cannot be empty")
+        return false
+    }
+    db := syncd.App.DB.DbHandler.Model(model)
+    db = parseWhereParam(db, query.Where)
+    db = db.Delete(model)
+    if err := db.Error; err != nil {
+        syncd.App.Logger.Warning("mysql query error: %s, sql[%v]", err.Error(), db.QueryExpr())
+        return false
+    }
+    return true
+}
+
+func DeleteByPk(model interface{}) bool {
+    db := syncd.App.DB.DbHandler.Model(model)
+    db.Delete(model)
+    if err := db.Error; err != nil {
+        syncd.App.Logger.Warning("mysql query error: %s, sql[%v]", err.Error(), db.QueryExpr())
+        return false
+    }
+    return true
+}
+
+func GetOne(model interface{}, query QueryParam) bool {
+    db := syncd.App.DB.DbHandler.Model(model)
     if query.Fields != "" {
         db = db.Select(query.Fields)
     }
     db = parseWhereParam(db, query.Where)
-    db = db.First(data)
+    db = db.First(model)
     if err := db.Error; err != nil && !db.RecordNotFound() {
-        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        syncd.App.Logger.Warning("mysql query error: %s, sql[%v]", err.Error(), db.QueryExpr())
         return false
     }
     return true
 }
 
-func GetByPk(tableName string, data interface{}, id interface{}) bool {
-    db := syncd.Orm.Table(setTableName(tableName))
-    db.First(data, id)
+func GetByPk(model interface{}, id interface{}) bool {
+    db := syncd.App.DB.DbHandler.Model(model)
+    db.First(model, id)
     if err := db.Error; err != nil && !db.RecordNotFound() {
-        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        syncd.App.Logger.Warning("mysql query error: %s sql[%v]", err.Error(), db.QueryExpr())
         return false
     }
     return true
 }
 
-func Update(tableName string, data interface{}, query QueryParam) bool {
-    db := syncd.Orm.Table(setTableName(tableName))
+func UpdateByPk(model interface{}) bool {
+    db := syncd.App.DB.DbHandler.Model(model)
+    db = db.Updates(model)
+    if err := db.Error; err != nil {
+        syncd.App.Logger.Warning("mysql query error: %s, sql[%v]", err.Error(), db.QueryExpr())
+        return false
+    }
+    return true
+}
+
+func Update(model interface{}, data interface{}, query QueryParam) bool {
+    db := syncd.App.DB.DbHandler.Model(model)
     db = parseWhereParam(db, query.Where)
     db = db.Updates(data)
     if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
-        return false
-    }
-    return true
-}
-
-func Delete(tableName string, data interface{}, query QueryParam) bool {
-    if len(query.Where) == 0 {
-        syncd.Logger.Warning("mysql query error: delete failed, where conditions cannot be empty")
-        return false
-    }
-    db := syncd.Orm.Table(setTableName(tableName))
-    db = parseWhereParam(db, query.Where)
-    db = db.Delete(data)
-    if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
-        return false
-    }
-    return true
-}
-
-func DeleteByPk(tableName string, data interface{}) bool {
-    db := syncd.Orm.Table(setTableName(tableName))
-    db.Delete(data)
-    if err := db.Error; err != nil {
-        syncd.Logger.Warning("mysql query error: %v, sql[%v]", err, db.QueryExpr())
+        syncd.App.Logger.Warning("mysql query error: %s, sql[%v]", err.Error(), db.QueryExpr())
         return false
     }
     return true
@@ -151,11 +160,4 @@ func parseWhereParam(db *gorm.DB, where []WhereParam) *gorm.DB {
         prepare = append(prepare, w.Prepare)
     }
     return db.Where(strings.Join(plain, " AND "), prepare...)
-}
-
-func setTableName(rawName string) string {
-    return strings.Join([]string{
-        syncd.DbInstance.GetTablePrefix(),
-        rawName,
-    }, "")
 }

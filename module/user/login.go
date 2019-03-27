@@ -1,64 +1,130 @@
-// Copyright 2018 syncd Author. All Rights Reserved.
+// Copyright 2019 syncd Author. All Rights Reserved.
 // Use of this source code is governed by a MIT-style
 // license that can be found in the LICENSE file.
 
 package user
 
 import (
-    "github.com/tinystack/goutil/gois"
-    "github.com/tinystack/goweb"
+    "errors"
+    "fmt"
+    "time"
+    "strings"
+
     "github.com/dreamans/syncd"
-    userService "github.com/dreamans/syncd/service/user"
+    "github.com/dreamans/syncd/util/gostring"
+    "github.com/dreamans/syncd/util/goaes"
 )
 
-func Login(c *goweb.Context) error {
-    name, pass := c.PostForm("name"), c.PostForm("pass")
-    if name == "" || pass == "" {
-        return syncd.RenderParamError("username or password name can not empty")
-    }
-    login := &userService.Login{
-        Pass: pass,
-        Ip: c.ClientIP(),
-    }
-    if gois.IsEmail(name) {
-        login.Email = name
-    } else {
-        login.Name = name
-    }
-
-    if err := login.Login(); err != nil {
-        return syncd.RenderCustomerError(syncd.CODE_ERR_LOGIN_FAILED, err.Error())
-    }
-    return syncd.RenderJson(c, goweb.JSON{
-        "user_id": login.UserDetail.ID,
-        "name": login.UserDetail.Name,
-        "email": login.UserDetail.Email,
-        "token": login.Token,
-    })
+type Login struct {
+    UserId      int
+    RoleId      int
+    Username    string
+    Password    string
+    Email       string
+    Truename    string
+    Mobile      string
+    Token       string
 }
 
-func LoginStatus(c *goweb.Context) error {
-    userId := c.GetInt("user_id")
-    return syncd.RenderJson(c, goweb.JSON{
-        "is_login": userId > 0,
-        "group_id": c.GetInt("group_id"),
-        "group_name": c.GetString("group_name"),
-        "user_id": userId,
-        "name": c.GetString("user_name"),
-        "email": c.GetString("email"),
-        "mobile": c.GetString("mobile"),
-        "true_name": c.GetString("true_name"),
-        "priv": c.GetIntSlice("priv"),
-    })
+func (login *Login) Logout() error {
+    token := &Token{
+        UserId: login.UserId,
+    }
+    return token.DeleteByUserId()
 }
 
-func Logout(c *goweb.Context) error {
-    userId := c.GetInt("user_id")
-    token := &userService.Token{
-        UserId: userId,
+func (login *Login) Login() error {
+    u := &User{}
+    if login.Username != "" {
+        u.Username = login.Username
     }
-    if err := token.DeleteByUserId(); err != nil {
-        return syncd.RenderAppError(err.Error())
+    if login.Email != "" {
+        u.Email = login.Email
     }
-    return syncd.RenderJson(c, nil)
+    if err := u.Detail(); err != nil {
+        return errors.New("username or password incorrect")
+    }
+    loginPassword := gostring.StrMd5(gostring.JoinStrings(login.Password, u.Salt))
+    if u.Password != loginPassword {
+        return errors.New("password incorrect")
+    }
+
+    if u.Status != 1 {
+        return errors.New("user is locked")
+    }
+
+    login.UserId = u.ID
+    if err := login.createToken(); err != nil {
+        return errors.New("token create failed")
+    }
+
+    return nil
 }
+
+func (login *Login) ValidateToken() error {
+    authTokenBytes, err := gostring.Base64UrlDecode(login.Token)
+    if err != nil {
+        return errors.New("token check failed, can not decode raw token")
+    }
+    tokenValBytes, err := goaes.Decrypt(syncd.App.CipherKey, authTokenBytes)
+    if err != nil {
+        return errors.New("token check failed, can not decrypt raw token")
+    }
+    tokenArr := strings.Split(string(tokenValBytes), "\t")
+    if len(tokenArr) != 2 {
+        return errors.New("token check failed, len wrong")
+    }
+    token := &Token{
+        UserId: gostring.Str2Int(tokenArr[0]),
+        Token: tokenArr[1],
+    }
+    if ok := token.ValidateToken(); !ok {
+        return errors.New("token check failed, maybe your account is logged in on another device or token expired")
+    }
+
+    //get user detail
+    user := &User{
+        ID: token.UserId,
+    }
+    if err := user.Detail(); err != nil {
+        return errors.New("token check failed, user detail get failed")
+    }
+
+    if user.Status != 1 {
+        return errors.New("user is locked")
+    }
+
+    login.UserId = user.ID
+    login.Username = user.Username
+    login.Email = user.Email
+    login.Truename = user.Truename
+    login.Mobile = user.Mobile
+    login.RoleId = user.RoleId
+
+    return nil
+}
+
+func (login *Login) createToken() error {
+    loginKey := gostring.StrRandom(40)
+    loginRaw := fmt.Sprintf("%d\t%s", login.UserId, loginKey)
+    var (
+        err error
+        tokenBytes []byte
+    )
+    tokenBytes, err = goaes.Encrypt(syncd.App.CipherKey, []byte(loginRaw))
+    if err != nil {
+        return err
+    }
+    login.Token = gostring.Base64UrlEncode(tokenBytes)
+
+    token := &Token{
+        UserId: login.UserId,
+        Token: loginKey,
+        Expire: int(time.Now().Unix()) + 86400 * 30,
+    }
+    if err := token.CreateOrUpdate(); err != nil {
+        return err
+    }
+    return nil
+}
+
