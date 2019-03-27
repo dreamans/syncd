@@ -1,0 +1,16 @@
+.app-logo {
+    margin: 50px auto 0;
+    width: 300px;
+    display: block;
+}
+.app-donate {
+    width: 220px;
+    border: 1px solid #dedede;
+    padding: 8px;
+    border-radius: 5px;
+}
+.app-donate .tit {
+    text-align: center;
+    display: block;
+    padding: 10px 0;
+}
