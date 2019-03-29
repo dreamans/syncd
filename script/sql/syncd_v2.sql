@@ -39,7 +39,7 @@ CREATE TABLE `syd_deploy_build` (
   `finish_time` int(11) unsigned NOT NULL DEFAULT '0',
   `status` int(11) unsigned NOT NULL DEFAULT '1',
   `tar` varchar(2000) NOT NULL DEFAULT '',
-  `output` text NOT NULL,
+  `output` mediumtext NOT NULL,
   `errmsg` text NOT NULL,
   `ctime` int(11) unsigned NOT NULL DEFAULT '0',
   PRIMARY KEY (`id`),
