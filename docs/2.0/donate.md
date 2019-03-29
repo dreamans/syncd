@@ -5,7 +5,7 @@ Syncd 一直在致力于为企业和个人提供简洁高效的持续集成工�
 ### 扫码捐赠
 
 <div class="app-donate">
-    <img class="app-wechat-donate" src="assets/img/wechat-donate.png" />
+    <img class="app-wechat-donate" src="../assets/img/wechat-donate.png" />
     <span class="tit">微信扫码捐赠</span>
 </div>
 
