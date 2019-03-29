@@ -1,7 +1,13 @@
-* 开始使用
+* 快速开始
     * [概述](/)
-    * [安装](install.md)
-    * [配置](setting.md)
-    * [问题列表](troubleshooting.md)
+    * [运行原理](architecture.md)
+    * [编译安装](install.md)
+    * [服务配置](setting.md)
+    * [安装问题列表](troubleinstall.md)
+* 使用方法
+    * [项目配置](project.md)
+    * [集群配置](server.md)
+    * [构建配置](build.md)
+    * [使用问题列表](troubleuse.md)
 * 其他
     * [捐赠](donate.md)
