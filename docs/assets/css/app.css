@@ -14,3 +14,10 @@
     display: block;
     padding: 10px 0;
 }
+.app-image {
+    border: 1px solid #dedede;
+    border-radius: 5px;
+}
+.app-img-eg {
+    width: 800px;
+}

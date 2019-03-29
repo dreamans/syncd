@@ -12,3 +12,4 @@
 *.out
 
 # dir
+.DS_Store
