@@ -30,3 +30,5 @@ Syncd目前仅支持Git仓库部署，并且通过 `git-ssh` 方式从仓库中�
 ## SSH信任
 
 生产服务器与部署服务器之间通过ssh-key建立信任，配置方法请参考 [秘钥配置](server.md?id=秘钥配置) 
+
+[filename](include/footer.md ':include')

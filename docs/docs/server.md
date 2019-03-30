@@ -27,3 +27,5 @@
 设置完成后不要忘记进行测试连通性 `ssh {生产机用户名}@{生产机地址}`
 
 > 注意：部署服务器的$HOME必须与运行Syncd的用户一致，否则ssh的免密登录将无效。
+
+[filename](include/footer.md ':include')

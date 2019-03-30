@@ -1,12 +1,207 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>文档 | Syncd</title>
-    <script>
-        window.location.href='2.0'
-    </script>
+    <meta charset="UTF-8">
+    <title>Syncd | 自动化部署工具</title>
+    <link rel="icon" href="assets/img/favicon.ico">
+    <link rel="stylesheet" href="https://unpkg.com/normalize.css">
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_1024174_px3ge7j87c.css">
+    <style>
+        body {
+            color: rgba(0,0,0,.87);
+        }
+        .text-center {
+            text-align: center;
+        }
+        .wrap {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .icon-large {
+            color: #666;
+            font-size: 36px;
+        }
+        .icon-large.left {
+            margin-right: 6px;
+        }
+        .header-container {
+            position: relative;
+            padding: 20px 0;
+            background: #171f26;
+            color: #fff;
+        }
+        .header-container .nav {
+            color: #fff;
+            display:flex;
+        }
+        .header-container .nav .logo img {
+            height: 30px;
+        }
+        .header-container .nav .nav-list {
+            display: flex;
+            align-items: center;
+            margin-left: 30px;
+        }
+        .header-container .nav-link {
+            color: #fff;
+            text-decoration: none;
+            opacity: .7;
+            padding: 0 15px;
+        }
+        .header-container .nav-link:hover {
+            opacity: 1;
+            color: #409EFF;
+        }
+        .header-container .nav-social {
+            padding: 0 5px;
+        }
+        .header-container .banner {
+            height: 450px;
+            opacity: .7;
+            overflow: hidden;
+        }
+        .header-container .banner .h {
+            font-weight: 300;
+        }
+        .header-container .banner .tit {
+            font-size: 50px;
+            padding-top: 100px;
+        }
+        .header-container .banner .subtit {
+            font-size: 20px;
+        }
+        .header-container .banner .start {
+            padding: 60px 0;
+        }
+        .header-container .banner .start-link {
+            background: #283542;
+            padding: 15px 20px;
+            display: flex;
+            margin: 0 auto;
+            width: 90px;
+            justify-content: space-between;
+            opacity: 1;
+        }
+        .header-container .banner .start-link:hover {
+            color: #fff;
+            background: #409EFF;
+        }
+        .section-container {
+            padding: 36px 0;
+        }
+        .features-list {
+            padding: 0;
+            overflow: hidden;
+            display: flex;
+            justify-content: space-between;
+        }
+        .features-list:not(:first-child) {
+            margin-top: 48px;
+        }
+        .features-list li {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 280px;
+        }
+        .features-list .desc {
+            margin-top: 24px;
+        }
+        .features-tit {
+            padding: 15px 0;
+            font-size: 30px;
+            position: relative;
+        }
+        .features-tit:after {
+            content: '';
+            width: 50px;
+            height: 2px;
+            background-color: #333;
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+    </style>
 </head>
 <body>
+    <div class="header-container">
+        <header class="nav wrap">
+            <div class="logo">
+                <img src="assets/img/logo-blue.svg" />
+            </div>
+            <nav class="nav-list">
+                <a class="nav-link" href="/" >首页</a>
+                <a class="nav-link" href="/docs/">文档</a>
+                <a class="nav-link" href="/docs/">技术支持</a>
+                <a class="nav-link" href="/docs/">捐赠</a>
+                <a class="nav-link" href="https://github.com/dreamans/syncd" target="_blank">Github</a>
+                <a class="nav-social" href="https://github.com/dreamans/syncd/stargazers" target="_blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/dreamans/syncd.svg?style=social"></a>
+                <a class="nav-social" href="https://github.com/dreamans/syncd/network/members" target="_blank"><img alt="GitHub forks" src="https://img.shields.io/github/forks/dreamans/syncd.svg?style=social"></a>
+                <a class="nav-social" href='https://gitee.com/dreamans/syncd/stargazers' target="_blank"><img src='https://gitee.com/dreamans/syncd/badge/star.svg?theme=dark' /></a>
+                <a class="nav-social" href='https://gitee.com/dreamans/syncd/members' target="_blank"><img src='https://gitee.com/dreamans/syncd/badge/fork.svg?theme=dark' /></a>
+            </nav>
+        </header>
+        <div class="banner wrap">
+            <h1 class="h tit text-center">Syncd - 自动化部署工具</h1>
+            <h3 class="h subtit text-center">Syncd是一款开源的代码部署工具，它具有简单、高效、易用等特点，可以提高团队的工作效率。</h3>
+            <div class="start">
+                <a class="start-link nav-link" href="/docs/">
+                    <i class="iconfont icon-logo"></i>开始使用
+                </a>
+            </div>
+        </div>
+    </div>
+    <div class="section-container">
+        <div class="wrap">
+            <h3 class="features-tit text-center">特性</h3>
+            <ul class="features-list">
+                <li>
+                    <i class="icon-large iconfont left icon-golang"></i>
+                    <span class="desc">Go语言开发，编译简单、运行高效</span>
+                </li>
+                <li>
+                    <i class="icon-large iconfont left icon-web"></i>
+                    <span class="desc">Web界面访问，交互友好</span>
+                </li>
+                <li>
+                    <i class="icon-large iconfont left icon-priv"></i>
+                    <span class="desc">权限模型灵活自由</span>
+                </li>
+                <li>
+                    <i class="icon-large iconfont left icon-build"></i>
+                    <span class="desc">自定义构建支持</span>
+                </li>
+            </ul>
+            <ul class="features-list">
+                <li>
+                    <i class="icon-large iconfont left icon-git"></i>
+                    <span class="desc">Git仓库支持</span>
+                </li>
+                <li>
+                    <i class="icon-large iconfont left icon-webhook"></i>
+                    <span class="desc">部署Hook支持，可扩展性强</span>
+                </li>
+                <li>
+                    <i class="icon-large iconfont left icon-workflow"></i>
+                    <span class="desc">完善的上线工作流</span>
+                </li>
+                <li>
+                    <i class="icon-large iconfont left icon-notice"></i>
+                    <span class="desc">邮件通知机制</span>
+                </li>
+            </ul>
+        </div>
+    </div>
+<script>
+    var _hmt = _hmt || [];
+    (function() {
+        var hm = document.createElement("script");
+        hm.src = "https://hm.baidu.com/hm.js?fb50c5786de11a790e1e2a45618fd7eb";
+        var s = document.getElementsByTagName("script")[0]; 
+        s.parentNode.insertBefore(hm, s);
+    })();
+</script>
 </body>
 </html>

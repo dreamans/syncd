@@ -10,7 +10,7 @@ Linux / macOS + Bash. 需要注意的是Syncd不支持Win系统。
 
 **Go 编译环境**
 
-Syncd依赖 `Go1.11` 编译环境，可前往[官方网站](https://golang.org/dl/) 或 [国内镜像](https://golang.google.cn/dl/) 下载安装。
+Syncd依赖 `Go1.11+` 编译环境，可前往[官方网站](https://golang.org/dl/) 或 [国内镜像](https://golang.google.cn/dl/) 下载安装。
 
 **MySQL**
 
@@ -25,7 +25,7 @@ MySQL 5.6+
 执行以下命令
 ```shell
 $ cd ~
-$ git clone git@github.com:dreamans/syncd.git
+$ git clone https://github.com/dreamans/syncd.git
 $ cd ./syncd
 $ make
 ```
@@ -112,3 +112,5 @@ Start Running...
 密码: 111111
 ```
 **!!!登录后尽快修改默认密码**
+
+[filename](include/footer.md ':include')
