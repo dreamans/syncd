@@ -17,7 +17,7 @@
 
 ## 文档
 
-[查看文档](https://rsy.me/syncd)
+[查看文档](https://syncd.cc)
 
 ## 特性
 
@@ -43,7 +43,7 @@ Syncd使用交流QQ群①: 725302833
 
 ## 捐赠
 
-Syncd的发展离不开您的支持，[前往捐赠](https://rsy.me/syncd/#donate.md)
+Syncd的发展离不开您的支持，[前往捐赠](https://syncd.cc/docs/#donate.md)
 
 ## LICENSE
 
