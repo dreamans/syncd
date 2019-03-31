@@ -12,3 +12,5 @@ Syncd 一直在致力于为企业和个人提供简洁高效的持续集成工�
 ### 捐赠列表
 
 --
+
+[filename](include/footer.md ':include')

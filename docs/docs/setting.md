@@ -175,3 +175,5 @@ Syncd数据库名。
 #### smtp_user
 
 #### smtp_pass
+
+[filename](include/footer.md ':include')

@@ -36,10 +36,6 @@ Github: https://github.com/dreamans/syncd
 
 Gitee: https://gitee.com/dreamans/syncd
 
-## 获取帮助
-
-Syncd使用交流QQ群①: 725302833
-
 ## 捐赠
 
 Syncd的发展离不开您的支持，[前往捐赠](donate.md)
@@ -47,3 +43,5 @@ Syncd的发展离不开您的支持，[前往捐赠](donate.md)
 ## LICENSE
 
 本项目采用 MIT 开源授权许可证，完整的授权说明已放置在 LICENSE 文件中。
+
+[filename](include/footer.md ':include')

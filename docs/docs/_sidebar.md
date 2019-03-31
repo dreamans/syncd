@@ -3,6 +3,7 @@
     * [运行原理](architecture.md)
     * [编译安装](install.md)
     * [服务配置](setting.md)
+    * [获取帮助](help.md)
     * [安装问题列表](troubleinstall.md)
 * 使用方法
     * [项目配置](project.md)

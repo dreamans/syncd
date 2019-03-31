@@ -157,6 +157,10 @@ func main() {
         },
     }
 
+    outputInfo("Log", cfg.Log.Path)
+    outputInfo("Mail Enable", cfg.Mail.Enable)
+    outputInfo("HTTP Service", cfg.Serve.Addr)
+
     if err := syncd.App.Init(cfg); err != nil {
         log.Fatal(err)
     }

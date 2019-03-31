@@ -23,3 +23,5 @@
 在 `添加新成员` 输入框中输入待加入成员的关键词，选中用户后点击添加。
 
 <img class="app-img-eg" src="assets/img/syncd-member-add.png" />
+
+[filename](include/footer.md ':include')
