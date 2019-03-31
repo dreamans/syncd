@@ -24,56 +24,45 @@ MySQL 5.6+
 
 执行以下命令
 ```shell
-$ cd ~
-$ git clone https://github.com/dreamans/syncd.git
-$ cd ./syncd
-$ make
+$ curl https://syncd.cc/install.sh | bash
 ```
 
-若编译程序未报错并且在 `./synce` 中生成 `output` 子目录，则表示安装成功。
+若编译程序未报错并且在当前目录中生成 `syncd-deploy` 子目录，则表示安装成功。
 
-output目录结构
+syncd-deploy目录结构
 
 ```shell
-output // output可修改为任意其他目录名称
+syncd-deploy // syncd-deploy可修改为任意其他目录名称
 ├── bin // bin目录存放Syncd的可执行文件
 │   └── syncd
 ├── etc // bin/syncd 程序运行时若不指定配置文件，则会在etc目录中查找syncd.ini作为默认配置
 │   └── syncd.ini
 ├── log
-└── public // 静态资源目录
+├── public // 静态资源目录
     ├── css
     ├── favicon.ico
     ├── fonts
     ├── img
     ├── index.html
     └── js
+└── resource // 资源目录
+    └── sql
 ```
 
-> 生成的 output 目录可拷贝或移动到你想要的地方，但不要试图将此目录拷贝到其他服务器上运行，会造成不可预料的结果。
+> 生成的 syncd-deploy 目录可拷贝或移动到你想要的地方，但不要试图将此目录拷贝到其他服务器上运行，会造成不可预料的结果。
 
 ## 导入数据库
 
-使用编辑器打开 `~/syncd/script/install_sql.sh` 文件
-
-修改此处MySQL数据库连接配置
-```
-#-------------此处根据实际情况进行修改-------------
-MYSQL_HOST=127.0.0.1 # 数据库Host
-MYSQL_USER=          # 数据库用户名
-MYSQL_PASS=          # 数据库密码
-#--------------------------------------------
-```
-
-运行脚本（Warning错误可忽略）
+Syncd依赖的MySQL数据表结构存在于 `syncd-deploy/resource/sql/syncd_{版本号}.sql` 中
 
 ```
-$ /bin/bash ~/syncd/script/install_sql.sh
+$ cd ./syncd-deploy
+$ mysql --default-character-set=utf8mb4 < ./resource/sql/syncd_{版本号}.sql # 导入MySQL表结构
 ```
 
 ## 配置文件
 
-配置文件位置: `~/syncd/output/etc/syncd.ini`
+配置文件位置: `syncd-deploy/etc/syncd.ini`
 
 修改数据库连接信息（查看[配置项](setting.md)详细文档）
 
@@ -89,7 +78,7 @@ dbname = syncd
 ## 运行程序
 
 ```shell
-$ cd ~/syncd/output
+$ cd syncd-deploy
 $ ./bin/syncd
 
    _____   __  __   ____     _____   ____/ /
@@ -100,7 +89,10 @@ $ ./bin/syncd
 
 Service:              syncd
 Version:              v2.0.0
-Config Loaded:        /Users/work/syncd/output/etc/syncd.ini
+Config Loaded:        ./etc/syncd.ini
+Log:                  stdout
+Mail Enable:          0
+HTTP Service:         :8878
 Start Running...
 ```
 

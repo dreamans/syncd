@@ -4,6 +4,7 @@ SYNCD_BIN_PATH=./output/bin
 SYNCD_ETC_PATH=./output/etc
 SYNCD_PUBLIC_PATH=./output/public
 SYNCD_LOG_PATH=./output/log
+SYNCD_RES_PATH=./output/resource
 
 .PHONY: all
 all: clean build install
@@ -13,21 +14,22 @@ linux: clean build-linux install
 
 .PHONY: build
 build:
-	@echo "build start >>>"
+	@echo "build syncd start >>>"
 	GOPROXY=https://goproxy.io $(GO_CMD) mod tidy
 	$(GO_CMD) build -o $(SYNCD_BIN) ./syncd/main.go
-	@echo ">>> build complete"
+	@echo ">>> build syncd complete"
 
 .PHONY: install
 install:
-	@echo "install start >>>"
+	@echo "install syncd start >>>"
 	mkdir -p $(SYNCD_BIN_PATH)
 	mv $(SYNCD_BIN) $(SYNCD_BIN_PATH)/syncd
 	mkdir -p $(SYNCD_ETC_PATH)
 	cp ./syncd.ini $(SYNCD_ETC_PATH)
 	cp -r ./public $(SYNCD_PUBLIC_PATH)
 	mkdir -p $(SYNCD_LOG_PATH)
-	@echo ">>> install complete"
+	cp -r ./resource $(SYNCD_RES_PATH)
+	@echo ">>> install syncd complete"
 
 .PHONY: clean
 clean:

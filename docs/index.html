@@ -5,128 +5,11 @@
     <title>Syncd | 自动化部署工具</title>
     <link rel="icon" href="assets/img/favicon.ico">
     <link rel="stylesheet" href="https://unpkg.com/normalize.css">
-    <link rel="stylesheet" href="//at.alicdn.com/t/font_1024174_px3ge7j87c.css">
-    <style>
-        body {
-            color: rgba(0,0,0,.87);
-        }
-        .text-center {
-            text-align: center;
-        }
-        .wrap {
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-        .icon-large {
-            color: #666;
-            font-size: 36px;
-        }
-        .icon-large.left {
-            margin-right: 6px;
-        }
-        .header-container {
-            position: relative;
-            padding: 20px 0;
-            background: #171f26;
-            color: #fff;
-        }
-        .header-container .nav {
-            color: #fff;
-            display:flex;
-        }
-        .header-container .nav .logo img {
-            height: 30px;
-        }
-        .header-container .nav .nav-list {
-            display: flex;
-            align-items: center;
-            margin-left: 30px;
-        }
-        .header-container .nav-link {
-            color: #fff;
-            text-decoration: none;
-            opacity: .7;
-            padding: 0 15px;
-        }
-        .header-container .nav-link:hover {
-            opacity: 1;
-            color: #409EFF;
-        }
-        .header-container .nav-social {
-            padding: 0 5px;
-        }
-        .header-container .banner {
-            height: 450px;
-            opacity: .7;
-            overflow: hidden;
-        }
-        .header-container .banner .h {
-            font-weight: 300;
-        }
-        .header-container .banner .tit {
-            font-size: 50px;
-            padding-top: 100px;
-        }
-        .header-container .banner .subtit {
-            font-size: 20px;
-        }
-        .header-container .banner .start {
-            padding: 60px 0;
-        }
-        .header-container .banner .start-link {
-            background: #283542;
-            padding: 15px 20px;
-            display: flex;
-            margin: 0 auto;
-            width: 90px;
-            justify-content: space-between;
-            opacity: 1;
-        }
-        .header-container .banner .start-link:hover {
-            color: #fff;
-            background: #409EFF;
-        }
-        .section-container {
-            padding: 36px 0;
-        }
-        .features-list {
-            padding: 0;
-            overflow: hidden;
-            display: flex;
-            justify-content: space-between;
-        }
-        .features-list:not(:first-child) {
-            margin-top: 48px;
-        }
-        .features-list li {
-            list-style: none;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            width: 280px;
-        }
-        .features-list .desc {
-            margin-top: 24px;
-        }
-        .features-tit {
-            padding: 15px 0;
-            font-size: 30px;
-            position: relative;
-        }
-        .features-tit:after {
-            content: '';
-            width: 50px;
-            height: 2px;
-            background-color: #333;
-            position: absolute;
-            bottom: 0;
-            left: 50%;
-            transform: translateX(-50%);
-        }
-    </style>
+    <link rel="stylesheet" href="//at.alicdn.com/t/font_1024174_5513d6zbshw.css">
+    <link rel="stylesheet" href="assets/css/app.css">
 </head>
 <body>
-    <div class="header-container">
+    <div class="header-container bg-dark">
         <header class="nav wrap">
             <div class="logo">
                 <img src="assets/img/logo-blue.svg" />
@@ -134,8 +17,8 @@
             <nav class="nav-list">
                 <a class="nav-link" href="/" >首页</a>
                 <a class="nav-link" href="/docs/">文档</a>
-                <a class="nav-link" href="/docs/">技术支持</a>
-                <a class="nav-link" href="/docs/">捐赠</a>
+                <a class="nav-link" href="/docs/#/help">获取帮助</a>
+                <a class="nav-link" href="/docs/#/donate">捐赠</a>
                 <a class="nav-link" href="https://github.com/dreamans/syncd" target="_blank">Github</a>
                 <a class="nav-social" href="https://github.com/dreamans/syncd/stargazers" target="_blank"><img alt="GitHub stars" src="https://img.shields.io/github/stars/dreamans/syncd.svg?style=social"></a>
                 <a class="nav-social" href="https://github.com/dreamans/syncd/network/members" target="_blank"><img alt="GitHub forks" src="https://img.shields.io/github/forks/dreamans/syncd.svg?style=social"></a>
@@ -147,8 +30,14 @@
             <h1 class="h tit text-center">Syncd - 自动化部署工具</h1>
             <h3 class="h subtit text-center">Syncd是一款开源的代码部署工具，它具有简单、高效、易用等特点，可以提高团队的工作效率。</h3>
             <div class="start">
-                <a class="start-link nav-link" href="/docs/">
-                    <i class="iconfont icon-logo"></i>开始使用
+                <a class="start-link nav-link main" href="/docs/">
+                    <i class="iconfont left icon-logo"></i>开始使用
+                </a>
+                <a class="start-link nav-link" href="https://github.com/dreamans/syncd" target="_blank">
+                    <i class="iconfont left icon-github"></i>Github
+                </a>
+                <a class="start-link nav-link" href="https://gitee.com/dreamans/syncd" target="_blank">
+                    <i class="iconfont left icon-gitee"></i>Gitee
                 </a>
             </div>
         </div>
@@ -192,6 +81,63 @@
                     <span class="desc">邮件通知机制</span>
                 </li>
             </ul>
+        </div>
+    </div>
+    <div class="section-container bg-gray">
+        <div class="wrap">
+            <div class="quick-shell">
+<pre>
+$ curl https://syncd.cc/install.sh | bash
+$ cd ./syncd-deploy
+$ mysql --default-character-set=utf8mb4 < ./resource/sql/syncd_{版本号}.sql
+$ GIN_MODE=release ./bin/syncd -c ./etc/syncd.ini
+                                          __
+   _____   __  __   ____     _____   ____/ /
+  / ___/  / / / /  / __ \   / ___/  / __  /
+ (__  )  / /_/ /  / / / /  / /__   / /_/ /
+/____/   \__, /  /_/ /_/   \___/   \__,_/
+        /____/
+
+Service:              syncd
+Version:              v2.0.0
+Config Loaded:        ./etc/syncd.ini
+Log:                  stdout
+Mail Enable:          0
+HTTP Service:         :8878
+Start Running...
+</pre>
+            </div>
+            <div class="quick-shell">
+                <span class="quick-internet"><i class="iconfont left icon-safari"></i>http://localhost:8878</span>
+            </div>
+        </div>
+    </div>
+    <div class="section-container">
+        <div class="wrap">
+            <div class="license-text text-center">
+                <p class="logo-large">
+                    <img width="300px;" src="assets/img/logo-blue.svg" />
+                </p>
+                <p>
+                    Syncd项目代码100%开源并可无条件免费使用，所有的源代码均通过<a href="https://github.com/dreamans/syncd/blob/master/LICENSE" target="_blank">MIT授权协议</a>托管在<a href="https://github.com/dreamans/syncd" target="_blank">Github</a>和<a href="https://gitee.com/dreamans/syncd" target="_blank">Gitee</a>上。
+                </p>
+                <p>
+                    <a href="https://travis-ci.org/dreamans/syncd"><img src="https://img.shields.io/travis/dreamans/syncd/master.svg" /></a>
+                    <a href="https://github.com/dreamans/syncd/blob/master/LICENSE"><img src="https://img.shields.io/github/license/dreamans/syncd.svg" /></a>
+                    <a href="https://godoc.org/github.com/dreamans/syncd" target="_blank"><img src="https://img.shields.io/badge/godoc-reference-green.svg" /></a>
+                    <a href="https://github.com/dreamans/syncd/releases"><img src="https://img.shields.io/github/release/dreamans/syncd.svg" /></a>
+                    <a href="https://github.com/dreamans/syncd/stargazers"><img src="https://img.shields.io/github/stars/dreamans/syncd.svg" /></a>
+                    <a href="https://github.com/dreamans/syncd/network/members"><img src="https://img.shields.io/github/forks/dreamans/syncd.svg" /></a>
+                    <a href='https://gitee.com/dreamans/syncd/stargazers'><img src='https://gitee.com/dreamans/syncd/badge/star.svg?theme=dark' /></a>
+                    <a href='https://gitee.com/dreamans/syncd/members'><img src='https://gitee.com/dreamans/syncd/badge/fork.svg?theme=dark' /></a>
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="section-container bg-dark">
+        <div class="wrap footer-copyright">
+            <p>© 2019 <a href="https://github.com/dreamans/syncd" target="_blank">Syncd</a></p>
+            <p>Documentation licensed under CC BY 4.0.</p>
         </div>
     </div>
 <script>

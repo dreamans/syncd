@@ -36,10 +36,6 @@ Github: https://github.com/dreamans/syncd
 
 Gitee: https://gitee.com/dreamans/syncd
 
-## 获取帮助
-
-Syncd使用交流QQ群①: 725302833
-
 ## 捐赠
 
 Syncd的发展离不开您的支持，[前往捐赠](donate.md)
