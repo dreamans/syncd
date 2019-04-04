@@ -186,7 +186,7 @@
                         {{ dialogDetail.description }}
                     </el-form-item>
                     <el-form-item :label="$t('audit_status')">
-                        {{ this.auditStatusTitle(dialogDetail.audit_status) }}
+                        <span :class="this.auditStatusTitle(dialogDetail.audit_status).auditClass">{{ this.auditStatusTitle(dialogDetail.audit_status).auditTitle }}</span>
                     </el-form-item>
                     <el-form-item :label="$t('submiter')">
                         {{ dialogDetail.username }} - {{ dialogDetail.email }}
@@ -317,9 +317,9 @@ export default {
                 {status: this.$root.ApplyStatusDrop, label: this.$t('deprecated')},
             ],
             auditStatusList: [
-                {status: this.$root.AuditStatusPending, label: this.$t('unaudit')},
-                {status: this.$root.AuditStatusOk, label: this.$t('audit_pass')},
-                {status: this.$root.AuditStatusRefuse, label: this.$t('audit_denied')},
+                {status: this.$root.AuditStatusPending, label: this.$t('unaudit'), class: 'app-color-warning'},
+                {status: this.$root.AuditStatusOk, label: this.$t('audit_pass'), class: 'app-color-success'},
+                {status: this.$root.AuditStatusRefuse, label: this.$t('audit_denied'), class: 'app-color-error'},
             ],
             projectList: [],
 
@@ -503,13 +503,16 @@ export default {
             this.loadTableData()
         },
         auditStatusTitle(auditStatus) {
-            let auditTitle = ''
+            let auditObj = {}
             this.auditStatusList.forEach(item => {
                 if (auditStatus == item.status) {
-                    auditTitle = item.label
+                    auditObj = {
+                        auditTitle: item.label,
+                        auditClass: item.class
+                    }
                 }
             })
-            return auditTitle
+            return auditObj
         },
         loadTableData() {
             this.tableLoading = true
