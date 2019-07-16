@@ -1,17 +1,10 @@
-FROM golang
-
-MAINTAINER dreamans@163.com
-
-RUN  mkdir -p /usr/local/src && \
-     mkdir /usr/local/syncd
-
+FROM golang:1.12-alpine3.10 AS build
 COPY . /usr/local/src
-
 WORKDIR /usr/local/src
+RUN apk --no-cache add build-base && make
 
-RUN make && \
-    mv output/* /usr/local/syncd
-
+FROM alpine:3.10
+WORKDIR /syncd
+COPY --from=build /usr/local/src/output /syncd
 EXPOSE 8878
-
-CMD ["/bin/bash"]
+CMD [ "/syncd/bin/syncd" ]
