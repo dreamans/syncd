@@ -473,9 +473,9 @@ export default {
             },
 
             editorInstance: null,
-            dialogBuildVisible: false,
-            dialogBuildLoading: false,
-            dialogBuildForm: {
+            dialogDeployVisible: false,
+            dialogDeployLoading: false,
+            dialogDeployForm: {
                 id: 0,
                 deploy_script: '',
             },
@@ -615,24 +615,24 @@ export default {
         },
 
         dialogSubmitDeployHandler() {
-            this.dialogBuildForm.build_script = this.getDeployEditorValue()
-            updateBuildScriptApi(this.dialogBuildForm).then(res => {
+            this.dialogDeployForm.deploy_script = this.getDeployEditorValue()
+            updateDeployScriptApi(this.dialogDeployForm).then(res => {
                 this.$root.MessageSuccess(() => {
-                    this.dialogBuildVisible = false
+                    this.dialogDeployVisible = false
                 })
             })
         },
         openDeployDialogHandler(row) {
-            this.dialogBuildVisible = true
-            this.dialogBuildLoading = true
+            this.dialogDeployVisible = true
+            this.dialogDeployLoading = true
             detailProjectApi({id: row.id}).then(res => {
-                this.dialogBuildForm = {
+                this.dialogDeployForm = {
                     id: res.id,
                     deploy_script: res.deploy_script,
                 }
-                this.dialogBuildLoading = false
+                this.dialogDeployLoading = false
                 this.$nextTick(() => {
-                    this.createDeployEditor(this.dialogBuildForm.deploy_script)
+                    this.createDeployEditor(this.dialogDeployForm.deploy_script)
                 })
             })
         },
