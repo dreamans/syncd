@@ -77,6 +77,11 @@
                         v-if="$root.CheckPriv($root.Priv.PROJECT_VIEW)"
                         icon="el-icon-view"
                         type="text"
+                        @click="openBuildDialogHandler(scope.row)">{{ $t('deploy_setting') }}</el-button>
+                        <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_VIEW)"
+                        icon="el-icon-view"
+                        type="text"
                         @click="openViewDialogHandler(scope.row)">{{ $t('view') }}</el-button>
                         <el-button
                         v-if="$root.CheckPriv($root.Priv.PROJECT_EDIT)"
@@ -370,6 +375,25 @@
             </div>
         </el-dialog>
 
+        <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_deploy_script')" :visible.sync="dialogBuildVisible" @close="dialogBuildVisible = false">
+            <div class="app-dialog" v-loading="dialogBuildLoading">
+                <div class="app-shell-editor">
+                    <textarea id="editor-textarea"></textarea>
+                </div>
+                <h4 class="app-form-subtitle">{{ $t('deploy_illustrate') }}</h4>
+                <div class="app-form-notice">
+                    <p>{{ $t('deploy_script_tips') }}:</p>
+                    <p>
+                        <i class="iconfont icon-dot"></i><span class="code">${env_workspace}</span> - {{ $t('deploy_script_env_workspace') }}
+                    </p>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button size="small" @click="dialogBuildVisible = false">{{ $t('cancel') }}</el-button>
+                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitBuildHandler">{{ $t('enter') }}</el-button>
+                </div>
+            </div>
+        </el-dialog>
+
         <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_hook_script')" :visible.sync="dialogHookVisible" @close="dialogHookVisible = false">
             <div class="app-dialog" v-loading="dialogHookLoading">
                 <el-form label-position="top" size="medium" label-width="130px">
@@ -446,6 +470,14 @@ export default {
             dialogBuildForm: {
                 id: 0,
                 build_script: '',
+            },
+
+            editorInstance: null,
+            dialogBuildVisible: false,
+            dialogBuildLoading: false,
+            dialogBuildForm: {
+                id: 0,
+                deploy_script: '',
             },
 
             dialogHookVisible: false,
