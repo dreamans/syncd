@@ -613,6 +613,57 @@ export default {
             }
             return this.editorInstance.getValue()
         },
+
+        dialogSubmitDeployHandler() {
+            this.dialogBuildForm.build_script = this.getDeployEditorValue()
+            updateBuildScriptApi(this.dialogBuildForm).then(res => {
+                this.$root.MessageSuccess(() => {
+                    this.dialogBuildVisible = false
+                })
+            })
+        },
+        openDeployDialogHandler(row) {
+            this.dialogBuildVisible = true
+            this.dialogBuildLoading = true
+            detailProjectApi({id: row.id}).then(res => {
+                this.dialogBuildForm = {
+                    id: res.id,
+                    deploy_script: res.deploy_script,
+                }
+                this.dialogBuildLoading = false
+                this.$nextTick(() => {
+                    this.createDeployEditor(this.dialogBuildForm.deploy_script)
+                })
+            })
+        },
+        createDeployEditor(content) {
+            if (!this.editorInstance) {
+                this.editorInstance = codeMirror.fromTextArea(
+                    document.getElementById('editor-textarea'),
+                    {
+                        theme: "dracula",
+                        mode: 'shell',
+                        tabSize: 4,
+                        indentUnit: 4,
+                        lineWrapping: 'wrap',
+                        lineNumbers: true,
+                        matchBrackets: true,
+                        scrollbarStyle: 'simple',
+                    }
+                )
+            }
+            if (!content) {
+                content = ''
+            }
+            this.editorInstance.setValue(content)
+        },
+        getDeployEditorValue() {
+            if (!this.editorInstance) {        
+                return ''
+            }
+            return this.editorInstance.getValue()
+        },
+
         openViewDialogHandler(row) {
             this.dialogViewVisible = true
             this.dialogViewLoading = true
