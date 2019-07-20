@@ -77,7 +77,7 @@
                         v-if="$root.CheckPriv($root.Priv.PROJECT_VIEW)"
                         icon="el-icon-view"
                         type="text"
-                        @click="openBuildDialogHandler(scope.row)">{{ $t('deploy_setting') }}</el-button>
+                        @click="openDeployDialogHandler(scope.row)">{{ $t('deploy_setting') }}</el-button>
                         <el-button
                         v-if="$root.CheckPriv($root.Priv.PROJECT_VIEW)"
                         icon="el-icon-view"
@@ -375,8 +375,8 @@
             </div>
         </el-dialog>
 
-        <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_deploy_script')" :visible.sync="dialogBuildVisible" @close="dialogBuildVisible = false">
-            <div class="app-dialog" v-loading="dialogBuildLoading">
+        <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_deploy_script')" :visible.sync="dialogDeployVisible" @close="dialogDeployVisible = false">
+            <div class="app-dialog" v-loading="dialogDeployLoading">
                 <div class="app-shell-editor">
                     <textarea id="editor-textarea"></textarea>
                 </div>
@@ -388,8 +388,8 @@
                     </p>
                 </div>
                 <div slot="footer" class="dialog-footer">
-                    <el-button size="small" @click="dialogBuildVisible = false">{{ $t('cancel') }}</el-button>
-                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitBuildHandler">{{ $t('enter') }}</el-button>
+                    <el-button size="small" @click="dialogDeployVisible = false">{{ $t('cancel') }}</el-button>
+                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitDeployHandler">{{ $t('enter') }}</el-button>
                 </div>
             </div>
         </el-dialog>
@@ -451,6 +451,7 @@ import {
     detailProjectApi, 
     deleteProjectApi, 
     updateBuildScriptApi,
+    updateDeployScriptApi,
     updateHookScriptApi
 } from '@/api/project'
 import { listGroupApi } from '@/api/server' 
