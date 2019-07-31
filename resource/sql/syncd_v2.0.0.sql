@@ -76,6 +76,7 @@ CREATE TABLE `syd_project` (
   `deploy_user` varchar(50) NOT NULL DEFAULT '',
   `deploy_path` varchar(500) NOT NULL DEFAULT '',
   `build_script` text NOT NULL,
+  `deploy_script` text NOT NULL,
   `build_hook_script` text NOT NULL,
   `deploy_hook_script` text NOT NULL,
   `pre_deploy_cmd` text NOT NULL,
