@@ -378,9 +378,9 @@
         <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_deploy_script')" :visible.sync="dialogDeployVisible" @close="dialogDeployVisible = false">
             <div class="app-dialog" v-loading="dialogDeployLoading">
                 <div class="app-shell-editor">
-                    <textarea id="editor-textarea"></textarea>
+                    <textarea id="deploy-editor-textarea"></textarea>
                 </div>
-                <h4 class="app-form-subtitle">{{ $t('deploy_illustrate') }}</h4>
+                <h4 class="app-form-subtitle">{{ $t('deployment_illustrate') }}</h4>
                 <div class="app-form-notice">
                     <p>{{ $t('deploy_script_tips') }}:</p>
                     <p>
@@ -629,7 +629,7 @@ export default {
             detailProjectApi({id: row.id}).then(res => {
                 this.dialogDeployForm = {
                     id: res.id,
-                    deploy_script: res.deploy_script,
+                    deploy_script: res.deploy_hook_script,
                 }
                 this.dialogDeployLoading = false
                 this.$nextTick(() => {
@@ -640,7 +640,7 @@ export default {
         createDeployEditor(content) {
             if (!this.editorInstance) {
                 this.editorInstance = codeMirror.fromTextArea(
-                    document.getElementById('editor-textarea'),
+                    document.getElementById('deploy-editor-textarea'),
                     {
                         theme: "dracula",
                         mode: 'shell',

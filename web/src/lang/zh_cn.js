@@ -162,7 +162,7 @@ export default {
     'build_script_env_workspace': '代码仓库本地副本目录',
     'build_script_env_pack_file': '打包文件绝对地址，构建完成后将需要部署到线上的代码打包到此文件中，必须使用 <span class="code">tar -zcf</span> 命令进行打包。部署模块会将此压缩包分发到目标主机并解压缩到指定目录，请按照要求打包，否则会部署失败。',
     'edit_deploy_script': '编辑部署脚本',
-    'deploy_illustrate': '部署说明',
+    'deployment_illustrate': '部署说明',
     'deploy_script_tips': '脚本会在代码构建完成后执行，部署脚本支持的变量',
     'deploy_script_env_workspace': '代码仓库本地副本目录',
     'select_project': '选择项目',

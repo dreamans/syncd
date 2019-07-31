@@ -36,10 +36,15 @@ type ProjectBuildScriptBind struct {
     BuildScript         string  `form:"build_script" binding:"required"`
 }
 
+type ProjectDeployScriptBind struct {
+    ID                  int     `form:"id" binding:"required"`
+    DeployScript        string  `form:"deploy_script" binding:"required"`
+}
+
 type ProjectHookScriptBind struct {
     ID                      int     `form:"id" binding:"required"`
     BuildHookScript         string  `form:"build_hook_script"`
-    DeployHookScript         string  `form:"deploy_hook_script"`
+    DeployHookScript        string  `form:"deploy_hook_script"`
 }
 
 type QueryBind struct {
@@ -73,6 +78,36 @@ func ProjectBuildScript(c *gin.Context) {
         BuildScript: form.BuildScript,
     }
     if err := proj.UpdateBuildScript(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+    render.Success(c)
+}
+
+func ProjectDeployScript(c *gin.Context) {
+    var form ProjectDeployScriptBind
+    if err := c.ShouldBind(&form); err != nil {
+        render.ParamError(c, err.Error())
+        return
+    }
+
+    p := &project.Project{
+        ID: form.ID,
+    }
+    if err := p.Detail(); err != nil {
+        render.AppError(c, err.Error())
+        return
+    }
+
+    if !common.InSpaceCheck(c, p.SpaceId) {
+        return
+    }
+
+    proj := &project.Project{
+        ID: form.ID,
+        DeployScript: form.DeployScript,
+    }
+    if err := proj.UpdateDeployScript(); err != nil {
         render.AppError(c, err.Error())
         return
     }
