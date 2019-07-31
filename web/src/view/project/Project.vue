@@ -629,7 +629,7 @@ export default {
             detailProjectApi({id: row.id}).then(res => {
                 this.dialogDeployForm = {
                     id: res.id,
-                    deploy_script: res.deploy_hook_script,
+                    deploy_script: res.deploy_script,
                 }
                 this.dialogDeployLoading = false
                 this.$nextTick(() => {
