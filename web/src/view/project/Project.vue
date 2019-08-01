@@ -465,7 +465,7 @@ import 'codemirror/addon/scroll/simplescrollbars.js'
 export default {
     data() {
         return {
-            editorInstance: null,
+            editorInstanceBuild: null,
             dialogBuildVisible: false,
             dialogBuildLoading: false,
             dialogBuildForm: {
@@ -473,7 +473,7 @@ export default {
                 build_script: '',
             },
 
-            editorInstance: null,
+            editorInstanceDeploy: null,
             dialogDeployVisible: false,
             dialogDeployLoading: false,
             dialogDeployForm: {
@@ -588,8 +588,8 @@ export default {
             })
         },
         createBuildEditor(content) {
-            if (!this.editorInstance) {
-                this.editorInstance = codeMirror.fromTextArea(
+            if (!this.editorInstanceBuild) {
+                this.editorInstanceBuild = codeMirror.fromTextArea(
                     document.getElementById('editor-textarea'),
                     {
                         theme: "dracula",
@@ -606,13 +606,13 @@ export default {
             if (!content) {
                 content = ''
             }
-            this.editorInstance.setValue(content)
+            this.editorInstanceBuild.setValue(content)
         },
         getBuildEditorValue() {
-            if (!this.editorInstance) {        
+            if (!this.editorInstanceBuild) {        
                 return ''
             }
-            return this.editorInstance.getValue()
+            return this.editorInstanceBuild.getValue()
         },
 
         dialogSubmitDeployHandler() {
@@ -638,8 +638,8 @@ export default {
             })
         },
         createDeployEditor(content) {
-            if (!this.editorInstance) {
-                this.editorInstance = codeMirror.fromTextArea(
+            if (!this.editorInstanceDeploy) {
+                this.editorInstanceDeploy = codeMirror.fromTextArea(
                     document.getElementById('deploy-editor-textarea'),
                     {
                         theme: "dracula",
@@ -656,13 +656,13 @@ export default {
             if (!content) {
                 content = ''
             }
-            this.editorInstance.setValue(content)
+            this.editorInstanceDeploy.setValue(content)
         },
         getDeployEditorValue() {
-            if (!this.editorInstance) {        
+            if (!this.editorInstanceDeploy) {        
                 return ''
             }
-            return this.editorInstance.getValue()
+            return this.editorInstanceDeploy.getValue()
         },
 
         openViewDialogHandler(row) {
