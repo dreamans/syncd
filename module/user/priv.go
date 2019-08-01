@@ -54,6 +54,7 @@ const (
     PROJECT_AUDIT = 2205 // 启用项目
     PROJECT_BUILD = 2206 // 构建设置
     PROJECT_HOOK  = 2207 // Hook设置
+	PROJECT_DEPLOY = 2208 // 部署设置
 
     USER_ROLE_VIEW = 3001 // 查看角色
     USER_ROLE_NEW  = 3002 // 新增角色
@@ -185,6 +186,10 @@ var privToApiMap = map[int][]string{
         reqApi.PROJECT_DETAIL,
         reqApi.PROJECT_BUILDSCRIPT,
     },
+	PROJECT_DEPLOY: []string{
+        reqApi.PROJECT_DETAIL,
+        reqApi.PROJECT_DEPLOYSCRIPT,
+    },
     PROJECT_HOOK: []string{
         reqApi.PROJECT_DETAIL,
         reqApi.PROJECT_HOOKSCRIPT,
@@ -296,6 +301,10 @@ var privProject = PrivGroup {
         PrivItem{
             Label: "项目-构建设置",
             Value: PROJECT_BUILD,
+        },
+		PrivItem{
+            Label: "项目-部署设置",
+            Value: PROJECT_DEPLOY,
         },
         PrivItem{
             Label: "项目-Hook设置",
