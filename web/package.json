@@ -9,7 +9,7 @@
   "dependencies": {
     "axios": "^0.19.1",
     "blueimp-md5": "^2.10.0",
-    "codemirror": "^5.43.0",
+    "codemirror": "^5.58.2",
     "element-ui": "^2.4.11",
     "js-cookie": "^2.2.0",
     "moment": "^2.24.0",
