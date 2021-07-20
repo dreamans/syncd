@@ -11,6 +11,7 @@ import (
 
     "github.com/jinzhu/gorm"
     _ "github.com/go-sql-driver/mysql"
+    _ "github.com/jinzhu/gorm/dialects/sqlite"
 )
 
 type DB struct {
@@ -25,7 +26,13 @@ func NewDatabase(cfg *DbConfig) *DB {
 }
 
 func (db *DB) Open() error {
-    c, err := gorm.Open("mysql", db.parseConnConfig())
+    var c *gorm.DB
+    var err error
+    if db.cfg.SqliteFile != "" {
+        c, err = gorm.Open("sqlite3", db.cfg.SqliteFile)
+    } else {
+        c, err = gorm.Open("mysql", db.parseConnConfig())
+    }
     if err != nil {
         return errors.New(fmt.Sprintf("mysql connect failed, %s", err.Error()))
     }
