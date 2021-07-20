@@ -67,3 +67,7 @@ export function updateBuildScriptApi(data) {
 export function updateHookScriptApi(data) {
     return post('/project/hookscript', data)
 }
+
+export function updateDeployScriptApi(data) {
+    return post('/project/deployscript', data)
+}

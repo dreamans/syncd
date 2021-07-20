@@ -22,6 +22,7 @@ type Project struct {
     DeployUser          string  `gorm:"type:varchar(100);not null;default:''"`
     DeployPath          string  `gorm:"type:varchar(500);not null;default:''"`
     BuildScript         string  `gorm:"type:text;not null"`
+    DeployScript        string  `gorm:"type:text;not null"`
     BuildHookScript     string  `gorm:"type:text;not null"`
     DeployHookScript    string  `gorm:"type:text;not null"`
     PreDeployCmd        string  `gorm:"type:text;not null"`

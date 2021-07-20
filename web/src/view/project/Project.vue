@@ -77,6 +77,11 @@
                         v-if="$root.CheckPriv($root.Priv.PROJECT_VIEW)"
                         icon="el-icon-view"
                         type="text"
+                        @click="openDeployDialogHandler(scope.row)">{{ $t('deploy_setting') }}</el-button>
+                        <el-button
+                        v-if="$root.CheckPriv($root.Priv.PROJECT_VIEW)"
+                        icon="el-icon-view"
+                        type="text"
                         @click="openViewDialogHandler(scope.row)">{{ $t('view') }}</el-button>
                         <el-button
                         v-if="$root.CheckPriv($root.Priv.PROJECT_EDIT)"
@@ -370,6 +375,25 @@
             </div>
         </el-dialog>
 
+        <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_deploy_script')" :visible.sync="dialogDeployVisible" @close="dialogDeployVisible = false">
+            <div class="app-dialog" v-loading="dialogDeployLoading">
+                <div class="app-shell-editor">
+                    <textarea id="deploy-editor-textarea"></textarea>
+                </div>
+                <h4 class="app-form-subtitle">{{ $t('deployment_illustrate') }}</h4>
+                <div class="app-form-notice">
+                    <p>{{ $t('deploy_script_tips') }}:</p>
+                    <p>
+                        <i class="iconfont icon-dot"></i><span class="code">${env_workspace}</span> - {{ $t('deploy_script_env_workspace') }}
+                    </p>
+                </div>
+                <div slot="footer" class="dialog-footer">
+                    <el-button size="small" @click="dialogDeployVisible = false">{{ $t('cancel') }}</el-button>
+                    <el-button :loading="btnLoading" size="small" type="primary" @click="dialogSubmitDeployHandler">{{ $t('enter') }}</el-button>
+                </div>
+            </div>
+        </el-dialog>
+
         <el-dialog :top="$root.DialogNormalTop" :width="$root.DialogNormalWidth" :title="$t('edit_hook_script')" :visible.sync="dialogHookVisible" @close="dialogHookVisible = false">
             <div class="app-dialog" v-loading="dialogHookLoading">
                 <el-form label-position="top" size="medium" label-width="130px">
@@ -427,6 +451,7 @@ import {
     detailProjectApi, 
     deleteProjectApi, 
     updateBuildScriptApi,
+    updateDeployScriptApi,
     updateHookScriptApi
 } from '@/api/project'
 import { listGroupApi } from '@/api/server' 
@@ -440,12 +465,20 @@ import 'codemirror/addon/scroll/simplescrollbars.js'
 export default {
     data() {
         return {
-            editorInstance: null,
+            editorInstanceBuild: null,
             dialogBuildVisible: false,
             dialogBuildLoading: false,
             dialogBuildForm: {
                 id: 0,
                 build_script: '',
+            },
+
+            editorInstanceDeploy: null,
+            dialogDeployVisible: false,
+            dialogDeployLoading: false,
+            dialogDeployForm: {
+                id: 0,
+                deploy_script: '',
             },
 
             dialogHookVisible: false,
@@ -555,8 +588,8 @@ export default {
             })
         },
         createBuildEditor(content) {
-            if (!this.editorInstance) {
-                this.editorInstance = codeMirror.fromTextArea(
+            if (!this.editorInstanceBuild) {
+                this.editorInstanceBuild = codeMirror.fromTextArea(
                     document.getElementById('editor-textarea'),
                     {
                         theme: "dracula",
@@ -573,14 +606,65 @@ export default {
             if (!content) {
                 content = ''
             }
-            this.editorInstance.setValue(content)
+            this.editorInstanceBuild.setValue(content)
         },
         getBuildEditorValue() {
-            if (!this.editorInstance) {        
+            if (!this.editorInstanceBuild) {        
                 return ''
             }
-            return this.editorInstance.getValue()
+            return this.editorInstanceBuild.getValue()
         },
+
+        dialogSubmitDeployHandler() {
+            this.dialogDeployForm.deploy_script = this.getDeployEditorValue()
+            updateDeployScriptApi(this.dialogDeployForm).then(res => {
+                this.$root.MessageSuccess(() => {
+                    this.dialogDeployVisible = false
+                })
+            })
+        },
+        openDeployDialogHandler(row) {
+            this.dialogDeployVisible = true
+            this.dialogDeployLoading = true
+            detailProjectApi({id: row.id}).then(res => {
+                this.dialogDeployForm = {
+                    id: res.id,
+                    deploy_script: res.deploy_script,
+                }
+                this.dialogDeployLoading = false
+                this.$nextTick(() => {
+                    this.createDeployEditor(this.dialogDeployForm.deploy_script)
+                })
+            })
+        },
+        createDeployEditor(content) {
+            if (!this.editorInstanceDeploy) {
+                this.editorInstanceDeploy = codeMirror.fromTextArea(
+                    document.getElementById('deploy-editor-textarea'),
+                    {
+                        theme: "dracula",
+                        mode: 'shell',
+                        tabSize: 4,
+                        indentUnit: 4,
+                        lineWrapping: 'wrap',
+                        lineNumbers: true,
+                        matchBrackets: true,
+                        scrollbarStyle: 'simple',
+                    }
+                )
+            }
+            if (!content) {
+                content = ''
+            }
+            this.editorInstanceDeploy.setValue(content)
+        },
+        getDeployEditorValue() {
+            if (!this.editorInstanceDeploy) {        
+                return ''
+            }
+            return this.editorInstanceDeploy.getValue()
+        },
+
         openViewDialogHandler(row) {
             this.dialogViewVisible = true
             this.dialogViewLoading = true
