@@ -41,6 +41,7 @@ type (
     }
 
     DbConfig struct {
+        SqliteFile      string
         Unix            string
         Host            string
         Port            int

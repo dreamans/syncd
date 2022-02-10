@@ -128,6 +128,7 @@ func main() {
             IdleTimeout: configIntOrDefault("serve", "idle_timeout", 300),
         },
         Db: &syncd.DbConfig{
+        	SqliteFile: configOrDefault("database", "sqlite_file", ""),
             Unix: configOrDefault("database", "unix", ""),
             Host: configOrDefault("database", "host", ""),
             Port: configIntOrDefault("database", "port", 3306),
