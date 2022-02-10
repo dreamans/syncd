@@ -26,6 +26,7 @@ type Project struct {
     DeployUser          string  `json:"deploy_user"`
     DeployPath          string  `json:"deploy_path"`
     BuildScript         string  `json:"build_script"`
+    DeployScript        string  `json:"deploy_script"`
     BuildHookScript     string  `json:"build_hook_script"`
     DeployHookScript    string  `json:"deploy_hook_script"`
     PreDeployCmd        string  `json:"pre_deploy_cmd"`
@@ -108,6 +109,24 @@ func (p *Project) UpdateBuildScript() error {
     return nil
 }
 
+func (p *Project) UpdateDeployScript() error {
+    project := &model.Project{}
+    updateData := map[string]interface{}{
+        "deploy_script": p.DeployScript,
+    }
+    if ok := project.UpdateByFields(updateData, model.QueryParam{
+        Where: []model.WhereParam{
+            model.WhereParam{
+                Field: "id",
+                Prepare: p.ID,
+            },
+        },
+    }); !ok {
+        return errors.New("project deploy_script update failed")
+    }
+    return nil
+}
+
 func (p *Project) UpdateHookScript() error {
     project := &model.Project{}
     updateData := map[string]interface{}{
@@ -152,6 +171,7 @@ func (p *Project) Detail() error {
     p.AfterDeployCmd = project.AfterDeployCmd
     p.Ctime = project.Ctime
     p.BuildScript = project.BuildScript
+    p.DeployScript = project.DeployScript
     p.BuildHookScript = project.BuildHookScript
     p.DeployHookScript = project.DeployHookScript
     p.AuditNotice = project.AuditNotice

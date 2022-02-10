@@ -76,6 +76,7 @@ CREATE TABLE `syd_project` (
   `deploy_user` varchar(50) NOT NULL DEFAULT '',
   `deploy_path` varchar(500) NOT NULL DEFAULT '',
   `build_script` text NOT NULL,
+  `deploy_script` text NOT NULL,
   `build_hook_script` text NOT NULL,
   `deploy_hook_script` text NOT NULL,
   `pre_deploy_cmd` text NOT NULL,
@@ -163,7 +164,7 @@ CREATE TABLE `syd_user_role` (
 
 INSERT INTO `syd_user_role` (`id`, `name`, `privilege`, `ctime`)
 VALUES
-	(1,'管理员','2001,2002,2003,2004,2100,2101,2102,2201,2202,2203,2204,2205,2206,2207,3001,3002,3004,3003,3101,3102,3103,3104,4001,4002,4003,4004,4101,4102,4103,4104,1001,1002,1006,1003,1004,1005',0);
+	(1,'管理员','2001,2002,2003,2004,2100,2101,2102,2201,2202,2203,2204,2205,2206,2207,2208,3001,3002,3004,3003,3101,3102,3103,3104,4001,4002,4003,4004,4101,4102,4103,4104,1001,1002,1006,1003,1004,1005',0);
 
 DROP TABLE IF EXISTS `syd_user_token`;
 
