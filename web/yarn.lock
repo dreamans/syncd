@@ -6101,10 +6101,10 @@ qs@6.7.0:
   resolved "https://registry.yarnpkg.com/qs/-/qs-6.7.0.tgz#41dc1a015e3d581f1621776be31afb2876a9b1bc"
   integrity sha512-VCdBRNFTX1fyE7Nb6FYoURo/SPe62QCaAyzJvUjwRaIsc+NePBEniHlvxFmmX56+HZphIGtV0XeCirBtpDrTyQ==
 
-qs@^6.6.0:
-  version "6.6.0"
-  resolved "http://registry.npm.taobao.org/qs/download/qs-6.6.0.tgz#a99c0f69a8d26bf7ef012f871cdabb0aee4424c2"
-  integrity sha1-qZwPaajSa/fvAS+HHNq7Cu5EJMI=
+qs@^6.6.1:
+  version "6.6.1"
+  resolved "https://registry.yarnpkg.com/qs/-/qs-6.6.1.tgz#badc3705933629bed17bc709ba824ba0676708c5"
+  integrity sha512-DxHK46yYwC06eXWu3FCqlADDkzHZUhkaMY2o4jFbPtN90TO/Y4jzyuOpCa1iZ4OvFEOCC4MoGzubQUdxpZzk2w==
 
 qs@~6.5.2:
   version "6.5.2"
