@@ -25,7 +25,7 @@ var task = &deployTask{
 
 func NewTask(id, mode int, deploys []*Deploy, startFn, finishFn CallbackFn, taskFn TaskCallbackFn) error {
 	if exists := task.exists(id); exists {
-        return errors.New(fmt.Sprintf("deploy task [id: %d] have exists", id))
+        return fmt.Errorf("deploy task [id: %d] have exists", id)
     }
     task.append(id, deploys)
     go func() {
