@@ -25,7 +25,7 @@ var task = &buildTask{
 
 func NewTask(id int, build *Build, fn CallbackFn) error {
     if exists := task.exists(id); exists {
-        return errors.New(fmt.Sprintf("build task [id: %d] have exists", id))
+        return fmt.Errorf("build task [id: %d] have exists", id)
     }
     task.append(id, build)
     go func() {
@@ -45,7 +45,7 @@ func StopTask(id int) {
 func StatusTask(id int) (*Result, []*command.TaskResult, error) {
     build, exists := task.get(id)
     if !exists {
-        return nil, nil, errors.New(fmt.Sprintf("build task [id: %d] not exists", id))
+        return nil, nil, fmt.Errorf("build task [id: %d] not exists", id)
     }
     return build.Result(), build.Output(), nil
 }

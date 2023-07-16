@@ -63,12 +63,12 @@ func (c *Command) Run() error {
     case <-time.After(c.Timeout):
         err = c.terminate()
         if err == nil {
-            err = errors.New(fmt.Sprintf("cmd run timeout, cmd [%s], time[%v]", c.Cmd, c.Timeout))
+            err = fmt.Errorf("cmd run timeout, cmd [%s], time[%v]", c.Cmd, c.Timeout)
         }
     case <-c.TerminateChan:
         err = c.terminate()
         if err == nil {
-            err = errors.New(fmt.Sprintf("cmd is terminated, cmd [%s]", c.Cmd))
+            err = fmt.Errorf("cmd is terminated, cmd [%s]", c.Cmd)
         }
     }
     return err
